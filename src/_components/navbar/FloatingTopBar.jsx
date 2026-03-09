@@ -29,7 +29,6 @@ export default function FloatingTopBar({ openAuth }) {
   const [user,setUser] = useState(null)
   const [username,setUsername] = useState(null)
 
-
   useEffect(()=>{
 
     async function loadUser(){
@@ -135,7 +134,7 @@ export default function FloatingTopBar({ openAuth }) {
 
   return(
 
-<div className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] sm:w-auto">
+<div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
 
 <motion.div
 animate={{ scale:collapsed?0.9:1 }}
@@ -169,7 +168,7 @@ className="flex items-center justify-center w-full h-full text-muted-foreground"
 
 ) : (
 
-<div className="relative flex items-center gap-1 flex-wrap sm:flex-nowrap justify-center">
+<div className="relative flex items-center gap-1">
 
 {sections.map((item)=>{
 
@@ -183,7 +182,7 @@ key={item.id}
 onClick={()=>scrollTo(item.id)}
 whileHover={{ y:-3, scale:1.05 }}
 transition={{ type:"spring",stiffness:300,damping:20 }}
-className="relative flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm text-muted-foreground hover:text-primary transition"
+className="relative flex items-center gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm text-muted-foreground hover:text-primary transition"
 >
 
 {isActive && (
@@ -213,7 +212,7 @@ transition={{ type:"spring",stiffness:300,damping:30 }}
 
 <button
 onClick={openAuth}
-className="ml-1 sm:ml-3 flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-primary text-white text-xs sm:text-sm hover:opacity-90 transition"
+className="ml-2 sm:ml-3 flex items-center gap-2 px-2 sm:px-4 py-2 rounded-full bg-primary text-white text-xs sm:text-sm hover:opacity-90 transition"
 >
 <User size={16}/>
 <span className="hidden sm:inline">Sign In</span>
@@ -228,7 +227,7 @@ className="ml-1 sm:ml-3 flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full b
 
 <button
 onClick={logout}
-className="ml-1 sm:ml-3 flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-secondary text-xs sm:text-sm hover:opacity-80 transition"
+className="ml-2 sm:ml-3 flex items-center gap-2 px-2 sm:px-4 py-2 rounded-full bg-secondary text-xs sm:text-sm hover:opacity-80 transition"
 >
 <span className="truncate max-w-[80px] sm:max-w-none">
 {username || "Account"}
