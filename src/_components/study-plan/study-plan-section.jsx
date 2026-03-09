@@ -27,13 +27,13 @@ localStorage.setItem(storageKey, JSON.stringify([...next]))
 
 refreshProgress()
 if (window.supabaseUser) {
-  saveTaskProgress(
-    window.supabaseUser.id,
-    weekId,
-    dayId,
-    task.title,
-    true
-  )
+saveTaskProgress(
+window.supabaseUser.id,
+weekId,
+dayId,
+task.title,
+true
+)
 }
 
 return next
@@ -90,7 +90,9 @@ checked
 : "text-foreground/80 text-sm"
 }
 >
+
 {subtask}
+
 </span>
 
 </li>
@@ -111,6 +113,7 @@ function DayCard({ dayPlan, weekNum, refreshProgress }) {
 const [open, setOpen] = useState(false)
 
 const globalDay = (weekNum - 1) * 5 + dayPlan.day
+
 const tasks = [dayPlan.morning, dayPlan.afternoon]
 
 let totalTasks = 0
@@ -197,7 +200,7 @@ className="absolute inset-0 rounded-full bg-primary flex items-center justify-ce
 
 </div>
 
-<div className="text-left">
+<div>
 
 <h3 className="text-sm font-semibold text-foreground">
 Day {dayPlan.day}
@@ -263,9 +266,6 @@ export default function StudyPlanSection() {
 
 const [user,setUser] = useState(null)
 const [dbProgress,setDbProgress] = useState([])
-const [activeWeek, setActiveWeek] = useState(0)
-const [progressTrigger, setProgressTrigger] = useState(0)
-const [showDays, setShowDays] = useState(true)
 
 useEffect(()=>{
 
@@ -311,6 +311,10 @@ setProgressTrigger(p=>p+1)
 
 },[dbProgress])
 
+const [activeWeek, setActiveWeek] = useState(0)
+const [progressTrigger, setProgressTrigger] = useState(0)
+const [showDays, setShowDays] = useState(true)
+
 const currentPlan = weeklyPlans[activeWeek]
 
 const refreshProgress = () => {
@@ -325,6 +329,7 @@ let completedTasks = 0
 currentPlan.days.forEach(day => {
 
 const globalDay = (currentPlan.week - 1) * 5 + day.day
+
 const tasks = [day.morning, day.afternoon]
 
 tasks.forEach(task => {
@@ -362,6 +367,7 @@ const restartWeek = () => {
 currentPlan.days.forEach(day => {
 
 const globalDay = (currentPlan.week - 1) * 5 + day.day
+
 const tasks = [day.morning, day.afternoon]
 
 tasks.forEach(task => {
@@ -441,7 +447,7 @@ className="flex justify-center mb-4"
 Congrats! You finished Week {currentPlan.week}
 </h3>
 
-<p className="text-green-700/80 mb-6 text-sm sm:text-base">
+<p className="text-green-700/80 mb-6">
 Great consistency. Head to the next week and keep the momentum.
 </p>
 
