@@ -44,7 +44,7 @@ return next
 
 return (
 
-<div className="p-5 rounded-lg border border-border bg-card/50">
+<div className="p-4 sm:p-5 rounded-lg border border-border bg-card/50">
 
 <div className="flex items-center gap-3 mb-3">
 
@@ -75,7 +75,7 @@ return (
 <li
 key={i}
 onClick={() => toggleItem(i)}
-className="flex items-center gap-2 cursor-pointer"
+className="flex items-start sm:items-center gap-2 cursor-pointer"
 >
 
 {checked
@@ -161,12 +161,12 @@ transition={{ duration: 0.4 }}
 
 <button
 onClick={() => setOpen(!open)}
-className="w-full flex items-center justify-between p-4"
+className="w-full flex items-center justify-between p-3 sm:p-4"
 >
 
-<div className="flex items-center gap-4">
+<div className="flex items-center gap-3 sm:gap-4">
 
-<div className="relative w-10 h-10 flex items-center justify-center">
+<div className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center">
 
 <AnimatePresence>
 
@@ -190,7 +190,7 @@ className="absolute inset-0 rounded-full bg-primary flex items-center justify-ce
 
 {!dayCompleted && (
 
-<div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+<div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex items-center justify-center">
 <span className="text-sm font-bold text-primary">
 {globalDay}
 </span>
@@ -200,7 +200,7 @@ className="absolute inset-0 rounded-full bg-primary flex items-center justify-ce
 
 </div>
 
-<div>
+<div className="text-left">
 
 <h3 className="text-sm font-semibold text-foreground">
 Day {dayPlan.day}
@@ -230,7 +230,7 @@ open ? "rotate-180" : ""
 initial={{ height: 0, opacity: 0 }}
 animate={{ height: "auto", opacity: 1 }}
 exit={{ height: 0, opacity: 0 }}
-className="px-4 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-3"
+className="px-3 sm:px-4 pb-4 sm:pb-5 grid grid-cols-1 sm:grid-cols-2 gap-3"
 >
 
 <TaskBlock
@@ -291,26 +291,6 @@ initUser()
 
 },[])
 
-useEffect(()=>{
-
-if(!dbProgress.length) return
-
-dbProgress.forEach(item=>{
-
-const storageKey = `week-${item.week}-day-${item.day}-${item.task}`
-
-const saved = localStorage.getItem(storageKey)
-
-if(!saved){
-localStorage.setItem(storageKey, JSON.stringify([0]))
-}
-
-})
-
-setProgressTrigger(p=>p+1)
-
-},[dbProgress])
-
 const [activeWeek, setActiveWeek] = useState(0)
 const [progressTrigger, setProgressTrigger] = useState(0)
 const [showDays, setShowDays] = useState(true)
@@ -321,92 +301,32 @@ const refreshProgress = () => {
 setProgressTrigger(p => p + 1)
 }
 
-const calculateWeekProgress = () => {
-
-let totalTasks = 0
-let completedTasks = 0
-
-currentPlan.days.forEach(day => {
-
-const globalDay = (currentPlan.week - 1) * 5 + day.day
-
-const tasks = [day.morning, day.afternoon]
-
-tasks.forEach(task => {
-
-totalTasks += task.subtasks.length
-
-const saved = localStorage.getItem(`week-${currentPlan.week}-day-${globalDay}-${task.title}`)
-
-if (saved) {
-completedTasks += JSON.parse(saved).length
-}
-
-})
-
-})
-
-if (totalTasks === 0) return 0
-
-return Math.round((completedTasks / totalTasks) * 100)
-
-}
-
-const weekProgress = calculateWeekProgress()
-const weekCompleted = weekProgress === 100
-
-useEffect(() => {
-
-if (weekCompleted) setShowDays(false)
-if (!weekCompleted) setShowDays(true)
-
-}, [weekCompleted])
-
-const restartWeek = () => {
-
-currentPlan.days.forEach(day => {
-
-const globalDay = (currentPlan.week - 1) * 5 + day.day
-
-const tasks = [day.morning, day.afternoon]
-
-tasks.forEach(task => {
-localStorage.removeItem(`week-${currentPlan.week}-day-${globalDay}-${task.title}`)
-})
-
-})
-
-setShowDays(true)
-refreshProgress()
-
-}
-
 return (
 
-<section id="study-plan" className="py-32 px-6">
+<section id="study-plan" className="py-20 sm:py-32 px-4 sm:px-6">
 
 <div className="max-w-5xl mx-auto">
 
-<div className="text-center mb-16">
+<div className="text-center mb-12 sm:mb-16">
 
 <span className="text-xs font-mono text-primary uppercase tracking-[0.3em] block mb-4">
 Study Plan
 </span>
 
-<h2 className="text-4xl sm:text-5xl font-bold">
+<h2 className="text-3xl sm:text-5xl font-bold">
 25-Day <span className="text-primary">Preparation</span>
 </h2>
 
 </div>
 
-<div className="flex justify-center gap-3 mb-12">
+<div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-10 sm:mb-12">
 
 {weeklyPlans.map((week, i) => (
 
 <button
 key={`week-${week.week}`}
 onClick={() => setActiveWeek(i)}
-className={`px-6 py-3 rounded-xl font-medium transition ${
+className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium text-sm sm:text-base transition ${
 activeWeek === i
 ? "bg-primary text-white shadow-md"
 : "bg-secondary text-muted-foreground hover:bg-secondary/80"
@@ -421,64 +341,6 @@ Week {week.week}
 
 </div>
 
-<AnimatePresence mode="wait">
-
-{weekCompleted && !showDays ? (
-
-<motion.div
-initial={{ opacity: 0, scale: 0.95 }}
-animate={{ opacity: 1, scale: 1 }}
-exit={{ opacity: 0 }}
-className="p-10 rounded-xl border border-green-300 bg-green-50 text-center"
->
-
-<motion.div
-initial={{ scale: 0 }}
-animate={{ scale: 1 }}
-transition={{ type: "spring", stiffness: 260 }}
-className="flex justify-center mb-4"
->
-
-<CheckCircle2 className="w-12 h-12 text-green-600"/>
-
-</motion.div>
-
-<h3 className="text-2xl font-bold text-green-700 mb-2">
-Congrats! You finished Week {currentPlan.week}
-</h3>
-
-<p className="text-green-700/80 mb-6">
-Great consistency. Head to the next week and keep the momentum.
-</p>
-
-<div className="flex justify-center gap-3">
-
-<button
-onClick={() => setShowDays(true)}
-className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary hover:bg-primary/10"
->
-
-<Eye size={16}/>
-View Days
-
-</button>
-
-<button
-onClick={restartWeek}
-className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-green-400 text-green-700 hover:bg-green-100"
->
-
-<RotateCcw size={16}/>
-Restart Week
-
-</button>
-
-</div>
-
-</motion.div>
-
-) : (
-
 <div className="space-y-3">
 
 {currentPlan.days.map(day => (
@@ -491,36 +353,6 @@ refreshProgress={refreshProgress}
 />
 
 ))}
-
-</div>
-
-)}
-
-</AnimatePresence>
-
-<div className="mt-14">
-
-<div className="flex justify-between text-sm mb-2">
-
-<span className="text-muted-foreground">
-Week {currentPlan.week} completion
-</span>
-
-<span className="font-semibold text-primary">
-{weekProgress}%
-</span>
-
-</div>
-
-<div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-
-<motion.div
-className="h-full bg-primary"
-animate={{ width: `${weekProgress}%` }}
-transition={{ duration: 0.5 }}
-/>
-
-</div>
 
 </div>
 
