@@ -118,7 +118,7 @@ return (
 
   {/* smooth transition to next section */}
 
-  <div className="absolute bottom-0 left-0 w-full h-32 sm:h-40 bg-gradient-to-b from-transparent to-background pointer-events-none" />
+  <div className="absolute bottom-0 left-0 w-full h-24 sm:h-32 lg:h-40 bg-gradient-to-b from-transparent to-background pointer-events-none" />
 
 </section>
 );
