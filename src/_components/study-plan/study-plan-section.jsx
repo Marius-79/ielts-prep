@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react"
 import { useState, useEffect, useRef } from "react"
-import { Sun, Moon, CheckCircle2, Circle, ChevronDown, Check, RotateCcw, Eye } from "lucide-react"
+import { createPortal } from "react-dom"
+import { Sun, Moon, CheckCircle2, Circle, ChevronDown, Check, RotateCcw, Eye, BookOpen, X, Lightbulb } from "lucide-react"
 import { weeklyPlans } from "../_lib/study-plan-data"
 import { supabase } from "../_lib/supabase"
 import { saveTaskProgress, loadUserProgress } from "../../lib/progress"
@@ -11,6 +12,70 @@ const R_STROKE = 3
 const R_RADIUS = (R_SIZE - R_STROKE) / 2
 const R_CIRC = 2 * Math.PI * R_RADIUS
 
+// ── HintModal ─────────────────────────────────────────────────────────────────
+function HintModal({ label, detail, period, taskTitle, onClose }) {
+  const isMorning = period.toLowerCase() === "morning"
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose() }
+    document.addEventListener("keydown", onKey)
+    document.body.style.overflow = "hidden"
+    return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = "" }
+  }, [onClose])
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-8"
+      style={{ backgroundColor: "rgba(255,255,255,0.82)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.93, opacity: 0, y: 12 }}
+        transition={{ type: "spring", stiffness: 320, damping: 26 }}
+        className="relative w-full max-w-[420px] bg-white rounded-2xl overflow-hidden border border-purple-100 shadow-2xl shadow-purple-200/60"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="h-1.5 w-full bg-purple-300" />
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-purple-50">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isMorning ? "bg-amber-50" : "bg-purple-50"}`}>
+            {isMorning ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-purple-400" />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[9px] font-mono text-purple-400 uppercase tracking-[0.15em] leading-none mb-1">{period} · Study tip</p>
+            <h3 className="text-sm font-bold text-gray-800 leading-tight truncate">{taskTitle}</h3>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors">
+            <X size={14} />
+          </button>
+        </div>
+        <div className="px-5 pt-4 pb-1">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0" />
+            <span className="text-[13px] font-semibold text-gray-800">{label}</span>
+          </div>
+          {detail && (
+            <div className="rounded-xl p-4 bg-purple-50 border border-purple-100 mb-1">
+              <div className="flex gap-2.5">
+                <Lightbulb size={15} className="flex-shrink-0 mt-0.5 text-purple-400" />
+                <p className="text-[13.5px] leading-[1.7] text-gray-700">{detail}</p>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="px-5 py-4">
+          <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-semibold bg-primary text-white hover:opacity-90 active:scale-[0.98] transition-all duration-150">
+            Got it
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body
+  )
+}
+
+// ── TaskBlock ──────────────────────────────────────────────────────────────────
 function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId }) {
 
 const storageKey = `week-${weekId}-day-${dayId}-${task.title}`
@@ -20,9 +85,9 @@ const saved = localStorage.getItem(storageKey)
 return saved ? new Set(JSON.parse(saved)) : new Set()
 })
 
-// Track previous checked count to detect direction of change
-const prevSize = useRef(checkedItems.size)
-const arcRef   = useRef(null)
+const [activeHint, setActiveHint] = useState(null) // { label, detail, index }
+
+const arcRef = useRef(null)
 
 const toggleItem = (index) => {
 
@@ -67,19 +132,44 @@ useEffect(() => {
 
 return (
 
+<>
+
+{/* HintModal portal */}
+<AnimatePresence>
+{activeHint && (
+  <HintModal
+    label={activeHint.label}
+    detail={activeHint.detail}
+    period={period}
+    taskTitle={task.title}
+    onClose={() => setActiveHint(null)}
+  />
+)}
+</AnimatePresence>
+
 <div
-  className="relative p-4 sm:p-5 rounded-lg border bg-card/50 overflow-hidden transition-colors duration-300"
-  style={{ borderColor: allDone ? "hsl(var(--primary) / 0.35)" : "hsl(var(--border))" }}
+  className="relative p-4 sm:p-5 rounded-lg border bg-card/50 transition-colors duration-300"
+  style={{ borderColor: allDone ? "rgba(139,92,246,0.35)" : "hsl(var(--border))" }}
 >
 
-{/* soft shimmer when all done — pure CSS, not Framer Motion so no re-render fight */}
+{/* left-to-right soft purple fill on completion */}
+<style>{`
+  @keyframes fill-ltr {
+    from { transform: scaleX(0); }
+    to   { transform: scaleX(1); }
+  }
+  .task-fill-ltr {
+    animation: fill-ltr 0.7s cubic-bezier(0.22,1,0.36,1) forwards;
+    transform-origin: left;
+  }
+`}</style>
 {allDone && (
-  <div
-    className="absolute inset-0 pointer-events-none"
-    style={{
-      background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.10) 0%, transparent 70%)"
-    }}
-  />
+  <div className="absolute inset-0 pointer-events-none rounded-lg overflow-hidden">
+    <div
+      className="task-fill-ltr absolute inset-0 rounded-lg"
+      style={{ background: "rgba(139,92,246,0.07)" }}
+    />
+  </div>
 )}
 
 <div className="flex items-center gap-3 mb-3">
@@ -93,14 +183,12 @@ return (
     style={{ transform: "rotate(-90deg)" }}
     overflow="visible"
   >
-    {/* track */}
     <circle
       cx={R_SIZE / 2} cy={R_SIZE / 2} r={R_RADIUS}
       fill="none"
       stroke="hsl(var(--secondary))"
       strokeWidth={R_STROKE}
     />
-    {/* progress arc — attributes written via DOM ref, React never touches them */}
     <circle
       ref={arcRef}
       cx={R_SIZE / 2} cy={R_SIZE / 2} r={R_RADIUS}
@@ -146,30 +234,45 @@ return (
 {task.subtasks.map((subtask, i) => {
 
 const label   = typeof subtask === "string" ? subtask : subtask.label
+const detail  = typeof subtask === "string" ? null    : subtask.detail
 const checked = checkedItems.has(i)
 
 return (
 
 <li
 key={i}
-onClick={() => toggleItem(i)}
-className="flex items-start sm:items-center gap-2 cursor-pointer select-none"
+className="flex items-start sm:items-center gap-2 select-none"
 >
 
+<span onClick={() => toggleItem(i)} className="flex-shrink-0 mt-0.5 sm:mt-0 cursor-pointer">
 {checked
-? <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 sm:mt-0"/>
-: <Circle className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 mt-0.5 sm:mt-0"/>
+? <CheckCircle2 className="w-4 h-4 text-primary"/>
+: <Circle className="w-4 h-4 text-muted-foreground/40"/>
 }
+</span>
 
 <span
-className={
-checked
-? "text-muted-foreground line-through text-sm leading-snug"
-: "text-foreground/80 text-sm leading-snug"
-}
+onClick={() => toggleItem(i)}
+className={`flex-1 cursor-pointer text-sm leading-snug ${
+checked ? "text-muted-foreground line-through" : "text-foreground/80"
+}`}
 >
 {label}
 </span>
+
+{detail && (
+  <button
+    onClick={() => setActiveHint({ label, detail })}
+    className={`flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold uppercase tracking-wide border transition-all duration-150 active:scale-95 ${
+      checked
+        ? "border-border/40 text-muted-foreground/50"
+        : "border-primary/25 text-primary bg-primary/5 hover:bg-primary/12 hover:border-primary/50"
+    }`}
+  >
+    <BookOpen size={10} />
+    <span>How</span>
+  </button>
+)}
 
 </li>
 
@@ -180,6 +283,8 @@ checked
 </ul>
 
 </div>
+
+</>
 
 )
 }
@@ -377,6 +482,66 @@ const refreshProgress = () => {
 setProgressTrigger(p => p + 1)
 }
 
+const calculateWeekProgress = () => {
+
+let totalTasks = 0
+let completedTasks = 0
+
+currentPlan.days.forEach(day => {
+
+const globalDay = (currentPlan.week - 1) * 5 + day.day
+
+const tasks = [day.morning, day.afternoon]
+
+tasks.forEach(task => {
+
+totalTasks += task.subtasks.length
+
+const saved = localStorage.getItem(`week-${currentPlan.week}-day-${globalDay}-${task.title}`)
+
+if (saved) {
+completedTasks += JSON.parse(saved).length
+}
+
+})
+
+})
+
+if (totalTasks === 0) return 0
+
+return Math.round((completedTasks / totalTasks) * 100)
+
+}
+
+const weekProgress = calculateWeekProgress()
+const weekCompleted = weekProgress === 100
+
+useEffect(() => {
+
+if (weekCompleted) setShowDays(false)
+if (!weekCompleted) setShowDays(true)
+
+}, [weekCompleted])
+
+const restartWeek = () => {
+
+currentPlan.days.forEach(day => {
+
+const globalDay = (currentPlan.week - 1) * 5 + day.day
+
+const tasks = [day.morning, day.afternoon]
+
+tasks.forEach(task => {
+localStorage.removeItem(`week-${currentPlan.week}-day-${globalDay}-${task.title}`)
+})
+
+})
+
+setShowDays(true)
+refreshProgress()
+
+}
+
 return (
 
 <section id="study-plan" className="py-20 sm:py-32 px-4 sm:px-6">
@@ -417,6 +582,60 @@ Week {week.week}
 
 </div>
 
+<AnimatePresence mode="wait">
+
+{weekCompleted && !showDays ? (
+
+<motion.div
+initial={{ opacity: 0, scale: 0.95 }}
+animate={{ opacity: 1, scale: 1 }}
+exit={{ opacity: 0 }}
+className="p-10 rounded-xl border border-green-300 bg-green-50 text-center"
+>
+
+<motion.div
+initial={{ scale: 0 }}
+animate={{ scale: 1 }}
+transition={{ type: "spring", stiffness: 260 }}
+className="flex justify-center mb-4"
+>
+
+<CheckCircle2 className="w-12 h-12 text-green-600"/>
+
+</motion.div>
+
+<h3 className="text-2xl font-bold text-green-700 mb-2">
+Congrats! You finished Week {currentPlan.week}
+</h3>
+
+<p className="text-green-700/80 mb-6">
+Great consistency. Head to the next week and keep the momentum.
+</p>
+
+<div className="flex justify-center gap-3 flex-wrap">
+
+<button
+onClick={() => setShowDays(true)}
+className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary hover:bg-primary/10"
+>
+<Eye size={16}/>
+View Days
+</button>
+
+<button
+onClick={restartWeek}
+className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-green-400 text-green-700 hover:bg-green-100"
+>
+<RotateCcw size={16}/>
+Restart Week
+</button>
+
+</div>
+
+</motion.div>
+
+) : (
+
 <div className="space-y-3">
 
 {currentPlan.days.map(day => (
@@ -429,6 +648,36 @@ refreshProgress={refreshProgress}
 />
 
 ))}
+
+</div>
+
+)}
+
+</AnimatePresence>
+
+<div className="mt-10">
+
+<div className="flex justify-between text-sm mb-2">
+
+<span className="text-muted-foreground">
+Week {currentPlan.week} completion
+</span>
+
+<span className="font-semibold text-primary">
+{weekProgress}%
+</span>
+
+</div>
+
+<div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+
+<motion.div
+className="h-full bg-primary"
+animate={{ width: `${weekProgress}%` }}
+transition={{ duration: 0.5 }}
+/>
+
+</div>
 
 </div>
 
