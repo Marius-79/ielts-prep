@@ -8,17 +8,17 @@ const skills = [
 ];
 
 export default function HeroSection() {
-return ( <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
+return (
+<section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
 
-
-  {/* Static gradient background (extremely cheap for GPU) */}
+  {/* Static gradient background */}
   <div className="absolute inset-0 pointer-events-none">
-    <div className="absolute top-[-300px] left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/5 blur-[120px] rounded-full" />
+    <div className="absolute top-[-300px] left-1/2 -translate-x-1/2 w-[900px] sm:w-[1000px] h-[500px] sm:h-[600px] bg-primary/5 blur-[120px] rounded-full" />
   </div>
 
   {/* HERO CONTENT */}
 
-  <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
+  <div className="relative z-10 text-center px-4 sm:px-6 max-w-5xl mx-auto">
 
     {/* badge */}
 
@@ -26,10 +26,10 @@ return ( <section className="relative min-h-screen flex items-center justify-cen
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 mb-10"
+      className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/20 bg-primary/5 mb-8 sm:mb-10"
     >
       <BookOpen className="w-4 h-4 text-primary" />
-      <span className="text-sm font-medium text-primary uppercase tracking-wide">
+      <span className="text-xs sm:text-sm font-medium text-primary uppercase tracking-wide">
         25-Day Intensive Program
       </span>
     </motion.div>
@@ -40,7 +40,7 @@ return ( <section className="relative min-h-screen flex items-center justify-cen
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, delay: 0.1 }}
-      className="text-5xl sm:text-7xl lg:text-8xl font-bold tracking-tight leading-[0.9]"
+      className="text-4xl sm:text-6xl lg:text-8xl font-bold tracking-tight leading-[0.95] sm:leading-[0.9]"
     >
       <span className="text-foreground">GET READY</span>
       <br />
@@ -54,7 +54,7 @@ return ( <section className="relative min-h-screen flex items-center justify-cen
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.25 }}
-      className="mt-8 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
+      className="mt-6 sm:mt-8 text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed px-2"
     >
       Your path to{" "}
       <span className="text-foreground font-semibold">IELTS C1 Level</span>.
@@ -68,7 +68,7 @@ return ( <section className="relative min-h-screen flex items-center justify-cen
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.35 }}
-      className="mt-12 flex flex-wrap justify-center gap-4"
+      className="mt-10 sm:mt-12 flex flex-wrap justify-center gap-3 sm:gap-4"
     >
       {skills.map((skill, i) => (
         <motion.div
@@ -77,10 +77,10 @@ return ( <section className="relative min-h-screen flex items-center justify-cen
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.45 + i * 0.08 }}
           whileHover={{ scale: 1.05, y: -3 }}
-          className="flex items-center gap-3 px-5 py-3 rounded-lg bg-card border border-border hover:border-primary/30 transition-all duration-300"
+          className="flex items-center gap-2 sm:gap-3 px-4 sm:px-5 py-2.5 sm:py-3 rounded-lg bg-card border border-border hover:border-primary/30 transition-all duration-300"
         >
-          <skill.icon className="w-5 h-5 text-primary" />
-          <span className="text-sm font-medium text-foreground">
+          <skill.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+          <span className="text-xs sm:text-sm font-medium text-foreground">
             {skill.label}
           </span>
         </motion.div>
@@ -93,14 +93,14 @@ return ( <section className="relative min-h-screen flex items-center justify-cen
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 1 }}
-      className="mt-20"
+      className="mt-16 sm:mt-20"
     >
       <motion.div
         animate={{ y: [0, 8, 0] }}
         transition={{ duration: 2.2, repeat: Infinity }}
         className="flex flex-col items-center gap-2"
       >
-        <span className="text-xs text-muted-foreground uppercase tracking-widest">
+        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-widest">
           Scroll to explore
         </span>
 
@@ -118,10 +118,8 @@ return ( <section className="relative min-h-screen flex items-center justify-cen
 
   {/* smooth transition to next section */}
 
-  <div className="absolute bottom-0 left-0 w-full h-40 bg-gradient-to-b from-transparent to-background pointer-events-none" />
+  <div className="absolute bottom-0 left-0 w-full h-32 sm:h-40 bg-gradient-to-b from-transparent to-background pointer-events-none" />
 
 </section>
-
-
 );
 }

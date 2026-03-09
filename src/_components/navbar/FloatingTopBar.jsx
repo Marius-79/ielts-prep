@@ -135,13 +135,13 @@ export default function FloatingTopBar({ openAuth }) {
 
   return(
 
-<div className="fixed top-6 left-1/2 -translate-x-1/2 z-50">
+<div className="fixed top-4 sm:top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] sm:w-auto">
 
 <motion.div
 animate={{ scale:collapsed?0.9:1 }}
 transition={{ type:"spring",stiffness:260,damping:22 }}
 className={`relative flex items-center border border-border bg-white/90 backdrop-blur-md shadow-md
-${collapsed ? "w-12 h-12 rounded-full justify-center" : "px-3 py-2 rounded-full gap-1"}
+${collapsed ? "w-12 h-12 rounded-full justify-center" : "px-2 sm:px-3 py-2 rounded-full gap-1"}
 `}
 >
 
@@ -169,7 +169,7 @@ className="flex items-center justify-center w-full h-full text-muted-foreground"
 
 ) : (
 
-<div className="relative flex items-center gap-1">
+<div className="relative flex items-center gap-1 flex-wrap sm:flex-nowrap justify-center">
 
 {sections.map((item)=>{
 
@@ -183,7 +183,7 @@ key={item.id}
 onClick={()=>scrollTo(item.id)}
 whileHover={{ y:-3, scale:1.05 }}
 transition={{ type:"spring",stiffness:300,damping:20 }}
-className="relative flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-primary transition"
+className="relative flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm text-muted-foreground hover:text-primary transition"
 >
 
 {isActive && (
@@ -195,7 +195,10 @@ transition={{ type:"spring",stiffness:300,damping:30 }}
 )}
 
 <Icon size={18} className="relative z-10"/>
-<span className="relative z-10">{item.label}</span>
+
+<span className="relative z-10 hidden sm:inline">
+{item.label}
+</span>
 
 </motion.button>
 
@@ -210,10 +213,10 @@ transition={{ type:"spring",stiffness:300,damping:30 }}
 
 <button
 onClick={openAuth}
-className="ml-3 flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-white text-sm hover:opacity-90 transition"
+className="ml-1 sm:ml-3 flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-primary text-white text-xs sm:text-sm hover:opacity-90 transition"
 >
 <User size={16}/>
-Sign In
+<span className="hidden sm:inline">Sign In</span>
 </button>
 
 )}
@@ -225,9 +228,11 @@ Sign In
 
 <button
 onClick={logout}
-className="ml-3 flex items-center gap-2 px-4 py-2 rounded-full bg-secondary text-sm hover:opacity-80 transition"
+className="ml-1 sm:ml-3 flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full bg-secondary text-xs sm:text-sm hover:opacity-80 transition"
 >
+<span className="truncate max-w-[80px] sm:max-w-none">
 {username || "Account"}
+</span>
 </button>
 
 )}
