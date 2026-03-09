@@ -27,13 +27,13 @@ localStorage.setItem(storageKey, JSON.stringify([...next]))
 
 refreshProgress()
 if (window.supabaseUser) {
-saveTaskProgress(
-window.supabaseUser.id,
-weekId,
-dayId,
-task.title,
-true
-)
+  saveTaskProgress(
+    window.supabaseUser.id,
+    weekId,
+    dayId,
+    task.title,
+    true
+  )
 }
 
 return next
@@ -42,11 +42,14 @@ return next
 
 }
 
+const pct = task.subtasks.length === 0 ? 0 : Math.round((checkedItems.size / task.subtasks.length) * 100)
+const allDone = pct === 100
+
 return (
 
 <div className="p-4 sm:p-5 rounded-lg border border-border bg-card/50">
 
-<div className="flex items-center gap-3 mb-3">
+<div className="flex items-center gap-3 mb-2">
 
 <div className="w-8 h-8 rounded-md bg-secondary flex items-center justify-center">
 <Icon className="w-4 h-4 text-muted-foreground"/>
@@ -64,10 +67,22 @@ return (
 
 </div>
 
+<div className="w-full h-1 rounded-full mb-3 overflow-hidden bg-secondary">
+  <div
+    className="h-full rounded-full"
+    style={{
+      width: `${pct}%`,
+      background: allDone ? "hsl(var(--primary))" : "rgb(196,181,253)",
+      transition: "width 0.35s ease-out, background 0.4s ease"
+    }}
+  />
+</div>
+
 <ul className="space-y-2">
 
 {task.subtasks.map((subtask, i) => {
 
+const label   = typeof subtask === "string" ? subtask : subtask.label
 const checked = checkedItems.has(i)
 
 return (
@@ -91,7 +106,7 @@ checked
 }
 >
 
-{subtask}
+{label}
 
 </span>
 
@@ -200,7 +215,7 @@ className="absolute inset-0 rounded-full bg-primary flex items-center justify-ce
 
 </div>
 
-<div>
+<div className="text-left">
 
 <h3 className="text-sm font-semibold text-foreground">
 Day {dayPlan.day}
@@ -291,26 +306,6 @@ initUser()
 
 },[])
 
-useEffect(()=>{
-
-if(!dbProgress.length) return
-
-dbProgress.forEach(item=>{
-
-const storageKey = `week-${item.week}-day-${item.day}-${item.task}`
-
-const saved = localStorage.getItem(storageKey)
-
-if(!saved){
-localStorage.setItem(storageKey, JSON.stringify([0]))
-}
-
-})
-
-setProgressTrigger(p=>p+1)
-
-},[dbProgress])
-
 const [activeWeek, setActiveWeek] = useState(0)
 const [progressTrigger, setProgressTrigger] = useState(0)
 const [showDays, setShowDays] = useState(true)
@@ -319,66 +314,6 @@ const currentPlan = weeklyPlans[activeWeek]
 
 const refreshProgress = () => {
 setProgressTrigger(p => p + 1)
-}
-
-const calculateWeekProgress = () => {
-
-let totalTasks = 0
-let completedTasks = 0
-
-currentPlan.days.forEach(day => {
-
-const globalDay = (currentPlan.week - 1) * 5 + day.day
-
-const tasks = [day.morning, day.afternoon]
-
-tasks.forEach(task => {
-
-totalTasks += task.subtasks.length
-
-const saved = localStorage.getItem(`week-${currentPlan.week}-day-${globalDay}-${task.title}`)
-
-if (saved) {
-completedTasks += JSON.parse(saved).length
-}
-
-})
-
-})
-
-if (totalTasks === 0) return 0
-
-return Math.round((completedTasks / totalTasks) * 100)
-
-}
-
-const weekProgress = calculateWeekProgress()
-const weekCompleted = weekProgress === 100
-
-useEffect(() => {
-
-if (weekCompleted) setShowDays(false)
-if (!weekCompleted) setShowDays(true)
-
-}, [weekCompleted])
-
-const restartWeek = () => {
-
-currentPlan.days.forEach(day => {
-
-const globalDay = (currentPlan.week - 1) * 5 + day.day
-
-const tasks = [day.morning, day.afternoon]
-
-tasks.forEach(task => {
-localStorage.removeItem(`week-${currentPlan.week}-day-${globalDay}-${task.title}`)
-})
-
-})
-
-setShowDays(true)
-refreshProgress()
-
 }
 
 return (
@@ -421,64 +356,6 @@ Week {week.week}
 
 </div>
 
-<AnimatePresence mode="wait">
-
-{weekCompleted && !showDays ? (
-
-<motion.div
-initial={{ opacity: 0, scale: 0.95 }}
-animate={{ opacity: 1, scale: 1 }}
-exit={{ opacity: 0 }}
-className="p-6 sm:p-10 rounded-xl border border-green-300 bg-green-50 text-center"
->
-
-<motion.div
-initial={{ scale: 0 }}
-animate={{ scale: 1 }}
-transition={{ type: "spring", stiffness: 260 }}
-className="flex justify-center mb-4"
->
-
-<CheckCircle2 className="w-10 h-10 sm:w-12 sm:h-12 text-green-600"/>
-
-</motion.div>
-
-<h3 className="text-xl sm:text-2xl font-bold text-green-700 mb-2">
-Congrats! You finished Week {currentPlan.week}
-</h3>
-
-<p className="text-green-700/80 mb-6">
-Great consistency. Head to the next week and keep the momentum.
-</p>
-
-<div className="flex flex-wrap justify-center gap-3">
-
-<button
-onClick={() => setShowDays(true)}
-className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary hover:bg-primary/10"
->
-
-<Eye size={16}/>
-View Days
-
-</button>
-
-<button
-onClick={restartWeek}
-className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-green-400 text-green-700 hover:bg-green-100"
->
-
-<RotateCcw size={16}/>
-Restart Week
-
-</button>
-
-</div>
-
-</motion.div>
-
-) : (
-
 <div className="space-y-3">
 
 {currentPlan.days.map(day => (
@@ -491,36 +368,6 @@ refreshProgress={refreshProgress}
 />
 
 ))}
-
-</div>
-
-)}
-
-</AnimatePresence>
-
-<div className="mt-10 sm:mt-14">
-
-<div className="flex justify-between text-sm mb-2">
-
-<span className="text-muted-foreground">
-Week {currentPlan.week} completion
-</span>
-
-<span className="font-semibold text-primary">
-{weekProgress}%
-</span>
-
-</div>
-
-<div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-
-<motion.div
-className="h-full bg-primary"
-animate={{ width: `${weekProgress}%` }}
-transition={{ duration: 0.5 }}
-/>
-
-</div>
 
 </div>
 
