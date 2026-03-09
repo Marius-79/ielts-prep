@@ -1,9 +1,15 @@
 import { motion, AnimatePresence } from "motion/react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Sun, Moon, CheckCircle2, Circle, ChevronDown, Check, RotateCcw, Eye } from "lucide-react"
 import { weeklyPlans } from "../_lib/study-plan-data"
 import { supabase } from "../_lib/supabase"
 import { saveTaskProgress, loadUserProgress } from "../../lib/progress"
+
+// SVG ring size constants — defined once outside component so they never change
+const R_SIZE = 36
+const R_STROKE = 3
+const R_RADIUS = (R_SIZE - R_STROKE) / 2
+const R_CIRC = 2 * Math.PI * R_RADIUS
 
 function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId }) {
 
@@ -13,6 +19,10 @@ const [checkedItems, setCheckedItems] = useState(() => {
 const saved = localStorage.getItem(storageKey)
 return saved ? new Set(JSON.parse(saved)) : new Set()
 })
+
+// Track previous checked count to detect direction of change
+const prevSize = useRef(checkedItems.size)
+const arcRef   = useRef(null)
 
 const toggleItem = (index) => {
 
@@ -42,20 +52,73 @@ return next
 
 }
 
-const pct = task.subtasks.length === 0 ? 0 : Math.round((checkedItems.size / task.subtasks.length) * 100)
-const allDone = pct === 100
+const total   = task.subtasks.length
+const pct     = total === 0 ? 0 : checkedItems.size / total
+const allDone = checkedItems.size === total && total > 0
+
+// Write arc directly to DOM after every render — bypasses React reconciler
+useEffect(() => {
+  const arc = arcRef.current
+  if (!arc) return
+  const offset = R_CIRC * (1 - pct)
+  arc.setAttribute("stroke-dashoffset", offset)
+  arc.setAttribute("stroke", allDone ? "hsl(var(--primary))" : "rgb(196,181,253)")
+})
 
 return (
 
-<div className="p-4 sm:p-5 rounded-lg border border-border bg-card/50">
+<div
+  className="relative p-4 sm:p-5 rounded-lg border bg-card/50 overflow-hidden transition-colors duration-300"
+  style={{ borderColor: allDone ? "hsl(var(--primary) / 0.35)" : "hsl(var(--border))" }}
+>
 
-<div className="flex items-center gap-3 mb-2">
+{/* soft shimmer when all done — pure CSS, not Framer Motion so no re-render fight */}
+{allDone && (
+  <div
+    className="absolute inset-0 pointer-events-none"
+    style={{
+      background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.10) 0%, transparent 70%)"
+    }}
+  />
+)}
 
-<div className="w-8 h-8 rounded-md bg-secondary flex items-center justify-center">
-<Icon className="w-4 h-4 text-muted-foreground"/>
+<div className="flex items-center gap-3 mb-3">
+
+{/* SVG ring around icon — DOM-written, never reset by React */}
+<div className="relative flex-shrink-0" style={{ width: R_SIZE, height: R_SIZE }}>
+  <svg
+    width={R_SIZE}
+    height={R_SIZE}
+    className="absolute inset-0"
+    style={{ transform: "rotate(-90deg)" }}
+    overflow="visible"
+  >
+    {/* track */}
+    <circle
+      cx={R_SIZE / 2} cy={R_SIZE / 2} r={R_RADIUS}
+      fill="none"
+      stroke="hsl(var(--secondary))"
+      strokeWidth={R_STROKE}
+    />
+    {/* progress arc — attributes written via DOM ref, React never touches them */}
+    <circle
+      ref={arcRef}
+      cx={R_SIZE / 2} cy={R_SIZE / 2} r={R_RADIUS}
+      fill="none"
+      strokeWidth={R_STROKE}
+      strokeLinecap="round"
+      strokeDasharray={R_CIRC}
+      strokeDashoffset={R_CIRC}
+      stroke="rgb(196,181,253)"
+      style={{ transition: "stroke-dashoffset 0.4s ease-out, stroke 0.5s ease" }}
+    />
+  </svg>
+  <div className="absolute inset-0 flex items-center justify-center">
+    <Icon className="w-4 h-4 text-muted-foreground" />
+  </div>
 </div>
 
-<div>
+<div className="flex-1 min-w-0">
 <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
 {period}
 </span>
@@ -65,17 +128,17 @@ return (
 </h4>
 </div>
 
-</div>
+{allDone && (
+  <motion.div
+    initial={{ scale: 0, opacity: 0 }}
+    animate={{ scale: 1, opacity: 1 }}
+    transition={{ type: "spring", stiffness: 300 }}
+    className="flex-shrink-0 flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full"
+  >
+    <Check size={9} /> Done
+  </motion.div>
+)}
 
-<div className="w-full h-1 rounded-full mb-3 overflow-hidden bg-secondary">
-  <div
-    className="h-full rounded-full"
-    style={{
-      width: `${pct}%`,
-      background: allDone ? "hsl(var(--primary))" : "rgb(196,181,253)",
-      transition: "width 0.35s ease-out, background 0.4s ease"
-    }}
-  />
 </div>
 
 <ul className="space-y-2">
@@ -90,24 +153,22 @@ return (
 <li
 key={i}
 onClick={() => toggleItem(i)}
-className="flex items-start sm:items-center gap-2 cursor-pointer"
+className="flex items-start sm:items-center gap-2 cursor-pointer select-none"
 >
 
 {checked
-? <CheckCircle2 className="w-4 h-4 text-primary"/>
-: <Circle className="w-4 h-4 text-muted-foreground/40"/>
+? <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5 sm:mt-0"/>
+: <Circle className="w-4 h-4 text-muted-foreground/40 flex-shrink-0 mt-0.5 sm:mt-0"/>
 }
 
 <span
 className={
 checked
-? "text-muted-foreground line-through text-sm"
-: "text-foreground/80 text-sm"
+? "text-muted-foreground line-through text-sm leading-snug"
+: "text-foreground/80 text-sm leading-snug"
 }
 >
-
 {label}
-
 </span>
 
 </li>
