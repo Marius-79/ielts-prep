@@ -49,7 +49,7 @@ export default function FloatingTopBar({ openAuth }) {
         .from("profiles")
         .select("username, avatar_url")
         .eq("id", id)
-        .single()
+        .maybeSingle()
       setUsername(data?.username ?? null)
       setAvatarUrl(data?.avatar_url ?? null)
     }
@@ -112,15 +112,13 @@ export default function FloatingTopBar({ openAuth }) {
   }
 
   async function logout() {
-    setDropdownOpen(false)
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      console.error("Logout error:", error.message)
-    }
-    setUser(null)
-    setUsername(null)
-    setAvatarUrl(null)
-  }
+  setDropdownOpen(false)
+  await supabase.auth.signOut()
+  setUser(null)
+  setUsername(null)
+  setAvatarUrl(null)
+  window.location.reload()
+}
 
   function openProfile() {
     setDropdownOpen(false)

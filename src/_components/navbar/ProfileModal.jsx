@@ -1,9 +1,8 @@
 import { motion, AnimatePresence } from "motion/react"
 import { X, User, Camera, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { supabase } from "../_lib/supabase"
 import { toast } from "sonner"
-
 export default function ProfileModal({ open, onClose, user, currentUsername, currentAvatar, onUpdated }) {
 
 const [username, setUsername] = useState(currentUsername || "")
@@ -12,7 +11,10 @@ const [avatarUrl, setAvatarUrl] = useState(currentAvatar || null)
 const [uploading, setUploading] = useState(false)
 const [saving, setSaving] = useState(false)
 const fileRef = useRef(null)
-
+useEffect(() => {
+  setUsername(currentUsername || "")
+  setAvatarUrl(currentAvatar || null)
+}, [currentUsername, currentAvatar, open])
 async function checkUsername(value) {
   setUsername(value)
   if (value === currentUsername) { setUsernameStatus("same"); return }
@@ -22,7 +24,7 @@ async function checkUsername(value) {
     .from("profiles")
     .select("username")
     .eq("username", value)
-    .single()
+    .maybeSingle()
   setUsernameStatus(data ? "taken" : "available")
 }
 
@@ -58,12 +60,15 @@ async function handleSave() {
 
   setSaving(true)
 
-  const updates = { username, avatar_url: avatarUrl }
+  console.log("saving...", { username, avatarUrl, userId: user.id })
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
-    .update(updates)
+    .update({ username, avatar_url: avatarUrl })
     .eq("id", user.id)
+    .select()
+
+  console.log("result:", data, error)
 
   if (error) {
     toast.error("Save failed: " + error.message)
