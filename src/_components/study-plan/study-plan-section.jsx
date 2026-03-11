@@ -78,7 +78,7 @@ function HintModal({ label, detail, period, taskTitle, onClose }) {
 // ── TaskBlock ──────────────────────────────────────────────────────────────────
 function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, userId, openAuth }) {
 
-const storageKey = `week-${weekId}-day-${dayId}-${task.title}`
+const storageKey = userId ? `${userId}-week-${weekId}-day-${dayId}-${task.title}` : `week-${weekId}-day-${dayId}-${task.title}`
 
 const [checkedItems, setCheckedItems] = useState(() => {
 const saved = localStorage.getItem(storageKey)
@@ -108,7 +108,7 @@ if (window.supabaseUser) {
     weekId,
     dayId,
     task.title,
-    true
+    [...next]
   )
 }
 
@@ -307,7 +307,7 @@ tasks.forEach(task => {
 
 totalTasks += task.subtasks.length
 
-const saved = localStorage.getItem(`week-${weekNum}-day-${globalDay}-${task.title}`)
+const saved = localStorage.getItem(userId ? `${userId}-week-${weekNum}-day-${globalDay}-${task.title}` : `week-${weekNum}-day-${globalDay}-${task.title}`)
 
 if (saved) {
 completedTasks += JSON.parse(saved).length
@@ -458,21 +458,14 @@ const [dbProgress,setDbProgress] = useState([])
 useEffect(()=>{
 
 async function initUser(){
-  const { data:{ session } } = await supabase.auth.getSession()
-  const currentUser = session?.user ?? null
-  setUser(currentUser)
-  window.supabaseUser = currentUser
-  if(currentUser){
-    const progress = await loadUserProgress(currentUser.id)
-    console.log("loaded progress:", progress)
-    setDbProgress(progress)
-    progress.forEach(row => {
-      const key = `${currentUser.id}-week-${row.week}-day-${row.day}-${row.task}`
-      const indices = row.completed_indices ?? []
-      console.log("restoring key:", key, "indices:", indices)
-      localStorage.setItem(key, JSON.stringify(indices))
-    })
-  }
+const { data:{ session } } = await supabase.auth.getSession()
+const currentUser = session?.user ?? null
+setUser(currentUser)
+window.supabaseUser = currentUser
+if(currentUser){
+const progress = await loadUserProgress(currentUser.id)
+setDbProgress(progress)
+}
 }
 
 initUser()
@@ -512,7 +505,7 @@ tasks.forEach(task => {
 
 totalTasks += task.subtasks.length
 
-const saved = localStorage.getItem(`week-${currentPlan.week}-day-${globalDay}-${task.title}`)
+const saved = localStorage.getItem(user?.id ? `${user.id}-week-${currentPlan.week}-day-${globalDay}-${task.title}` : `week-${currentPlan.week}-day-${globalDay}-${task.title}`)
 
 if (saved) {
 completedTasks += JSON.parse(saved).length
@@ -547,7 +540,7 @@ const globalDay = (currentPlan.week - 1) * 5 + day.day
 const tasks = [day.morning, day.afternoon]
 
 tasks.forEach(task => {
-localStorage.removeItem(`week-${currentPlan.week}-day-${globalDay}-${task.title}`)
+localStorage.removeItem(user?.id ? `${user.id}-week-${currentPlan.week}-day-${globalDay}-${task.title}` : `week-${currentPlan.week}-day-${globalDay}-${task.title}`)
 })
 
 })

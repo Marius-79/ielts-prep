@@ -1,9 +1,7 @@
 import { supabase } from "../_components/_lib/supabase"
 
 export async function saveTaskProgress(userId, week, day, task, checkedIndices) {
-  const indicesArray = Array.isArray(checkedIndices) 
-    ? checkedIndices 
-    : [...checkedIndices]
+  const indicesArray = Array.isArray(checkedIndices) ? checkedIndices : [...checkedIndices]
 
   const { error } = await supabase
     .from("study_progress")
@@ -20,8 +18,8 @@ export async function saveTaskProgress(userId, week, day, task, checkedIndices) 
     console.error("Progress save error:", error)
   }
 }
-export async function loadUserProgress(userId) {
 
+export async function loadUserProgress(userId) {
   const { data, error } = await supabase
     .from("study_progress")
     .select("*")
@@ -33,5 +31,4 @@ export async function loadUserProgress(userId) {
   }
 
   return data
-
 }

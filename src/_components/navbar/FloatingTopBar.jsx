@@ -71,6 +71,11 @@ export default function FloatingTopBar({ openAuth }) {
           setUser(currentUser)
           if (currentUser) await fetchProfile(currentUser.id)
         }
+        if (event === "INITIAL_SESSION" || event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+  const currentUser = session?.user ?? null
+  setUser(currentUser)
+  if (currentUser) await fetchProfile(currentUser.id)
+}
       }
     )
 
