@@ -37,6 +37,18 @@ export default function FloatingTopBar({ openAuth }) {
 
   useEffect(() => {
 
+    async function fetchProfile(id) {
+      const { data } = await supabase
+        .from("profiles")
+        .select("username, avatar_url")
+        .eq("id", id)
+        .maybeSingle()
+      if (data) {
+        setUsername(data.username ?? null)
+        setAvatarUrl(data.avatar_url ?? null)
+      }
+    }
+
     async function loadUser() {
       const { data: { session } } = await supabase.auth.getSession()
       const currentUser = session?.user ?? null
@@ -44,27 +56,20 @@ export default function FloatingTopBar({ openAuth }) {
       if (currentUser) await fetchProfile(currentUser.id)
     }
 
-    async function fetchProfile(id) {
-      const { data } = await supabase
-        .from("profiles")
-        .select("username, avatar_url")
-        .eq("id", id)
-        .maybeSingle()
-      setUsername(data?.username ?? null)
-      setAvatarUrl(data?.avatar_url ?? null)
-    }
-
     loadUser()
 
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        const currentUser = session?.user ?? null
-        setUser(currentUser)
-        if (currentUser) {
-          await fetchProfile(currentUser.id)
-        } else {
+      async (event, session) => {
+        if (event === "SIGNED_OUT") {
+          setUser(null)
           setUsername(null)
           setAvatarUrl(null)
+          return
+        }
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") {
+          const currentUser = session?.user ?? null
+          setUser(currentUser)
+          if (currentUser) await fetchProfile(currentUser.id)
         }
       }
     )
@@ -73,15 +78,15 @@ export default function FloatingTopBar({ openAuth }) {
 
   }, [])
 
-  // close dropdown on outside click
+  // close dropdown on outside click — MUST be mousedown not click
   useEffect(() => {
-    function handleClickOutside(e) {
+    function handleMouseDown(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setDropdownOpen(false)
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleMouseDown)
+    return () => document.removeEventListener("mousedown", handleMouseDown)
   }, [])
 
   // section highlight observer
@@ -101,9 +106,10 @@ export default function FloatingTopBar({ openAuth }) {
     return () => observer.disconnect()
   }, [])
 
-  function scrollTo(id) {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })
-  }
+ function scrollTo(id) {
+  setActive(id)
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })
+}
 
   function expandBar() {
     setCollapsed(false)
@@ -111,13 +117,14 @@ export default function FloatingTopBar({ openAuth }) {
     setTimeout(() => setWave(false), 600)
   }
 
-  async function logout() {
+async function logout() {
   setDropdownOpen(false)
-  await supabase.auth.signOut()
-  setUser(null)
-  setUsername(null)
-  setAvatarUrl(null)
-  window.location.reload()
+  const projectRef = "fjekxmtjfimgbdlmljfz"
+  const authKey = `sb-${projectRef}-auth-token`
+  localStorage.clear()
+  sessionStorage.clear()
+  localStorage.removeItem(authKey)
+  window.location.href = window.location.origin
 }
 
   function openProfile() {
@@ -130,14 +137,12 @@ export default function FloatingTopBar({ openAuth }) {
     setAvatarUrl(newAvatar)
   }
 
-  // avatar display — image or initials fallback
   const initials = (username || "?").slice(0, 2).toUpperCase()
 
   return (
 
 <>
 
-{/* Profile modal */}
 {user && (
   <ProfileModal
     open={profileOpen}
@@ -208,7 +213,6 @@ export default function FloatingTopBar({ openAuth }) {
         )
       })}
 
-      {/* SIGN IN */}
       {!user && (
         <button
           onClick={openAuth}
@@ -219,7 +223,6 @@ export default function FloatingTopBar({ openAuth }) {
         </button>
       )}
 
-      {/* ACCOUNT DROPDOWN */}
       {user && (
         <div ref={dropdownRef} className="relative ml-2 sm:ml-3">
 
@@ -227,7 +230,6 @@ export default function FloatingTopBar({ openAuth }) {
             onClick={() => setDropdownOpen(prev => !prev)}
             className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-secondary hover:opacity-80 transition"
           >
-            {/* avatar */}
             <div className="w-7 h-7 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center flex-shrink-0">
               {avatarUrl ? (
                 <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
@@ -249,7 +251,6 @@ export default function FloatingTopBar({ openAuth }) {
               transition={{ type: "spring", stiffness: 320, damping: 24 }}
               className="absolute right-0 mt-2 w-48 bg-white border border-border rounded-xl shadow-lg overflow-hidden"
             >
-              {/* user info */}
               <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60">
                 <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center flex-shrink-0">
                   {avatarUrl ? (
@@ -264,7 +265,6 @@ export default function FloatingTopBar({ openAuth }) {
                 </div>
               </div>
 
-              {/* edit profile */}
               <button
                 onClick={openProfile}
                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground hover:bg-secondary/70 transition"
@@ -273,7 +273,6 @@ export default function FloatingTopBar({ openAuth }) {
                 Edit profile
               </button>
 
-              {/* logout */}
               <button
                 onClick={logout}
                 className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition border-t border-border/60"

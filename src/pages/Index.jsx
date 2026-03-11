@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Toaster } from "sonner"
 import HeroSection from "../_components/hero/hero-section.jsx"
 import OverviewSection from "../_components/overview/overview-section.jsx"
@@ -14,46 +14,52 @@ import NotebookModal from "../_components/notebook/NotebookModal.jsx"
 import FloatingNotebookButton from "../_components/notebook/FloatingNotebookButton.jsx"
 
 import AuthModal from "../_components/auth/AuthModal.jsx"
+import { supabase } from "../_components/_lib/supabase"
 
 export default function Index() {
 
   const [openNotebook, setOpenNotebook] = useState(false)
   const [authOpen, setAuthOpen] = useState(false)
+  const [authKey, setAuthKey] = useState(0)
+
+  // Re-render the whole page when auth state changes (login / logout)
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      setAuthKey(k => k + 1)
+    })
+    return () => listener.subscription.unsubscribe()
+  }, [])
 
   return (
 
     <div className="min-h-screen bg-background text-foreground">
 
-      {/* Navigation */}
       <FloatingTopBar openAuth={() => setAuthOpen(true)} />
       <DailyReminder/>
-      {/* Sections */}
+
       <HeroSection/>
       <OverviewSection/>
       <SkillsSection/>
-      <StudyPlanSection/>
+      <StudyPlanSection key={authKey} openAuth={() => setAuthOpen(true)} />
       <ResourcesSection/>
       <ContactSection/>
       <Footer/>
 
-      {/* Floating notebook button */}
       <FloatingNotebookButton
         openNotebook={() => setOpenNotebook(true)}
       />
 
-      {/* Notebook modal */}
       <NotebookModal
         open={openNotebook}
         onClose={() => setOpenNotebook(false)}
       />
 
-      {/* Auth modal */}
       <AuthModal
         open={authOpen}
         onClose={() => setAuthOpen(false)}
       />
 
-        <Toaster position="top-center" />
+      <Toaster position="top-center" />
 
     </div>
 

@@ -3,6 +3,7 @@ import { X, User, Camera, Loader2, CheckCircle2, AlertCircle } from "lucide-reac
 import { useState, useRef, useEffect } from "react"
 import { supabase } from "../_lib/supabase"
 import { toast } from "sonner"
+
 export default function ProfileModal({ open, onClose, user, currentUsername, currentAvatar, onUpdated }) {
 
 const [username, setUsername] = useState(currentUsername || "")
@@ -11,10 +12,12 @@ const [avatarUrl, setAvatarUrl] = useState(currentAvatar || null)
 const [uploading, setUploading] = useState(false)
 const [saving, setSaving] = useState(false)
 const fileRef = useRef(null)
+
 useEffect(() => {
   setUsername(currentUsername || "")
   setAvatarUrl(currentAvatar || null)
 }, [currentUsername, currentAvatar, open])
+
 async function checkUsername(value) {
   setUsername(value)
   if (value === currentUsername) { setUsernameStatus("same"); return }
@@ -60,15 +63,10 @@ async function handleSave() {
 
   setSaving(true)
 
-  console.log("saving...", { username, avatarUrl, userId: user.id })
-
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("profiles")
     .update({ username, avatar_url: avatarUrl })
     .eq("id", user.id)
-    .select()
-
-  console.log("result:", data, error)
 
   if (error) {
     toast.error("Save failed: " + error.message)

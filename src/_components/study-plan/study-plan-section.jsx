@@ -76,7 +76,7 @@ function HintModal({ label, detail, period, taskTitle, onClose }) {
 }
 
 // ── TaskBlock ──────────────────────────────────────────────────────────────────
-function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId }) {
+function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, userId, openAuth }) {
 
 const storageKey = `week-${weekId}-day-${dayId}-${task.title}`
 
@@ -91,6 +91,8 @@ const arcRef = useRef(null)
 
 const toggleItem = (index) => {
 
+if (!userId) { openAuth(); return }
+
 setCheckedItems(prev => {
 
 const next = new Set(prev)
@@ -100,7 +102,6 @@ else next.add(index)
 
 localStorage.setItem(storageKey, JSON.stringify([...next]))
 
-refreshProgress()
 if (window.supabaseUser) {
   saveTaskProgress(
     window.supabaseUser.id,
@@ -114,6 +115,8 @@ if (window.supabaseUser) {
 return next
 
 })
+
+setTimeout(() => refreshProgress(), 0)
 
 }
 
@@ -262,7 +265,7 @@ checked ? "text-muted-foreground line-through" : "text-foreground/80"
 
 {detail && (
   <button
-    onClick={() => setActiveHint({ label, detail })}
+    onClick={() => { if (!userId) { openAuth(); return } setActiveHint({ label, detail }) }}
     className={`flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold uppercase tracking-wide border transition-all duration-150 active:scale-95 ${
       checked
         ? "border-border/40 text-muted-foreground/50"
@@ -289,7 +292,7 @@ checked ? "text-muted-foreground line-through" : "text-foreground/80"
 )
 }
 
-function DayCard({ dayPlan, weekNum, refreshProgress }) {
+function DayCard({ dayPlan, weekNum, refreshProgress, userId, openAuth }) {
 
 const [open, setOpen] = useState(false)
 
@@ -421,6 +424,8 @@ icon={Sun}
 refreshProgress={refreshProgress}
 dayId={globalDay}
 weekId={weekNum}
+userId={userId}
+openAuth={openAuth}
 />
 
 <TaskBlock
@@ -430,6 +435,8 @@ icon={Moon}
 refreshProgress={refreshProgress}
 dayId={globalDay}
 weekId={weekNum}
+userId={userId}
+openAuth={openAuth}
 />
 
 </motion.div>
@@ -443,7 +450,7 @@ weekId={weekNum}
 )
 }
 
-export default function StudyPlanSection() {
+export default function StudyPlanSection({ openAuth }) {
 
 const [user,setUser] = useState(null)
 const [dbProgress,setDbProgress] = useState([])
@@ -451,24 +458,32 @@ const [dbProgress,setDbProgress] = useState([])
 useEffect(()=>{
 
 async function initUser(){
-
-const { data } = await supabase.auth.getUser()
-
-const currentUser = data.user
-
-setUser(currentUser)
-window.supabaseUser = currentUser
-
-if(currentUser){
-
-const progress = await loadUserProgress(currentUser.id)
-setDbProgress(progress)
-
-}
-
+  const { data:{ session } } = await supabase.auth.getSession()
+  const currentUser = session?.user ?? null
+  setUser(currentUser)
+  window.supabaseUser = currentUser
+  if(currentUser){
+    const progress = await loadUserProgress(currentUser.id)
+    console.log("loaded progress:", progress)
+    setDbProgress(progress)
+    progress.forEach(row => {
+      const key = `${currentUser.id}-week-${row.week}-day-${row.day}-${row.task}`
+      const indices = row.completed_indices ?? []
+      console.log("restoring key:", key, "indices:", indices)
+      localStorage.setItem(key, JSON.stringify(indices))
+    })
+  }
 }
 
 initUser()
+
+const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+const currentUser = session?.user ?? null
+setUser(currentUser)
+window.supabaseUser = currentUser
+})
+
+return () => listener.subscription.unsubscribe()
 
 },[])
 
@@ -566,7 +581,10 @@ Study Plan
 
 <button
 key={`week-${week.week}`}
-onClick={() => setActiveWeek(i)}
+onClick={() => {
+  if (!user && i !== 0) { openAuth(); return }
+  setActiveWeek(i)
+}}
 className={`px-4 sm:px-6 py-2 sm:py-3 rounded-xl font-medium text-sm sm:text-base transition ${
 activeWeek === i
 ? "bg-primary text-white shadow-md"
@@ -645,6 +663,8 @@ key={`week-${currentPlan.week}-day-${day.day}`}
 dayPlan={day}
 weekNum={currentPlan.week}
 refreshProgress={refreshProgress}
+userId={user?.id ?? null}
+openAuth={openAuth}
 />
 
 ))}
