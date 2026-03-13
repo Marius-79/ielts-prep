@@ -1,516 +1,502 @@
 export const weeklyPlans = [
   {
     week: 1,
-    title: "Foundation Building",
-    focus: "Listening & Reading Core Skills",
     days: [
       {
         day: 1,
         morning: {
-          title: "Listening course (1h)",
+          title: "Listening Foundation",
           subtasks: [
-            { label: "Listening test (40 min)", detail: "Use a Cambridge IELTS 14–19 paper. No replays — simulate real exam conditions. Cover the answer sheet until the end." },
-            { label: "Spelling correction", detail: "Write out every misspelled word 3 times by hand. Start a dedicated spelling list — you'll review it on Day 5." },
-            { label: "Vocabulary collection", detail: "Pick 8–10 words you didn't know from the audio. Write each with its meaning AND an example sentence you create yourself." }
+            { label: "Watch IELTS Listening overview & section types (30 min)", detail: "Understand Section 1-4 differences. Section 1 is a conversation, Section 4 is an academic monologue — the hardest. Familiarise yourself with the format before doing any practice." },
+            { label: "Listen to Section 1 practice (20 min)", detail: "Use an official Cambridge IELTS book or the British Council website. Focus on spelling — names, addresses, numbers. These are the most commonly lost marks in Section 1." },
+            { label: "Note 10 new vocabulary words with phonetics", detail: "Write the word, its pronunciation, and a short example sentence. Learning pronunciation alongside vocabulary improves both listening and speaking simultaneously." }
           ]
         },
         afternoon: {
-          title: "Reading course (1h)",
+          title: "Reading Foundation",
           subtasks: [
-            { label: "Vocabulary building", detail: "Add today's new words to a flashcard app (Anki or Quizlet). Include word, meaning, and your own example sentence." },
-            { label: "Mistake analysis", detail: "For every wrong answer, write: (1) what you chose, (2) the correct answer, (3) WHY you were wrong. This is the most important habit in the plan." },
-            { label: "Reading practice passages", detail: "Do 1 passage with no time limit. Focus on understanding the question types, not speed. Identify: what type of question is this?" }
+            { label: "Study IELTS Reading question types (30 min)", detail: "There are 14 question types. The most important to master first: True/False/Not Given, Matching Headings, and Summary Completion. These appear in almost every test." },
+            { label: "Read one academic passage and skim for main ideas (30 min)", detail: "Spend 2 minutes skimming before reading carefully. Look at the title, first sentence of each paragraph, and any bold/italic words. This saves time in the real exam." },
+            { label: "Identify 5 unfamiliar academic words and write definitions", detail: "Focus on words from the Academic Word List (AWL). These are the most likely to appear in IELTS Reading and Writing. Keep a vocabulary journal." }
           ]
         }
       },
       {
         day: 2,
         morning: {
-          title: "Listening practice",
+          title: "Listening — Number & Spelling Drills",
           subtasks: [
-            { label: "Section 1 practice", detail: "Section 1 is a conversation (e.g. booking, registration). Focus on spelling of names, numbers, and addresses — these are the most common errors." },
-            { label: "Spelling correction", detail: "Review your Day 1 spelling list. Add any new errors from today. Never let a spelling mistake appear twice." },
-            { label: "Vocabulary review", detail: "Go through yesterday's 8–10 words without looking at the meanings. Test yourself. Re-study any you forgot." }
+            { label: "Section 1 practice test with focus on numbers/dates (40 min)", detail: "Common traps: numbers that sound similar (13 vs 30), dates in different formats, postcodes. Always write exactly what you hear — do not guess." },
+            { label: "Check answers and categorise errors (20 min)", detail: "Were errors from mishearing, spelling, or not following along? Knowing your error type lets you target practice more efficiently." },
+            { label: "Spelling correction — rewrite all misspelled words 5 times", detail: "Spelling counts in Listening. Common misspellings: 'accommodation', 'necessary', 'environment', 'government'. Drill these until automatic." }
           ]
         },
         afternoon: {
-          title: "Reading practice",
+          title: "Reading — True/False/Not Given",
           subtasks: [
-            { label: "Passage timing", detail: "Set a 20-minute timer for 1 passage. Stop exactly at 20 min. Note how many questions you answered — this is your baseline speed." },
-            { label: "Vocabulary collection", detail: "Pick 5 academic words from the passage you didn't know. Add to your flashcard deck with definitions and example sentences." },
-            { label: "Mistake analysis", detail: "Review every wrong answer: write why you were wrong. Focus on True/False/Not Given — the most commonly failed question type." }
+            { label: "Study T/F/NG strategy in detail (20 min)", detail: "True = the text confirms it. False = the text contradicts it. Not Given = the text neither confirms nor contradicts it. 'Not Given' is NOT the same as false — the information is simply absent." },
+            { label: "Practice one set of T/F/NG questions (30 min)", detail: "Always locate the relevant paragraph before answering. Never rely on memory. The statements follow the order of the text in most cases." },
+            { label: "Vocabulary building — 10 words from the passage", detail: "Pay attention to collocations (word partnerships), not just definitions. For example: 'conduct research', not 'make research'. These patterns matter in Writing too." }
           ]
         }
       },
       {
         day: 3,
         morning: {
-          title: "Listening practice",
+          title: "Listening — Section 2 Practice",
           subtasks: [
-            { label: "Section 2 listening", detail: "Section 2 is a monologue (e.g. tour guide, announcement). Practice predicting answers from the question before listening. Read ahead during the pause." },
-            { label: "Vocabulary extraction", detail: "From today's listening, extract 8 words you didn't recognise when heard. Note them with pronunciation — write how they sound phonetically." },
-            { label: "Error correction", detail: "Go back to any Section 2 wrong answers. Listen to that part again. Identify: was it a spelling error, distraction word, or mishearing?" }
+            { label: "Study Section 2 format — monologue, public context (20 min)", detail: "Section 2 is a single speaker talking about something practical: a community event, a tour, a radio broadcast. Focus on multiple-choice and map/diagram labelling questions." },
+            { label: "Complete one Section 2 practice (40 min)", detail: "For map questions, read all labels before the audio starts. Predict where the speaker might go based on the map layout." },
+            { label: "Review and note down distractor techniques used", detail: "IELTS Listening deliberately includes distractors — the speaker mentions something then corrects themselves. Train yourself to wait for the final answer." }
           ]
         },
         afternoon: {
-          title: "Reading drills",
+          title: "Reading — Matching Headings",
           subtasks: [
-            { label: "Skimming exercise", detail: "Read only the title + first sentence of each paragraph. After 90 seconds, close the text and write what you think the passage is about. Then verify." },
-            { label: "Scanning exercise", detail: "Pick a keyword from a question. Move your eyes rapidly down the passage looking only for that word or its synonym. Don't read — hunt." },
-            { label: "Vocabulary practice", detail: "Choose 5 words from today's passage. Write a sentence using each word in a different context than the original passage." }
+            { label: "Learn the Matching Headings strategy (20 min)", detail: "Read the headings first, then read each paragraph's first and last sentence only. The main idea is almost always in one of these two sentences. Do not read the whole paragraph for every heading." },
+            { label: "Practice one Matching Headings passage (35 min)", detail: "Cross out headings you have used. If stuck between two options, move on and come back — other answers may eliminate one option for you." },
+            { label: "Paraphrase 3 headings in your own words", detail: "IELTS headings are paraphrases of paragraph content. Practising paraphrasing trains you to recognise when two phrases mean the same thing — a critical skill." }
           ]
         }
       },
       {
         day: 4,
         morning: {
-          title: "Listening mock",
+          title: "Listening — Section 3 & Academic Vocabulary",
           subtasks: [
-            { label: "Full listening section (40 min)", detail: "Complete a full Sections 1–4 test under strict conditions. Sit at a desk, no phone, use headphones. Transfer answers in the last 10 minutes." },
-            { label: "Score analysis", detail: "Mark your test and log the score. Note which section lost you the most marks. This becomes your target for Day 5." },
-            { label: "Vocabulary notes", detail: "Extract 10 words from the listening transcripts you didn't know. Add to your flashcard deck." }
+            { label: "Study Section 3 format — academic discussion (20 min)", detail: "Two or more students or a student and tutor discussing academic work. Questions often involve multiple-choice and matching. The conversation changes direction frequently." },
+            { label: "Complete one Section 3 practice (40 min)", detail: "In multiple-choice questions, all options will likely be mentioned. The trap is that only one is the correct answer to the specific question asked. Read questions very carefully." },
+            { label: "Record 10 academic collocations from the audio", detail: "Examples: 'draw a conclusion', 'carry out an experiment', 'reach an agreement'. These phrases also appear in Writing Task 2 and will boost your Lexical Resource score." }
           ]
         },
         afternoon: {
-          title: "Reading mock",
+          title: "Reading — Summary Completion",
           subtasks: [
-            { label: "Timed reading test", detail: "Complete all 3 passages in exactly 60 minutes (20 min each). Do not go over time on any passage — move on even if unfinished." },
-            { label: "Error analysis", detail: "Categorise each wrong answer by question type (T/F/NG, matching, sentence completion etc). Which type is costing you the most marks?" },
-            { label: "Vocabulary review", detail: "Review all vocabulary flashcards from Days 1–4. Remove any you know perfectly. Re-study any you still struggle with." }
+            { label: "Study Summary Completion strategy (20 min)", detail: "The summary is a paraphrase of a passage section. Find the relevant section first, then look for words that fit grammatically AND logically. Always stay within the word limit." },
+            { label: "Complete one Summary Completion task (35 min)", detail: "Read the summary before scanning the text. It gives you context clues about what you are looking for. The answers follow the order of the text." },
+            { label: "Grammar check — identify the word type needed for each gap", detail: "Ask: does this gap need a noun, verb, adjective, or adverb? This narrows your options and prevents grammatically incorrect answers." }
           ]
         }
       },
       {
         day: 5,
         morning: {
-          title: "Listening improvement",
+          title: "Listening — Full Section 1-4 Simulation",
           subtasks: [
-            { label: "Weak section practice", detail: "Based on Day 4 score analysis, redo only the section type you scored lowest on (e.g. if Section 3 was worst, do 2 more Section 3 practices today)." },
-            { label: "Spelling review", detail: "Go through your full spelling list from Days 1–4. Test yourself on every word. Any you still miss — write them 5 more times." },
-            { label: "Vocabulary consolidation", detail: "Review your full week's vocabulary deck (40–50 words). Write 5 sentences using words you found hardest this week." }
+            { label: "Complete a full Listening test under timed conditions (45 min)", detail: "Use the exact IELTS format: listen once, no pausing, transfer answers at the end. Simulating exam conditions from Week 1 builds the mental stamina you will need on test day." },
+            { label: "Score and analyse results by section", detail: "Note which section caused most errors. Most students lose marks in Section 4 (academic lecture). If you scored below 30/40 this week, increase Section 4 practice next week." },
+            { label: "Revisit all incorrect answers and find why you went wrong", detail: "Categories: (1) didn't hear it, (2) heard it but didn't understand, (3) spelling error, (4) missed it while writing a previous answer. Each needs a different fix." }
           ]
         },
         afternoon: {
-          title: "Reading improvement",
+          title: "Reading — Timed Practice & Review",
           subtasks: [
-            { label: "Difficult passage practice", detail: "Find an academic passage on a topic you find boring or difficult (science, economics). Force yourself through it — exam passages won't always interest you." },
-            { label: "Timing improvement", detail: "Redo a passage you finished slowly this week. Set a 17-minute target. Focus on reading the question first, then scanning for the answer." },
-            { label: "Mistake correction", detail: "Look at your Week 1 mistake log. Write a 1-sentence rule for each recurring error type. E.g. 'Not Given = the text is silent, not wrong.'" }
+            { label: "Complete one full Reading passage timed (20 min for 13-14 questions)", detail: "IELTS Reading gives you 60 minutes for 3 passages and 40 questions — roughly 20 minutes per passage. Stick strictly to this timing from Week 1." },
+            { label: "Review all answers with focus on 'Not Given' errors", detail: "Most students confuse 'False' with 'Not Given'. If the passage does not mention the topic of the statement at all — it is Not Given, regardless of what you think is true in real life." },
+            { label: "Write a weekly vocabulary list of 20 words learned this week", detail: "Review this list each morning next week for 5 minutes. Spaced repetition — reviewing at increasing intervals — is the most effective vocabulary retention method." }
           ]
         }
       }
     ]
   },
-
   {
     week: 2,
-    title: "Writing Introduction",
-    focus: "Writing Task 1 + Continued Listening",
     days: [
       {
         day: 1,
         morning: {
-          title: "Listening practice",
+          title: "Mock Listening + Reading",
           subtasks: [
-            { label: "Section practice", detail: "Choose the section type you found hardest in Week 1. Do 2 focused practices on that section only. Quality over quantity." },
-            { label: "Spelling correction", detail: "Review your full spelling list. Add any new errors from today. Your goal: zero repeated spelling mistakes by end of Week 2." },
-            { label: "Vocabulary review", detail: "Quiz yourself on last week's flashcards without looking. Any word you can't recall — move it back to 'learning' in your deck." }
+            { label: "Complete Sections 1 & 2 of a Listening mock (30 min)", detail: "This week, focus on improving your prediction skills. In the 30-second pause before each section, read all questions carefully and predict what type of answer is needed: a name, a number, a place, an opinion." },
+            { label: "Complete one Reading passage with mixed question types (25 min)", detail: "Choose a passage that includes both T/F/NG and a matching task. Switching between strategies in one session mirrors the real exam experience." },
+            { label: "Track vocabulary — add new words to your journal", detail: "Aim to learn 10 new words per day. By the end of 25 days, you will have 250 new words — enough to noticeably improve both Reading and Writing scores." }
           ]
         },
         afternoon: {
-          title: "Writing Task 1 course",
+          title: "Writing Task 1 — Introduction",
           subtasks: [
-            { label: "Chart description practice", detail: "Study the overview sentence structure: 'Overall, the most notable trend is…'. Write 3 different overview sentences for the same chart. Choose the best one." },
-            { label: "Linking word collection", detail: "Start a dedicated Task 1 language bank. Today's targets: contrast words (whereas, while, in contrast), comparison words (similarly, likewise, equally)." },
-            { label: "Example writing", detail: "Write a full Task 1 response with no time limit. Focus only on structure: intro → overview → two body paragraphs. Don't worry about perfection yet." }
+            { label: "Study Writing Task 1 question types: graphs, charts, maps, processes (40 min)", detail: "Task 1 asks you to describe visual data in 150+ words in 20 minutes. The 4 types require different language: graphs use trends, processes use passive voice, maps use location vocabulary." },
+            { label: "Analyse 2 Band 7 sample Task 1 responses", detail: "Notice how they open (paraphrase the question), structure the overview (the most important sentence), and organise details into paragraphs. Never begin with 'This graph shows...' — paraphrase instead." },
+            { label: "Collect 10 linking words for Task 1", detail: "Essential connectors: 'In contrast', 'Similarly', 'Overall', 'Notably', 'Whereas', 'By comparison', 'Subsequently'. These boost your Coherence and Cohesion score significantly." }
           ]
         }
       },
       {
         day: 2,
         morning: {
-          title: "Listening mock",
+          title: "Mock Listening + Reading",
           subtasks: [
-            { label: "Full listening test", detail: "Complete Sections 1–4 under strict exam conditions. No phone, no breaks, use the 10-min transfer time to check spelling carefully." },
-            { label: "Error correction", detail: "For every wrong answer, listen to that moment in the audio again. Was it: distraction word, spelling, number confusion, or simply missed?" },
-            { label: "Vocabulary notes", detail: "Extract 8 words from the transcripts. Focus on academic and formal vocabulary — these words will also appear in Reading passages." }
+            { label: "Complete Sections 3 & 4 of a Listening mock (30 min)", detail: "Section 4 is the hardest — a 10-minute academic lecture with no pause in the middle. The key strategy: do not try to write everything. Listen for the answers to the specific questions only." },
+            { label: "Complete a Reading passage focused on Matching Information (25 min)", detail: "Matching Information questions ask you to find which paragraph contains specific information. Unlike Matching Headings, there is no set order — you must scan all paragraphs for each question." },
+            { label: "Review mistakes and identify patterns", detail: "Keep a running error log. If you see the same type of error three times, dedicate 20 minutes of the next session specifically to that skill." }
           ]
         },
         afternoon: {
-          title: "Writing Task 1 — Bar chart",
+          title: "Writing Task 1 — Line Graphs",
           subtasks: [
-            { label: "Bar chart description", detail: "Write a full Task 1 for a bar chart. Describe the highest and lowest values, then compare categories. Minimum 150 words. Include an overview." },
-            { label: "Vocabulary expansion", detail: "Add 10 data language phrases to your bank: 'reached a peak of', 'accounted for', 'the proportion of', 'stood at approximately'. Use 5 in your writing." },
-            { label: "Self correction", detail: "Re-read your bar chart response. Check: (1) Is there an overview? (2) Did you describe trends, not just list numbers? (3) Are paragraphs clear?" }
+            { label: "Study language for describing trends (30 min)", detail: "Rising: increased, rose, grew, climbed, surged. Falling: decreased, fell, declined, dropped, plummeted. Use adverbs to show degree: dramatically, significantly, gradually, slightly, marginally." },
+            { label: "Write an overview sentence for 2 different line graphs (20 min)", detail: "The overview is the most important part of Task 1. It summarises the main trend(s) without specific numbers. Examiners look for this immediately — it is what separates Band 6 from Band 7." },
+            { label: "Practice example response without timing (no time pressure today)", detail: "Write freely. Focus on variety of language and accurate data description. You will add timing pressure from Day 4 onwards." }
           ]
         }
       },
       {
         day: 3,
         morning: {
-          title: "Listening practice",
+          title: "Mock Listening + Weak Area Focus",
           subtasks: [
-            { label: "Section 3 listening", detail: "Section 3 is an academic discussion (2–3 speakers). Focus on tracking who says what — questions often test opinions and attitudes, not facts." },
-            { label: "Spelling review", detail: "Review your full spelling list. Time yourself: can you spell every word correctly in under 30 seconds? Speed matters under exam pressure." },
-            { label: "Vocabulary practice", detail: "Take 10 words from your deck and write a short paragraph (5–6 sentences) using as many of them as naturally as possible." }
+            { label: "Redo the question type you scored lowest on this week (35 min)", detail: "Targeted practice on weak areas gives far better results than repeating what you are already good at. Be honest about your weakest section and attack it directly." },
+            { label: "Listening dictation exercise — transcribe 2 minutes of audio (15 min)", detail: "Play a podcast or news broadcast. Pause every 30 seconds and write exactly what you heard. This trains your ear to decode connected speech and reductions (e.g. 'gonna', 'wanna', 'didja')." },
+            { label: "Vocabulary tracking — review Week 1 list + add 10 new words", detail: "Do a quick self-test: cover the definitions and try to recall each word's meaning. If you cannot remember a word after 24 hours, it needs more repetitions." }
           ]
         },
         afternoon: {
-          title: "Writing Task 1 — Line graph",
+          title: "Writing Task 1 — Bar Charts & Tables",
           subtasks: [
-            { label: "Line graph practice", detail: "Write a full Task 1 for a line graph showing changes over time. Use trend language: rose sharply, declined gradually, fluctuated, remained stable." },
-            { label: "Linking words", detail: "Add sequencing/time words to your bank: 'between X and Y', 'from … to …', 'over the period', 'by the end of'. Use all of them in your response." },
-            { label: "Error correction", detail: "Compare your line graph response with a band 7 sample. Highlight every phrase in the sample you wish you'd written. Add them to your language bank." }
+            { label: "Study bar chart and table description strategies (25 min)", detail: "For bar charts: compare the highest and lowest values, then group similar bars together. For tables: identify the most striking figures. Never describe every single number — select and compare." },
+            { label: "Write a Task 1 response for a bar chart (25 min)", detail: "Remember: describe what you see, not why it happened. IELTS Task 1 is purely descriptive — speculation about causes is off-task and will lower your score." },
+            { label: "Peer-check: count words and verify you have an overview paragraph", detail: "A response without an overview cannot score above Band 5 for Task Achievement. Check that your overview mentions the main overall trend before going into specific details." }
           ]
         }
       },
       {
         day: 4,
         morning: {
-          title: "Listening improvement",
+          title: "Full Mock — Listening Sections 1-4",
           subtasks: [
-            { label: "Weak section practice", detail: "Identify the section type with the lowest average score across your Week 2 mocks. Do 3 focused practices on that section type today only." },
-            { label: "Vocabulary review", detail: "Review this week's listening vocabulary deck. Write example sentences for the 5 words you remember least." },
-            { label: "Error analysis", detail: "Look at all your Week 2 listening errors together. Is there a pattern? (e.g. always miss Section 4, or always misspell numbers). Name the pattern." }
+            { label: "Complete full Listening mock under strict exam conditions (45 min)", detail: "No pausing. No rewinding. Answer while listening, then transfer to answer sheet in the final 10 minutes. This is the exact format used in the real IELTS exam." },
+            { label: "Score and compare to Week 1 result", detail: "Are you improving? A Band 7 Listening score requires approximately 30/40. If you are consistently scoring below 25, consider increasing your daily listening exposure to English podcasts and documentaries." },
+            { label: "Error analysis — write down what caused each wrong answer", detail: "Do not just mark answers right or wrong. Understanding why you got something wrong is the only way to stop making the same mistake in the future." }
           ]
         },
         afternoon: {
-          title: "Writing Task 1 timed",
+          title: "Writing Task 1 — Timed Practice",
           subtasks: [
-            { label: "20-minute timed task", detail: "Set a strict 20-min timer. Spend 2 min planning (identify overview + 2 main trends), then write. Stop at exactly 20 min — no exceptions." },
-            { label: "Compare with model answer", detail: "Read the model answer AFTER writing. Don't just read it — annotate it. Mark: (1) phrases better than yours, (2) structure differences, (3) vocabulary gaps." },
-            { label: "Correction", detail: "Rewrite your weakest paragraph using language from the model answer. Don't copy — paraphrase the same ideas with better vocabulary." }
+            { label: "Write a complete Task 1 response in 20 minutes (timed)", detail: "Spend 2 minutes planning: identify the overview, select key data, decide paragraph structure. Then write. Stop at 20 minutes regardless. Speed is a skill you must train." },
+            { label: "Self-evaluate using the 4 IELTS criteria", detail: "Task Achievement (did you describe all key features?), Coherence & Cohesion (does it flow logically?), Lexical Resource (varied vocabulary?), Grammatical Range & Accuracy (complex sentences with no major errors?)." },
+            { label: "Write paragraph starters for your next 3 practice responses", detail: "Having pre-prepared openers reduces cognitive load under time pressure. Example: 'The graph illustrates...', 'As is evident from the data...', 'Overall, the most notable feature is...'" }
           ]
         }
       },
       {
         day: 5,
         morning: {
-          title: "Listening mock",
+          title: "Reading — Full Timed Passage Set",
           subtasks: [
-            { label: "Full test simulation", detail: "Final Week 2 listening mock. Strict conditions. Aim to beat your Day 2 score. Transfer answers carefully — a correct answer spelled wrong is still wrong." },
-            { label: "Score evaluation", detail: "Log your score. Compare: Week 1 Day 4 vs Week 2 Day 5. Calculate improvement. If no improvement, identify exactly which question type held you back." },
-            { label: "Vocabulary update", detail: "Review your full vocabulary deck (now 60–80 words). Remove cards you know perfectly. Your deck should stay manageable — quality over size." }
+            { label: "Complete 2 Reading passages under timed conditions (40 min)", detail: "40 minutes for 2 passages. If you finish early, review your answers — especially T/F/NG and multiple choice where mistakes are most common." },
+            { label: "Skimming drill — read 3 passages and write the main idea of each in 1 sentence (10 min)", detail: "Skim = read for gist, not detail. Run your eyes over the first line of each paragraph only. This skill is essential for finishing the Reading section on time." },
+            { label: "Vocabulary — identify academic words from passages and look up collocations", detail: "For every new word, find 2 collocations. Example: 'significant' → 'significant difference', 'significant impact'. Using words in their natural partnerships boosts your Writing Lexical Resource score." }
           ]
         },
         afternoon: {
-          title: "Writing review",
+          title: "Writing Task 1 — Maps & Processes",
           subtasks: [
-            { label: "Review all Task 1 mistakes", detail: "Read every Task 1 you wrote this week. For each: did you include an overview? Did you compare, not just describe? Were paragraphs logically grouped?" },
-            { label: "Vocabulary building", detail: "From your Task 1 writing this week, collect 10 phrases you used weakly and replace them with stronger alternatives from your language bank." },
-            { label: "Rewrite best answer", detail: "Choose your weakest Task 1 from this week. Rewrite it completely from scratch, now using all language you've collected. Aim for band 7 quality." }
+            { label: "Study map description language (25 min)", detail: "Location vocabulary: 'to the north of', 'adjacent to', 'opposite', 'in the centre', 'alongside'. Change vocabulary: 'was replaced by', 'was converted into', 'a new X was constructed', 'remained unchanged'." },
+            { label: "Study process diagram language (20 min)", detail: "Process diagrams require passive voice: 'The material is heated...', 'The liquid is then transferred...'. Use sequencing language: 'First', 'Subsequently', 'Following this', 'Finally', 'Once X has been completed'." },
+            { label: "Write a practice response for either a map or process diagram (no timing)", detail: "Focus on accuracy today. Make sure every stage of the process or every map change is described. Missing a key feature is the most common Task Achievement error." }
           ]
         }
       }
     ]
   },
-
   {
     week: 3,
-    title: "Writing Mastery",
-    focus: "Task 1 timed + Task 2 introduction",
     days: [
       {
         day: 1,
         morning: {
-          title: "Writing Task 1 timed",
+          title: "Listening Timed + Speaking Introduction",
           subtasks: [
-            { label: "20-minute task", detail: "Pie chart or process diagram today — a chart type you haven't practised yet. Spend 2 min planning before writing. Stop at exactly 20 min." },
-            { label: "Compare with model", detail: "After writing, read the model answer. Annotate every phrase that is better than yours. These become your target phrases for next time." },
-            { label: "Error correction", detail: "Fix your top 3 language errors from this writing. Rewrite those specific sentences with corrected vocabulary or grammar." }
+            { label: "Complete a full Listening mock (45 min)", detail: "By now you should be familiar with the format. This week, focus on improving your Section 4 score specifically — it carries the same marks as the other sections but is attempted when you are most mentally tired." },
+            { label: "Introduction to IELTS Speaking — study the 3-part format (15 min)", detail: "Part 1: 4-5 minutes, personal questions. Part 2: 1-2 minute talk from a cue card, 1 minute preparation. Part 3: 4-5 minutes, abstract discussion. Each part needs different preparation strategies." },
+            { label: "Weak area review — revisit your error log from Weeks 1-2", detail: "Identify your single biggest weakness in Listening. Dedicate 15 minutes every morning this week to targeted drills for that specific weakness." }
           ]
         },
         afternoon: {
-          title: "Writing Task 2 introduction",
+          title: "Writing Task 1 Timed + Grammar",
           subtasks: [
-            { label: "Essay structure", detail: "Learn the 4-paragraph structure: Introduction (paraphrase + position) → Body 1 (main argument + example) → Body 2 (second argument + example) → Conclusion (restate position). Write the structure from memory." },
-            { label: "Linking words", detail: "Build your Task 2 language bank. Today: argument connectors (Furthermore, In addition, However, Nevertheless, Consequently, As a result)." },
-            { label: "Example essay", detail: "Read one band 8 Task 2 essay. Identify: (1) where the position is stated, (2) how each paragraph opens, (3) how examples are introduced. Don't copy — analyse." }
+            { label: "Write a Task 1 response in 20 minutes — line graph or bar chart (20 min)", detail: "You have been practising for 2 weeks. Now push for Band 7 quality: varied vocabulary, clear overview, well-organised paragraphs, and accurate data. Do not just describe everything — select and compare." },
+            { label: "Grammar focus — complex sentences with relative clauses (20 min)", detail: "Band 7 requires a range of complex structures. Practise: 'The country which recorded the highest growth was...', 'The period during which sales peaked was...'. These structures lift your Grammatical Range score." },
+            { label: "Collect 10 sentence starters for Task 1 comparisons and trends", detail: "Useful starters: 'In comparison to...', 'While X experienced a rise, Y saw a decline...', 'The figures for X were considerably higher than those for Y...'. Having these ready reduces hesitation in the exam." }
           ]
         }
       },
       {
         day: 2,
         morning: {
-          title: "Writing Task 1 — Table",
+          title: "Listening Timed + Speaking Part 1",
           subtasks: [
-            { label: "Table description", detail: "Tables require selecting the most significant data — you can't describe every cell. Identify the highest, lowest, and most interesting comparisons. Write those only." },
-            { label: "Vocabulary improvement", detail: "Avoid repeating the same verbs. Replace: 'shows' → 'illustrates/reveals/indicates', 'big' → 'substantial/considerable/significant'. Expand your range." },
-            { label: "Correction", detail: "Re-read your table response. Check subject-verb agreement, article use (the/a), and prepositions (in/at/by). These are the most common grammar errors in Task 1." }
+            { label: "Complete Listening Sections 1-2 timed (30 min)", detail: "Focus on prediction this session. Use the pause before each section to read all questions and underline key words. Predicting the answer type (a number? a place?) focuses your attention during playback." },
+            { label: "Study Speaking Part 1 strategies (15 min)", detail: "Part 1 questions are about familiar topics: home, family, work, hobbies, food, travel. Answers should be 2-3 sentences — long enough to show fluency, short enough to stay on topic. Avoid one-word answers." },
+            { label: "Practice 5 Part 1 questions aloud and record yourself (15 min)", detail: "Recording yourself is uncomfortable but essential. Play it back and notice: Do you hesitate often? Do you use filler words ('um', 'uh', 'like')? Is your pronunciation clear? Self-awareness drives improvement." }
           ]
         },
         afternoon: {
-          title: "Writing Task 2 — Opinion essay",
+          title: "Writing Task 1 — Timed with Self-Assessment",
           subtasks: [
-            { label: "Opinion essay", detail: "Write a 'To what extent do you agree?' essay. State your position clearly in the introduction. Don't sit on the fence — examiners reward a clear, consistent stance." },
-            { label: "Idea development", detail: "Each body paragraph = Topic sentence → Explanation → Example → Link back. Write this formula on paper and follow it for every paragraph you write." },
-            { label: "Self correction", detail: "Re-read your essay. Is your position clear from the first paragraph? Does every sentence in each body paragraph support that paragraph's main point?" }
+            { label: "Write a full Task 1 response in exactly 20 minutes", detail: "Choose question type you find hardest. Harder practice in training means the real exam feels easier. This is deliberate discomfort — it works." },
+            { label: "Grammar correction — identify and fix all grammar errors in your response", detail: "Common Task 1 grammar errors: incorrect article use ('the' vs 'a'), wrong prepositions with numbers ('by 20%' vs 'to 20%'), subject-verb agreement with data ('the figures show' not 'the figures shows')." },
+            { label: "Write 5 new sentence starters and linking words in your notes", detail: "Building a bank of high-quality phrases for Task 1 gives you reliable language to fall back on under pressure. Quality phrases reduce cognitive load and let you focus on accurate data description." }
           ]
         }
       },
       {
         day: 3,
         morning: {
-          title: "Writing Task 1 — Map",
+          title: "Listening Sections 3-4 + Speaking Part 2",
           subtasks: [
-            { label: "Map description", detail: "Maps require location language: 'to the north of', 'adjacent to', 'where X once stood', 'has been replaced by', 'a new X has been constructed'. Build this list before writing." },
-            { label: "Vocabulary expansion", detail: "Add 10 map/change language phrases to your bank. Include: demolished, extended, relocated, converted, remained unchanged, developed into." },
-            { label: "Rewrite answer", detail: "After writing your map description, rewrite the weakest paragraph using better location vocabulary. Compare both versions side by side." }
+            { label: "Complete Listening Sections 3-4 timed (30 min)", detail: "Section 4 tip: the questions follow the order of the lecture. If you miss one answer, do not panic — move to the next question immediately. Trying to recover a missed answer causes you to miss the next one too." },
+            { label: "Study Speaking Part 2 (cue card) strategy (15 min)", detail: "You have exactly 1 minute to prepare. Use the pencil and paper provided. Write 4-5 bullet points covering: what, when, where, who, and why you liked it. Structure prevents you from running out of things to say." },
+            { label: "Practice a Part 2 cue card — speak for 2 minutes without stopping", detail: "Two minutes is longer than you think. Common topic areas: describe a person you admire, a place you visited, an experience that changed you, a skill you would like to learn. Practise at least one per day." }
           ]
         },
         afternoon: {
-          title: "Writing Task 2 — Discussion essay",
+          title: "Writing Task 1 — Mixed Types + Task 2 Preview",
           subtasks: [
-            { label: "Discussion essay", detail: "Write a 'Discuss both views and give your opinion' essay. Body 1 = View A. Body 2 = View B + your opinion woven in. Don't save your opinion for the conclusion only." },
-            { label: "Idea organisation", detail: "Before writing, spend 5 minutes making a mind map: write the topic in the centre, then 3 ideas for each view. Choose the 2 strongest ideas per side." },
-            { label: "Correction", detail: "Review your discussion essay. Are both views fairly represented? Is your own opinion clear? Did you use hedging language (It is argued that / Some believe that)?" }
+            { label: "Write a Task 1 response for a process diagram timed (20 min)", detail: "Process diagrams are often neglected in preparation. They appear in approximately 20% of tests. Passive voice structures are mandatory: 'The raw materials are first sorted before being...'" },
+            { label: "Read 2 Band 7 Writing Task 2 essays — identify structure (20 min)", detail: "Task 2 is worth twice the marks of Task 1. A Band 7 essay has: a clear introduction that paraphrases the question, body paragraphs each with one central idea, and a conclusion that does not introduce new information." },
+            { label: "Note 5 essay structures you could use in Task 2 next week", detail: "Common structures: Argument (agree/disagree), Discussion (both views), Problem-Solution, Advantage-Disadvantage. Knowing which structure suits which question type saves 2-3 minutes of planning time." }
           ]
         }
       },
       {
         day: 4,
         morning: {
-          title: "Writing mock",
+          title: "Full Listening Mock + Speaking Part 3",
           subtasks: [
-            { label: "Task 1 + Task 2 timed (60 min)", detail: "20 min for Task 1, 40 min for Task 2. Strict timing. This is the real exam format. Do not let Task 1 eat into Task 2 time — Task 2 is worth double the marks." },
-            { label: "Self assessment", detail: "After writing, score yourself against the 4 IELTS writing criteria: Task Achievement, Coherence & Cohesion, Lexical Resource, Grammatical Range. Give each a 1–9 score." },
-            { label: "Error correction", detail: "Identify your single biggest weakness from today's mock (e.g. vocabulary range, paragraph structure). Write 3 specific things you will do differently next time." }
+            { label: "Full Listening mock under exam conditions (45 min)", detail: "Track your score against Week 1 and Week 2. You should see consistent improvement. If not, double your daily passive listening — have English content playing while you eat, commute, or exercise." },
+            { label: "Study Speaking Part 3 strategies (15 min)", detail: "Part 3 is an abstract discussion. Questions often ask you to compare, speculate, or evaluate: 'How has X changed?', 'Do you think X is important?', 'What might happen if...?' Show complex thinking, not just simple opinions." },
+            { label: "Practice 3 Part 3 questions aloud — aim for 4-5 sentence answers", detail: "Use the PEEL structure: Point, Explain, Example, Link back. This ensures your answers are developed enough to demonstrate the Fluency and Coherence required for Band 7." }
           ]
         },
         afternoon: {
-          title: "Listening + Reading review",
+          title: "Writing Task 1 Final Timed Practice",
           subtasks: [
-            { label: "Weak sections", detail: "Go back to your weakest Listening section and weakest Reading question type from Weeks 1–2. Do one focused practice of each. No full test — targeted drilling only." },
-            { label: "Speed practice", detail: "For Reading: do 1 passage in 15 minutes (faster than normal). For Listening: do 1 section and try to predict answers from questions before audio starts." },
-            { label: "Vocabulary notes", detail: "Review your full vocabulary deck. By end of Week 3 you should have 100+ words. Cull any you know perfectly — keep your deck sharp and focused." }
+            { label: "Write a Task 1 map comparison response in 20 minutes", detail: "A 'before and after' map is a common Task 1 variant. Describe what existed before, then what changed. Group changes thematically — for example, all new buildings together, then all demolitions." },
+            { label: "Review and correct your own response against Band 7 descriptors", detail: "Ask: (1) Did I write 150+ words? (2) Is there a clear overview? (3) Did I group and compare data, not just list it? (4) Did I use a range of vocabulary without repetition? (5) Are my sentences varied in structure?" },
+            { label: "Write paragraph starters for Task 2 body paragraphs", detail: "Prepare topic sentence templates: 'One significant reason for this is...', 'A further consideration is...', 'This can be illustrated by...', 'Despite this, it is important to note that...'" }
           ]
         }
       },
       {
         day: 5,
         morning: {
-          title: "Writing improvement",
+          title: "Reading Full Passage + Speaking Review",
           subtasks: [
-            { label: "Grammar correction", detail: "Focus on the 3 most common Task 2 grammar errors: (1) missing articles, (2) subject-verb agreement, (3) run-on sentences. Fix these in your Week 3 essays." },
-            { label: "Vocabulary improvement", detail: "Find 5 places in your Week 3 writing where you repeated the same word. Replace each with a precise alternative from your language bank." },
-            { label: "Essay rewrite", detail: "Rewrite your weakest Task 2 from this week completely from scratch. Use everything you've learned. Aim for a clear position, developed arguments, and varied grammar." }
+            { label: "Complete all 3 Reading passages under timed conditions (60 min)", detail: "Full exam simulation. 60 minutes, 40 questions, 3 passages. Do not spend more than 20 minutes on any one passage. If stuck on a question, make your best guess and move on — there are no penalties for wrong answers." },
+            { label: "Analyse time management across the 3 passages", detail: "Most students run out of time on Passage 3 because they spend too long on Passages 1 and 2. Track exactly how many minutes you spent on each passage and adjust your pacing strategy accordingly." },
+            { label: "Review all Speaking recordings from this week — note improvements and issues", detail: "Compare today's recordings to Day 1. Listen for: range of vocabulary, grammatical accuracy, fluency (fewer pauses), and pronunciation clarity. Identify one specific thing to improve next week." }
           ]
         },
         afternoon: {
-          title: "Vocabulary building",
+          title: "Writing Task 2 — Foundation",
           subtasks: [
-            { label: "Collect useful words", detail: "Find 15 high-frequency IELTS academic words you haven't yet collected. Use the Academic Word List (AWL) as a source. Add to your deck with example sentences." },
-            { label: "Synonym practice", detail: "Take 10 common words: big, small, increase, decrease, important, show, use, problem, good, bad. Write 3 formal synonyms for each. These are your essay vocabulary upgrades." },
-            { label: "Example sentences", detail: "Write one sentence for each of your 10 newest vocabulary words. Each sentence should relate to a real IELTS topic (technology, environment, education, health)." }
+            { label: "Study Task 2 question types in depth (30 min)", detail: "5 main types: Opinion (Do you agree?), Discussion (Discuss both views), Problem-Solution, Advantage-Disadvantage, Two-part question. Each has a slightly different structure. Misidentifying the question type is a very costly error." },
+            { label: "Analyse 2 Band 7 Task 2 essays for paragraph structure (20 min)", detail: "A Band 7 essay typically has 4-5 paragraphs: Introduction (2-3 sentences), Body 1, Body 2, optional Body 3, Conclusion. Each body paragraph develops ONE idea with explanation and example." },
+            { label: "Write 3 thesis statement sentences for practice questions", detail: "The thesis (your position) must appear in the introduction. It must be clear and direct. Avoid vague statements like 'There are many factors to consider.' State your actual view: 'I firmly believe that...'" }
           ]
         }
       }
     ]
   },
-
   {
     week: 4,
-    title: "Speaking Preparation",
-    focus: "Speaking Parts 1–3 + Writing consolidation",
     days: [
       {
         day: 1,
         morning: {
-          title: "Speaking Part 1",
+          title: "Full Mock (L + R + Task 1) + Speaking Test",
           subtasks: [
-            { label: "Common questions practice", detail: "Part 1 topics: hometown, work/study, hobbies, daily routine, food, weather. Answer each question in 2–3 sentences. Don't memorise scripts — memorise frameworks: Direct answer → Reason → Example." },
-            { label: "Vocabulary preparation", detail: "For each Part 1 topic, prepare 5 topic-specific words. E.g. for 'food': cuisine, nourishing, indulge, savoury, wholesome. Use them naturally — don't force them." },
-            { label: "Pronunciation practice", detail: "Record yourself answering 5 Part 1 questions. Listen back. Mark words you mispronounce or where you rush. Slow down — fluency ≠ speed." }
+            { label: "Complete a full Listening mock (45 min)", detail: "This is full simulation week. Treat every session as if it is the real exam. Sit at a desk, no distractions, no phone. Mental conditioning for exam conditions is a real and trainable skill." },
+            { label: "Complete one timed Reading passage (20 min)", detail: "Focus on accuracy not speed today. If you are making careless errors, slow down slightly. It is better to get 35/40 carefully than 38/40 with 5 careless mistakes." },
+            { label: "Write a Task 1 response in 20 minutes — any type", detail: "By Week 4, Task 1 should feel routine. If it does not, you need more varied practice. The goal this week is consistency — producing a Band 7 response reliably under any conditions." }
           ]
         },
         afternoon: {
-          title: "Writing Task 2",
+          title: "Writing Task 2 — Opinion Essays",
           subtasks: [
-            { label: "Essay practice", detail: "Write a 'Problems and Solutions' or 'Advantages and Disadvantages' essay. Choose a topic you haven't written about yet: urbanisation, social media, or globalisation." },
-            { label: "Idea development", detail: "Before writing, plan for 5 minutes: identify 2 problems and 2 realistic solutions (or 2 advantages and 2 disadvantages). Weak ideas = weak essay." },
-            { label: "Self review", detail: "Check your essay answers this: Does your conclusion restate your position without introducing new ideas? Is each body paragraph exactly one main idea?" }
+            { label: "Study opinion essay structure and model answer (30 min)", detail: "For 'To what extent do you agree?' questions: state your position clearly in the introduction, develop your view in two body paragraphs with reasons and examples, acknowledge a counterargument briefly, then reinforce your position in the conclusion." },
+            { label: "Write a Task 2 opinion essay in 40 minutes", detail: "The full exam gives you 40 minutes for Task 2. Spend 5 minutes planning before you write. Planning prevents you from losing your argument midway through — the most common cause of poor Task Achievement scores." },
+            { label: "Write paragraph starters for counterargument sentences", detail: "Useful concession phrases: 'Admittedly...', 'While it is true that...', 'Although some argue that...', 'Critics of this view suggest that...'. These show the examiner you can consider multiple perspectives." }
           ]
         }
       },
       {
         day: 2,
         morning: {
-          title: "Speaking Part 2",
+          title: "Full Mock (L + R + Task 1) + Score Tracking",
           subtasks: [
-            { label: "Cue card preparation", detail: "Use the PEEL structure for Part 2: Point (what) → Example (specific detail) → Explain (why it matters) → Link (how it connects to you). Practice applying it to 3 different cue cards." },
-            { label: "2-minute talk", detail: "Time yourself with a stopwatch. Aim for exactly 1 min 50 sec – 2 min. Too short = not enough development. Too long = going off-topic. Practice stopping naturally." },
-            { label: "Self recording", detail: "Record your Part 2 answer. Listen back: Are you using filler words ('um', 'like', 'you know')? Are your sentences grammatically complete? Is there a clear ending?" }
+            { label: "Full Listening mock under timed conditions (45 min)", detail: "Record your score. By the end of Week 4 you should consistently score 30+ in Listening. If not, Section 4 is almost certainly pulling your score down — it requires dedicated daily practice." },
+            { label: "Full timed Reading passage with score analysis (20 min)", detail: "Track your score across all weeks. Are you improving? A Band 7 Reading score requires approximately 30/40. Speed and accuracy both matter — you cannot sacrifice one for the other." },
+            { label: "Score tracking — update your weekly progress chart", detail: "Keep a simple table: Week, Listening score, Reading score, Writing self-score, Speaking self-score. Seeing your progress in concrete numbers is motivating and highlights which skills need more attention." }
           ]
         },
         afternoon: {
-          title: "Writing Task 1 timed",
+          title: "Writing Task 2 — Discussion Essays",
           subtasks: [
-            { label: "Timed task (20 min)", detail: "Choose a chart type you haven't practised recently. Strict 20-min timer. Spend 2 min planning (overview + 2 key trends), 15 min writing, 3 min checking." },
-            { label: "Correction", detail: "After writing, check specifically: (1) Is the overview in a separate paragraph? (2) Did you avoid personal opinion? (3) Did you group data logically?" },
-            { label: "Vocabulary review", detail: "Review your Task 1 language bank. Can you use all the phrases without looking? Write 3 sentences from memory using your data language." }
+            { label: "Study discussion essay structure (30 min)", detail: "For 'Discuss both views and give your opinion' questions: dedicate one body paragraph to each view, then give your opinion in the conclusion or at the end of the second body paragraph. Do not mix both views in the same paragraph." },
+            { label: "Write a full discussion essay in 40 minutes", detail: "Common mistake: spending too long on one view. Give approximately equal weight to both sides before stating your opinion. An unbalanced discussion suggests you misunderstood the question." },
+            { label: "Practice + review mistakes — use Band 7 sample as reference", detail: "Compare your essay directly to a Band 7 model. What vocabulary did they use that you did not? How did they open paragraphs? How long were their examples? This comparison is more instructive than any grammar drill." }
           ]
         }
       },
       {
         day: 3,
         morning: {
-          title: "Speaking Part 3",
+          title: "Full Mock + Weak Skill Focus",
           subtasks: [
-            { label: "Discussion questions", detail: "Part 3 requires developed opinions. Structure every answer: State view → Give reason → Give example → Consider the other side (optional). Practice with topics: environment, technology, education, globalisation." },
-            { label: "Advanced vocabulary", detail: "Learn 10 opinion/discussion phrases: 'From my perspective', 'It could be argued that', 'The evidence suggests', 'One could make the case that', 'This is a double-edged issue'. Use all 10 today." },
-            { label: "Opinion structuring", detail: "Record yourself answering 3 Part 3 questions. Each answer should be 30–45 seconds long. No longer — in a real interview the examiner will follow up. Clarity > length." }
+            { label: "Complete your weakest Listening section type twice (40 min)", detail: "Identify your single worst question type from your error logs. Do it twice — once to practise, once to verify improvement. Focused repetition of your weakness is the fastest path to score improvement." },
+            { label: "Speaking test simulation — Part 1, 2, and 3 with a timer (30 min)", detail: "Use a timer: 5 minutes for Part 1, 1 minute preparation + 2 minutes speaking for Part 2, 5 minutes for Part 3. Record yourself. Even doing this alone at home builds the composure needed for the real examiner session." },
+            { label: "Identify 3 specific improvements to target in Speaking this week", detail: "Concrete targets work better than vague goals. Not 'speak better' but 'stop saying um', 'use more connectors', 'extend my Part 3 answers to 5 sentences'. Specific goals produce measurable results." }
           ]
         },
         afternoon: {
-          title: "Full mock test",
+          title: "Writing Task 2 — Problem/Solution Essays",
           subtasks: [
-            { label: "Listening + Reading mock", detail: "Complete Listening (40 min) + Reading (60 min) back-to-back with a 5-min break between. This is exactly the real exam format. Log your scores." },
-            { label: "Timing simulation", detail: "For Reading, set phone face down and only check time at the 20 and 40-minute marks. Practise judging time internally — you can't always watch the clock in exams." },
-            { label: "Score tracking", detail: "Log today's scores. Compare to your Week 1 and Week 2 scores. Calculate your approximate band score (Listening: score/40 → band; Reading: score/40 → band)." }
+            { label: "Study problem/solution essay structure (20 min)", detail: "Structure: Introduction (paraphrase + thesis), Body 1 (problems with examples), Body 2 (solutions with examples), Conclusion. Both problems AND solutions must be developed equally — do not spend 80% on problems." },
+            { label: "Write a full problem/solution essay in 40 minutes", detail: "Problem/solution topics often involve: urbanisation, unemployment, environmental damage, education inequality, technology addiction. Familiarise yourself with factual examples in these areas to use as evidence." },
+            { label: "Write paragraph starters specifically for problem/solution essays", detail: "Problem starters: 'One of the most pressing issues is...', 'This has resulted in...'. Solution starters: 'A practical approach to this problem would be...', 'Governments could address this by...', 'The most effective solution is...'" }
           ]
         }
       },
       {
         day: 4,
         morning: {
-          title: "Speaking mock",
+          title: "Full Mock — All Four Skills",
           subtasks: [
-            { label: "Full speaking interview (11–14 min)", detail: "Do a full Part 1 + Part 2 + Part 3 session. Use a partner, a tutor, or record yourself answering questions from an IELTS speaking question bank. Treat it as the real thing." },
-            { label: "Record answers", detail: "Record the entire mock. Don't listen immediately — do the afternoon session first, then listen back with fresh ears. You'll notice issues you didn't feel while speaking." },
-            { label: "Self evaluation", detail: "Score yourself on the 4 Speaking criteria: Fluency & Coherence, Lexical Resource, Grammatical Range & Accuracy, Pronunciation. Be honest — identify your weakest criterion." }
+            { label: "Full Listening mock (45 min)", detail: "Final week of intensive skill-building. Push for your target score in every session. Consistent performance across multiple practice tests is the best predictor of real exam results." },
+            { label: "Full Reading test — 3 passages, 60 minutes", detail: "Full exam simulation with strict timing. If you finish with time to spare, review your T/F/NG and multiple-choice answers first — these have the highest error rate across all test takers." },
+            { label: "Speaking test — record and self-evaluate all 3 parts", detail: "This is your final full Speaking simulation before exam week. Be critical: Is your vocabulary range sufficient for Band 7? Are you using complex grammar? Are your examples specific and relevant?" }
           ]
         },
         afternoon: {
-          title: "Writing mock",
+          title: "Writing Task 2 — Advantage/Disadvantage Essays",
           subtasks: [
-            { label: "Task 1 + Task 2 timed (60 min)", detail: "20 min Task 1 + 40 min Task 2. Strict exam conditions. Write by hand if your real exam is on paper. Your handwriting speed affects how much you can write in 40 min." },
-            { label: "Band comparison", detail: "Compare your Task 2 against the official IELTS band descriptors (available on ielts.org). For each criterion, find evidence in your writing for the band you gave yourself." },
-            { label: "Error correction", detail: "Fix your top grammar error from today's writing. Write 5 corrected sentences using the same grammar structure correctly." }
+            { label: "Study advantage/disadvantage essay structure (20 min)", detail: "Structure: Introduction (paraphrase + overview of both sides), Body 1 (advantages + examples), Body 2 (disadvantages + examples), Conclusion (balanced summary + your view if asked). Neutral tone throughout." },
+            { label: "Write a full advantage/disadvantage essay in 40 minutes", detail: "Common topics: remote working, social media, technology in education, globalisation. Prepare 2-3 real-world examples for each topic area — citing specific examples is what separates Band 7 from Band 6 essays." },
+            { label: "Review your essay against Task Response, Coherence, Lexical Resource, Grammar", detail: "Use the official IELTS Band Descriptors (freely available online) as your checklist. A Band 7 in Lexical Resource requires 'sufficient range' with 'less common items' used 'with some awareness of style and collocation'." }
           ]
         }
       },
       {
         day: 5,
         morning: {
-          title: "Weak skill review",
+          title: "Full Mock — Exam Conditions",
           subtasks: [
-            { label: "Identify weakest skill", detail: "Look at your score logs from Weeks 1–4. Which skill has improved least? That skill gets 100% of your attention today morning. Don't spread effort — focus completely." },
-            { label: "Targeted practice", detail: "Do 2 focused practice sessions on your weakest skill only. For Listening: weakest section type. For Reading: weakest question type. For Writing: weakest essay component." },
-            { label: "Vocabulary update", detail: "Review your full vocabulary deck. You should now have 150+ words. Cull words you know perfectly. Add 10 new words specifically related to your weakest skill area." }
+            { label: "Complete a full Listening mock — aim for personal best score (45 min)", detail: "Push yourself. Comfort zone practice produces comfort zone results. If you have been averaging 30, aim for 33 today. Deliberate stretch goals improve performance faster than repeated familiar practice." },
+            { label: "Complete a full Reading test — personal best attempt (60 min)", detail: "Your reading speed and accuracy should be noticeably better than Week 1. If the improvement feels small, that is normal — skills develop faster than they feel subjectively. Your test scores will confirm real progress." },
+            { label: "Writing Task 2 — write a two-part question essay in 40 minutes", detail: "Two-part questions ('What are the reasons for X? What can be done about it?') require you to answer BOTH questions fully. Missing one part is an immediate cap on your Task Achievement score, regardless of how well you write." }
           ]
         },
         afternoon: {
-          title: "Grammar + vocabulary",
+          title: "Writing Review + Speaking Preparation",
           subtasks: [
-            { label: "Review collected words", detail: "Do a full deck review. For any word you hesitate on, write a new example sentence. Aim to use each word in speech or writing within the next 24 hours." },
-            { label: "Grammar corrections", detail: "Review the grammar errors from your Week 4 writing mocks. Rewrite each error sentence correctly. Then write 2 more sentences using the same structure correctly." },
-            { label: "Practice sentences", detail: "Write 10 complex sentences on IELTS topics, each using a different grammar structure: conditionals, relative clauses, passive voice, reported speech, gerunds." }
+            { label: "Comprehensive review of all Task 2 essays written this week (30 min)", detail: "Read all 5 essays back to back. Look for recurring weaknesses: do you always forget to include examples? Do your conclusions repeat the introduction word for word? Do you run out of ideas in Body 2? Fix these now." },
+            { label: "Prepare Speaking Part 2 answers for 5 common cue card topics (20 min)", detail: "Common topics: a person who influenced you, a place you would like to visit, an object that is important to you, a skill you learned, an event you remember clearly. Prepare bullet point notes, not full scripts." },
+            { label: "Write paragraph starters for exam day — your personal reference list", detail: "Create a one-page cheat sheet of your best sentence starters, linking words, and vocabulary for both tasks. Review this every morning in Week 5. On exam day, these phrases will come automatically." }
           ]
         }
       }
     ]
   },
-
   {
     week: 5,
-    title: "Exam Simulation",
-    focus: "Full IELTS mock tests + final confidence",
     days: [
       {
         day: 1,
         morning: {
-          title: "Listening + Reading mock",
+          title: "Full Mock Exam (L + R + W)",
           subtasks: [
-            { label: "Strict exam timing", detail: "Listening: 40 min + 10 min transfer. Reading: 60 min, 20 min per passage. No extensions. If you don't finish, leave it — this exposes real time management issues before the real exam." },
-            { label: "Score evaluation", detail: "Log both scores. This is your Week 5 baseline. Compare to Week 4. Are you at or above your target band? If not, identify which specific question types to fix in Days 3–4." },
-            { label: "Error analysis", detail: "Categorise every wrong answer. Create a final error log: which question types and which sections are still costing you marks in Week 5?" }
+            { label: "Complete a full Listening mock (45 min)", detail: "Final week. The goal now is confidence and consistency, not new learning. Perform under exam conditions every session. Your preparation is complete — trust it." },
+            { label: "Complete a full Reading test (60 min)", detail: "If you hit a difficult passage, do not panic. Move to the next question. Panic in the exam is the biggest performance killer. You have done this many times — trust your process." },
+            { label: "Write one Task 1 and one Task 2 back to back (60 min total)", detail: "In the real exam, Writing lasts 60 minutes total. Practise completing both tasks in sequence: 20 minutes for Task 1, then 40 minutes for Task 2. Do not take a break between them — the real exam does not." }
           ]
         },
         afternoon: {
-          title: "Mistake review",
+          title: "Speaking Templates + Full Mock Test",
           subtasks: [
-            { label: "Analyse errors", detail: "For each wrong answer from this morning, write the reason in one sentence. Group errors by type. The most common error type = your #1 focus for Day 4 targeted practice." },
-            { label: "Vocabulary correction", detail: "Review any vocabulary errors from Reading passages. Update your flashcard deck — add words from today's texts that you didn't know." },
-            { label: "Rewrite answers", detail: "For Listening errors: write the correct answer and why it was correct. For Reading errors: find the paragraph that contains the answer and underline the exact evidence." }
+            { label: "Prepare and rehearse Part 1 answers for 10 common topics (25 min)", detail: "Topics: hometown, studies/work, daily routine, food, sport, technology, music, travel, the environment, friends. You cannot predict the exact questions, but you can prepare vocabulary clusters for each topic area." },
+            { label: "Conversation practice — speak for 30 minutes in English (Discord/partner/tutor)", detail: "Speaking with a real person is irreplaceable preparation. The examiner will respond to you, follow up on your answers, and change direction unexpectedly. Practise this dynamic with another person wherever possible." },
+            { label: "Full Speaking mock test — record and score all 3 parts", detail: "Use the IELTS Speaking Band Descriptors to self-score. Be honest. If you score yourself Band 6 on Fluency and Coherence, identify exactly what is causing the deduction and practise specifically for that." }
           ]
         }
       },
       {
         day: 2,
         morning: {
-          title: "Writing mock",
+          title: "Full Mock Exam + Weakness Review",
           subtasks: [
-            { label: "Task 1 + Task 2 (60 min strict)", detail: "Treat this exactly like the real exam. Sit at a desk, no distractions, write by hand if your exam is on paper. 20 min Task 1, 40 min Task 2 — do not adjust the timing." },
-            { label: "Strict timing", detail: "Set two alarms: one at 20 min (move to Task 2), one at 60 min (stop). Practice the psychological discipline of stopping even mid-sentence when time is up." },
-            { label: "Band evaluation", detail: "After writing, honestly score Task 2 using all 4 criteria. Compare to your Week 4 mock score. Any criterion that hasn't improved needs targeted attention on Day 4." }
+            { label: "Complete your weakest skill area with maximum focus (45 min)", detail: "This is your last chance to significantly improve a weak area before the exam. Be ruthlessly honest about which skill holds back your overall band score and put all your energy there today." },
+            { label: "Listening Section 4 targeted drill — 3 different lectures (30 min)", detail: "Section 4 is where Band 7 is won or lost for most candidates. Listen actively — not passively. Predict, follow, and verify. Each lecture should have a clear purpose: test yourself, do not just listen." },
+            { label: "Review your full error log from all 5 weeks", detail: "Look for patterns across all weeks. If the same error type has appeared 5+ times, it is a systemic weakness, not a fluke. Address it with one final focused drill today." }
           ]
         },
         afternoon: {
-          title: "Speaking mock",
+          title: "Speaking Full Mock + Writing Review",
           subtasks: [
-            { label: "Full interview (Parts 1–3)", detail: "Full mock: Part 1 (4–5 min), Part 2 (3–4 min including 1 min prep), Part 3 (4–5 min). Use a partner, tutor, or AI speaking tool. Record the whole session." },
-            { label: "Self recording", detail: "Listen back to your recording. Mark every moment where you paused unnaturally, used a filler word, or repeated yourself. These are your targets for Day 5 rehearsal." },
-            { label: "Confidence training", detail: "Pick your 3 weakest moments from the recording. Re-answer those specific questions. Record again. Compare: is the second attempt noticeably better? If yes — that's your method." }
+            { label: "Full Speaking simulation — all 3 parts with strict timing (20 min)", detail: "Final speaking simulation. Focus on impression management: confident posture, clear voice, eye contact if with a partner. The examiner is assessing language, not personality — but confidence produces better language." },
+            { label: "Review your best Task 2 essay from Week 4 and rewrite it better (25 min)", detail: "Take your strongest essay and push it higher. Add a more sophisticated example, replace basic vocabulary with more precise alternatives, or tighten a paragraph that felt weak. Even Band 7 essays can be improved." },
+            { label: "Full speaking mock test — final recorded session before exam", detail: "This is your benchmark. Compare to Day 1 of Week 1. You will likely be surprised by how much you have improved. Use this comparison to build genuine confidence going into the exam." }
           ]
         }
       },
       {
         day: 3,
         morning: {
-          title: "Full IELTS simulation",
+          title: "Light Mock + Consolidation",
           subtasks: [
-            { label: "All 4 skills back-to-back", detail: "Listening (50 min) → Reading (60 min) → Writing (60 min). Speaking can be done in the afternoon. This is the closest to real exam conditions you can create at home." },
-            { label: "Exam conditions", detail: "Phone in another room. Desk only. Water allowed. No dictionary, no notes. Sit upright. This is about building physical and mental familiarity with the exam experience." },
-            { label: "Time management", detail: "Note your actual time usage per section. Did you run over on any section? Did you rush? This data tells you where exam-day pressure will hit hardest." }
+            { label: "Complete only Sections 1-2 of a Listening mock — easy warm-up (30 min)", detail: "Three days before the exam, reduce intensity slightly. Maintain sharpness but avoid exhaustion. Overstudy in the final days increases anxiety without improving performance." },
+            { label: "Read one academic article for pleasure — no questions (20 min)", detail: "Read something genuinely interesting to you in English. This maintains your reading speed without the pressure of being tested. Enjoyable reading reinforces vocabulary naturally." },
+            { label: "Review your personal vocabulary list — all 5 weeks", detail: "Quick self-test on your full vocabulary journal. Any word you cannot immediately recall needs one more review. By tomorrow, you do not need to add new words — consolidate what you know." }
           ]
         },
         afternoon: {
-          title: "Score review",
+          title: "Speaking Templates + Final Writing Polish",
           subtasks: [
-            { label: "Analyse results", detail: "Score all sections from this morning. Log everything. Calculate your approximate overall band score. Are you at target? If not, how many marks are you away from your goal?" },
-            { label: "Identify weaknesses", detail: "List your 3 biggest remaining weaknesses across all 4 skills. Be brutally specific: not 'Reading is weak' but 'Matching Headings costs me 3–4 marks every test'." },
-            { label: "Plan Day 4 practice", detail: "Based on today's analysis, write a specific list of exactly what to practise on Day 4. Day 4 is your last targeted practice — make it surgical, not general." }
+            { label: "Rehearse 10 Part 2 cue card topics aloud without notes (30 min)", detail: "You should now be able to speak for 90+ seconds on any familiar topic. If you still struggle to reach 2 minutes, use the WHAT-WHEN-WHERE-WHO-WHY-HOW framework to extend any answer." },
+            { label: "Write a final Task 2 essay on a fresh topic (40 min)", detail: "Pick a topic you have not practised yet. Adapting your skills to an unfamiliar question is the truest test of readiness. The real exam will give you a question you have never seen before." },
+            { label: "Final conversation practice — speak English for 30 minutes", detail: "Your last substantial speaking practice before the exam. Keep it relaxed. Talk about something you enjoy. Ending preparation on a positive, fluid speaking session builds confidence for exam day." }
           ]
         }
       },
       {
         day: 4,
         morning: {
-          title: "Targeted practice",
+          title: "Exam Eve — Light Review Only",
           subtasks: [
-            { label: "Weak skill improvement", detail: "Use the list you made yesterday. Do focused, drilling practice on your top 2 weak areas only. This is not a mock — it's targeted skill work. 45 min maximum per area." },
-            { label: "Vocabulary review", detail: "Final full deck review. Any word you still don't know confidently — write it on a small card and keep it with you for light review today and tomorrow morning only." },
-            { label: "Grammar correction", detail: "Final review of your most persistent grammar error across all 5 weeks. Write it as a rule. Write 5 perfect example sentences. This is your last active correction session." }
+            { label: "Review your sentence starter cheat sheet (15 min)", detail: "Read through your prepared sentence starters, linking words, and Task 1/Task 2 vocabulary one final time. This is recall practice, not new learning. Make sure these phrases feel natural and automatic." },
+            { label: "Listen to 20 minutes of English — podcast or documentary", detail: "Light listening only. Keep your ear tuned without taxing yourself. Choose something you enjoy. The goal is to keep your English brain active without creating exam-eve stress." },
+            { label: "Prepare everything you need for exam day (15 min)", detail: "Lay out your ID, directions to the test centre, arrival time, water, and any permitted items. Logistical preparation the evening before eliminates morning stress and lets you focus entirely on performance." }
           ]
         },
         afternoon: {
-          title: "Light review",
+          title: "Rest + Mental Preparation",
           subtasks: [
-            { label: "Review notes only", detail: "Read through your mistake log, language bank, and sentence starters. Do not do new practice. Light reading only — your brain needs to consolidate, not absorb new information." },
-            { label: "Practice vocabulary (light)", detail: "Flip through your flashcard deck once without pressure. Don't test yourself hard — just a relaxed review. You know this material. Trust what you've built." },
-            { label: "Rest and prepare", detail: "Stop studying by early evening. Confirm your exam: time, location, what to bring (ID, pencils, pens, water). Eat well. Sleep at your normal time. The work is done." }
+            { label: "Review your top 20 vocabulary words and key grammar structures (20 min)", detail: "Final vocabulary pass. Keep it brief and positive. Focus on your strongest, most reliable phrases — the ones you will definitely use tomorrow. This builds confidence, not anxiety." },
+            { label: "Visualise the exam going well — all 4 skills (10 min)", detail: "Mental rehearsal is used by elite athletes and performers. Close your eyes and walk through the exam: calm, focused, answering confidently. Visualisation primes your brain for the experience." },
+            { label: "Sleep at least 8 hours — this is part of your exam preparation", detail: "Sleep consolidates memory and language acquisition. A well-rested brain performs measurably better on language tasks than a tired one. Going to bed early is one of the highest-impact things you can do tonight." }
           ]
         }
       },
       {
         day: 5,
         morning: {
-          title: "Final speaking rehearsal",
+          title: "Exam Day — Final Warm-Up",
           subtasks: [
-            { label: "Quick Part 1–3 practice", detail: "30 minutes only. Do one round of Part 1 (3 questions), one Part 2 cue card, and 2 Part 3 questions. This is a warm-up, not a test. Stay relaxed and conversational." },
-            { label: "Confidence boost", detail: "Listen to your best speaking recording from this week. Remind yourself how far you've come. Note 3 things you do well. Take those 3 strengths into the exam room." },
-            { label: "Pronunciation review", detail: "Say the 5 words you've historically mispronounced out loud, correctly, 3 times each. That's all. Close the book after this." }
+            { label: "Light English warm-up — read one short article (15 min)", detail: "Activate your English processing before the exam. Read something straightforward in English with your morning routine. This is like a warm-up lap before a race — you are not training, just activating." },
+            { label: "Review your opening sentences for Task 1 and Task 2 one final time", detail: "You have prepared these for 5 weeks. A quick final read makes them feel fresh and accessible. Walk into the Writing test knowing exactly how you will begin both responses." },
+            { label: "Arrive early, stay calm, and trust your preparation", detail: "You have completed 25 days of structured, progressive preparation across all four skills. Anxiety is normal — use it as energy, not as a signal to doubt yourself. You are ready. Execute your plan." }
           ]
         },
         afternoon: {
-          title: "Exam preparation",
+          title: "Post-Exam Reflection",
           subtasks: [
-            { label: "Prepare materials", detail: "Lay out everything you need for tomorrow: valid ID/passport, 2–3 pencils, eraser, 2 pens (black or blue), water bottle. Charge your phone for the journey — not for studying." },
-            { label: "Review strategy only", detail: "Read your personal strategy notes: your Task 2 essay structure, your Reading question-type approach, your Speaking framework. Read once. Don't rewrite or study. Just remind." },
-            { label: "Rest — the prep is complete", detail: "No more study after 7pm. You have done 25 days of consistent preparation. The best thing you can do right now is sleep well, eat well, and arrive calm. Trust your work." }
+            { label: "Write down everything you remember about the exam — questions, topics, timing", detail: "Do this within a few hours while memory is fresh. This record is invaluable if you need to retake the exam — you will know exactly what to expect and which areas to improve." },
+            { label: "Evaluate each skill honestly — what went well, what did not", detail: "Be specific: 'Section 4 felt manageable', 'I ran out of time on Reading Passage 3', 'Task 2 introduction was strong but Body 2 felt weak'. Honest self-assessment now prepares you perfectly for any future attempt." },
+            { label: "Celebrate your commitment to 25 days of serious preparation", detail: "Regardless of outcome, completing a 25-day structured preparation programme demonstrates real discipline and commitment. Most people never prepare this systematically. Be proud of the work you have done." }
           ]
         }
       }
     ]
   }
-];
+]

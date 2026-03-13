@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Toaster } from "sonner"
 import HeroSection from "../_components/hero/hero-section.jsx"
 import OverviewSection from "../_components/overview/overview-section.jsx"
@@ -12,32 +12,46 @@ import ResourcesSection from "../_components/resources/resources-section.jsx"
 import NotebookModal from "../_components/notebook/NotebookModal.jsx"
 import FloatingNotebookButton from "../_components/notebook/FloatingNotebookButton.jsx"
 import AuthModal from "../_components/auth/AuthModal.jsx"
+import { supabase } from "../_components/_lib/supabase.js"
 
 export default function Index() {
+  const [notebookOpen, setNotebookOpen] = useState(false)
+  const [authOpen, setAuthOpen]         = useState(false)
+  const [user, setUser]                 = useState(null)
 
-  const [openNotebook, setOpenNotebook] = useState(false)
-  const [authOpen, setAuthOpen] = useState(false)
+  // Track auth state globally so Notebook (and any other component) can use it
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") setUser(null)
+      else if (session?.user) setUser(session.user)
+    })
+    return () => listener.subscription.unsubscribe()
+  }, [])
 
   return (
-
     <div className="min-h-screen bg-background text-foreground">
 
       <FloatingTopBar openAuth={() => setAuthOpen(true)} />
-      <DailyReminder/>
+      <DailyReminder />
 
-      <HeroSection/>
-      <OverviewSection/>
-      <SkillsSection/>
+      <HeroSection />
+      <OverviewSection />
+      <SkillsSection />
       <StudyPlanSection openAuth={() => setAuthOpen(true)} />
-      <ResourcesSection/>
-      <ContactSection/>
-      <Footer/>
+      <ResourcesSection />
+      <ContactSection />
+      <Footer />
 
-      <FloatingNotebookButton openNotebook={() => setOpenNotebook(true)} />
+      <FloatingNotebookButton openNotebook={() => setNotebookOpen(true)} />
 
       <NotebookModal
-        open={openNotebook}
-        onClose={() => setOpenNotebook(false)}
+        open={notebookOpen}
+        onClose={() => setNotebookOpen(false)}
+        user={user}
+        openAuth={() => { setNotebookOpen(false); setAuthOpen(true) }}
       />
 
       <AuthModal
@@ -46,9 +60,6 @@ export default function Index() {
       />
 
       <Toaster position="top-center" />
-
     </div>
-
   )
-
 }

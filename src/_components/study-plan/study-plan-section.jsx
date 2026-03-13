@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "motion/react"
 import { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
-import { Sun, Moon, CheckCircle2, Circle, ChevronDown, Check, RotateCcw, Eye, BookOpen, X, Lightbulb } from "lucide-react"
+import { Sun, Moon, CheckCircle2, Circle, ChevronDown, Check, RotateCcw, Eye, BookOpen, X, Lightbulb, ExternalLink, TrendingUp, Plus, Trash2, ChevronUp } from "lucide-react"
 import { weeklyPlans } from "../_lib/study-plan-data"
 import { supabase } from "../_lib/supabase"
 import { saveTaskProgress, loadUserProgress } from "../../lib/progress"
@@ -10,6 +10,32 @@ const R_SIZE = 36
 const R_STROKE = 3
 const R_RADIUS = (R_SIZE - R_STROKE) / 2
 const R_CIRC = 2 * Math.PI * R_RADIUS
+
+// ── Resource links based on task title ────────────────────────────────────────
+function getResources(taskTitle) {
+  const t = taskTitle.toLowerCase()
+  const resources = []
+
+  if (t.includes("listening")) {
+    resources.push({ label: "Simon's Listening Lessons", url: "https://t.me/Simon_Listening_Lessons", color: "#0088cc" })
+  }
+  if (t.includes("reading")) {
+    resources.push({ label: "Simon's Reading Practice", url: "https://t.me/IELTS_with_Simon_reading", color: "#0088cc" })
+  }
+  if (t.includes("writing") || t.includes("task 1") || t.includes("task 2") || t.includes("essay")) {
+    resources.push({ label: "Simon's Writing Lessons", url: "https://t.me/IELTS_with_Simon_writing", color: "#0088cc" })
+  }
+  if (t.includes("speaking")) {
+    resources.push({ label: "Simon's Speaking Practice", url: "https://t.me/IELTS_with_Simon_speaking", color: "#0088cc" })
+    resources.push({ label: "Join Speaking Community", url: "https://discord.gg/english", color: "#5865F2" })
+  }
+  if (t.includes("mock") || t.includes("test") || t.includes("simulation") || t.includes("exam")) {
+    resources.push({ label: "Practice on JumpInto", url: "https://jumpinto.com/ielts/practice", color: "#7c3aed" })
+    resources.push({ label: "Practice on Engnovate", url: "https://engnovate.com", color: "#059669" })
+  }
+
+  return resources
+}
 
 // ── HintModal ─────────────────────────────────────────────────────────────────
 function HintModal({ label, detail, period, taskTitle, onClose }) {
@@ -64,6 +90,25 @@ function HintModal({ label, detail, period, taskTitle, onClose }) {
           )}
         </div>
         <div className="px-5 py-4">
+          {/* Resource links */}
+          {getResources(taskTitle).length > 0 && (
+            <div className="mb-3 space-y-2">
+              <p className="text-[10px] font-mono text-purple-400 uppercase tracking-widest mb-2">Resources</p>
+              {getResources(taskTitle).map((r, i) => (
+                <a
+                  key={i}
+                  href={r.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90 active:scale-[0.98]"
+                  style={{ backgroundColor: r.color }}
+                >
+                  <ExternalLink size={13} className="flex-shrink-0" />
+                  {r.label}
+                </a>
+              ))}
+            </div>
+          )}
           <button onClick={onClose} className="w-full py-2.5 rounded-xl text-sm font-semibold bg-primary text-white hover:opacity-90 active:scale-[0.98] transition-all duration-150">
             Got it
           </button>
@@ -286,6 +331,260 @@ function DayCard({ dayPlan, weekNum, refreshProgress, userId, openAuth, progress
   )
 }
 
+// ── Score conversion helpers ───────────────────────────────────────────────────
+function rawToBand(raw, type) {
+  if (type === "listening") {
+    if (raw >= 39) return 9; if (raw >= 37) return 8.5; if (raw >= 35) return 8
+    if (raw >= 33) return 7.5; if (raw >= 30) return 7; if (raw >= 27) return 6.5
+    if (raw >= 23) return 6; if (raw >= 20) return 5.5; if (raw >= 16) return 5
+    if (raw >= 13) return 4.5; if (raw >= 10) return 4; return 3.5
+  }
+  if (type === "reading") {
+    if (raw >= 39) return 9; if (raw >= 37) return 8.5; if (raw >= 35) return 8
+    if (raw >= 33) return 7.5; if (raw >= 30) return 7; if (raw >= 27) return 6.5
+    if (raw >= 23) return 6; if (raw >= 19) return 5.5; if (raw >= 15) return 5
+    if (raw >= 13) return 4.5; if (raw >= 10) return 4; return 3.5
+  }
+  return raw
+}
+
+function calcOverall(l, r, w, s) {
+  const avg = (Number(l) + Number(r) + Number(w) + Number(s)) / 4
+  return Math.round(avg * 2) / 2
+}
+
+function bandColor(band) {
+  if (band >= 8) return "#059669"
+  if (band >= 7) return "#7c3aed"
+  if (band >= 6) return "#d97706"
+  return "#ef4444"
+}
+
+// ── ScoreTracker ───────────────────────────────────────────────────────────────
+function ScoreTracker({ user, openAuth, supabase }) {
+  const [open, setOpen]         = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [scores, setScores]     = useState([])
+  const [loading, setLoading]   = useState(false)
+  const [saving, setSaving]     = useState(false)
+
+  const [listening, setListening] = useState("")
+  const [reading,   setReading]   = useState("")
+  const [writing,   setWriting]   = useState("")
+  const [speaking,  setSpeaking]  = useState("")
+
+  useEffect(() => {
+    if (open && user) loadScores()
+  }, [open, user])
+
+  async function loadScores() {
+    setLoading(true)
+    const { data } = await supabase
+      .from("score_history")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(20)
+    if (data) setScores(data)
+    setLoading(false)
+  }
+
+  async function saveScore() {
+    if (!user) { openAuth(); return }
+    // At least one skill must be filled
+    if (listening === "" && reading === "" && writing === "" && speaking === "") return
+    setSaving(true)
+    const payload = { user_id: user.id }
+    if (listening !== "") payload.listening = Number(listening)
+    if (reading   !== "") payload.reading   = Number(reading)
+    if (writing   !== "") payload.writing   = Number(writing)
+    if (speaking  !== "") payload.speaking  = Number(speaking)
+
+    const { data } = await supabase.from("score_history").insert(payload).select()
+    if (data) {
+      setScores(prev => [data[0], ...prev])
+      setListening(""); setReading(""); setWriting(""); setSpeaking("")
+      setShowForm(false)
+    }
+    setSaving(false)
+  }
+
+  async function deleteScore(id) {
+    await supabase.from("score_history").delete().eq("id", id)
+    setScores(prev => prev.filter(s => s.id !== id))
+  }
+
+  const bandOpts = [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
+
+  const latestFull = scores.find(s => s.listening != null && s.reading != null && s.writing != null && s.speaking != null)
+  const overall    = latestFull ? calcOverall(latestFull.listening, latestFull.reading, latestFull.writing, latestFull.speaking) : null
+  const anyFilled  = listening !== "" || reading !== "" || writing !== "" || speaking !== ""
+  const allFilled  = listening !== "" && reading !== "" && writing !== "" && speaking !== ""
+  const previewBand = allFilled ? calcOverall(Number(listening), Number(reading), Number(writing), Number(speaking)) : null
+
+  const fields = [
+    { label: "Listening", val: listening, set: setListening },
+    { label: "Reading",   val: reading,   set: setReading   },
+    { label: "Writing",   val: writing,   set: setWriting   },
+    { label: "Speaking",  val: speaking,  set: setSpeaking  },
+  ]
+
+  return (
+    <div className="mt-8 border border-border rounded-2xl overflow-hidden bg-card/40">
+      <button
+        onClick={() => { if (!user) { openAuth(); return } setOpen(o => !o) }}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-secondary/40 transition"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <TrendingUp size={16} className="text-primary" />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-foreground">Score Tracker</p>
+            <p className="text-xs text-muted-foreground">
+              {!user ? "Sign in to track your scores" : overall ? `Latest overall: Band ${overall}` : "Log your mock test scores"}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {overall && (
+            <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: bandColor(overall) }}>
+              Band {overall}
+            </span>
+          )}
+          {open ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="border-t border-border/60"
+          >
+            <div className="p-5">
+
+              {!showForm && (
+                <button
+                  onClick={() => setShowForm(true)}
+                  className="mb-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 transition"
+                >
+                  <Plus size={15} /> Log New Score
+                </button>
+              )}
+
+              <AnimatePresence>
+                {showForm && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                    className="mb-5 p-4 rounded-xl border border-primary/20 bg-primary/5"
+                  >
+                    <p className="text-xs font-mono text-primary uppercase tracking-widest mb-1">Log a Score</p>
+                    <p className="text-xs text-muted-foreground mb-3">Leave blank any skill you didn't test.</p>
+
+                    <div className="grid grid-cols-2 gap-3 mb-4">
+                      {fields.map(f => (
+                        <div key={f.label}>
+                          <label className="text-xs text-muted-foreground mb-1 block">{f.label}</label>
+                          <select
+                            value={f.val}
+                            onChange={e => f.set(e.target.value)}
+                            className="w-full text-sm border border-border rounded-lg px-3 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
+                          >
+                            <option value="">— skip —</option>
+                            {bandOpts.map(v => (
+                              <option key={v} value={v}>Band {v}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+
+                    {previewBand && (
+                      <div className="mb-3 px-3 py-2 rounded-lg bg-white border border-border flex items-center justify-between">
+                        <span className="text-xs text-muted-foreground">Estimated Overall Band</span>
+                        <span className="text-lg font-bold" style={{ color: bandColor(previewBand) }}>{previewBand}</span>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={saveScore}
+                        disabled={!anyFilled || saving}
+                        className="flex-1 py-2 rounded-xl text-sm font-semibold bg-primary text-white hover:opacity-90 disabled:opacity-40 transition"
+                      >
+                        {saving ? "Saving..." : "Save Score"}
+                      </button>
+                      <button
+                        onClick={() => { setShowForm(false); setListening(""); setReading(""); setWriting(""); setSpeaking("") }}
+                        className="px-4 py-2 rounded-xl text-sm border border-border text-muted-foreground hover:bg-secondary/60 transition"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Score history */}
+              {loading ? (
+                <p className="text-sm text-muted-foreground text-center py-4">Loading scores...</p>
+              ) : scores.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-4">No scores yet. Take a mock test and log your result!</p>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-xs font-mono text-muted-foreground uppercase tracking-widest mb-3">Score History</p>
+                  {scores.map((s, i) => {
+                    const hasAll = s.listening != null && s.reading != null && s.writing != null && s.speaking != null
+                    const ov     = hasAll ? calcOverall(s.listening, s.reading, s.writing, s.speaking) : null
+                    return (
+                      <motion.div
+                        key={s.id}
+                        initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        className="flex items-center gap-3 p-3 rounded-xl border border-border bg-white hover:bg-secondary/20 transition"
+                      >
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm text-white flex-shrink-0"
+                          style={{ backgroundColor: ov ? bandColor(ov) : "#94a3b8" }}>
+                          {ov ?? "—"}
+                        </div>
+                        <div className="flex-1 grid grid-cols-4 gap-1">
+                          {[
+                            { label: "L", val: s.listening },
+                            { label: "R", val: s.reading   },
+                            { label: "W", val: s.writing   },
+                            { label: "S", val: s.speaking  },
+                          ].map(item => (
+                            <div key={item.label} className="text-center">
+                              <div className="text-[9px] text-muted-foreground font-mono">{item.label}</div>
+                              <div className={`text-xs font-bold ${item.val != null ? "text-foreground" : "text-muted-foreground/30"}`}>
+                                {item.val ?? "—"}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground flex-shrink-0">
+                          {new Date(s.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        </div>
+                        <button onClick={() => deleteScore(s.id)}
+                          className="flex-shrink-0 p-1 rounded-lg text-muted-foreground/40 hover:text-red-400 hover:bg-red-50 transition">
+                          <Trash2 size={13} />
+                        </button>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 // ── StudyPlanSection ───────────────────────────────────────────────────────────
 export default function StudyPlanSection({ openAuth }) {
 
@@ -446,6 +745,8 @@ export default function StudyPlanSection({ openAuth }) {
             <motion.div className="h-full bg-primary" animate={{ width: `${weekProgress}%` }} transition={{ duration: 0.5 }} />
           </div>
         </div>
+
+        <ScoreTracker user={user} openAuth={openAuth} supabase={supabase} />
 
       </div>
     </section>

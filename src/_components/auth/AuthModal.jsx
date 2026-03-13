@@ -132,14 +132,30 @@ async function handleAuth() {
 }
 
 async function signInWithGithub() {
-  const { error } = await supabase.auth.signInWithOAuth({
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "github",
     options: {
-      redirectTo: window.location.origin,
-      skipBrowserRedirect: false,
+      redirectTo: `${window.location.origin}/auth/callback`,
+      skipBrowserRedirect: true,
+      queryParams: { prompt: "select_account" }
     }
   })
-  if (error) toast.error(error.message)
+
+  if (error || !data?.url) { toast.error(error?.message ?? "GitHub login failed"); return }
+
+  const width = 600, height = 700
+  const left = window.screenX + (window.outerWidth - width) / 2
+  const top = window.screenY + (window.outerHeight - height) / 2
+  window.open(data.url, "github-oauth", `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no`)
+
+  // Listen for success message from popup
+  window.addEventListener("message", function handler(e) {
+    if (e.origin !== window.location.origin) return
+    if (e.data?.type === "GITHUB_AUTH_SUCCESS") {
+      window.removeEventListener("message", handler)
+      window.location.href = "/"
+    }
+  })
 }
 
 function switchMode(login) {

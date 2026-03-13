@@ -126,9 +126,17 @@ async function logout() {
   setDropdownOpen(false)
   const projectRef = "fjekxmtjfimgbdlmljfz"
   const authKey = `sb-${projectRef}-auth-token`
-  localStorage.clear()
-  sessionStorage.clear()
+  
+  // Only remove the auth token, NOT everything
+  // Clearing all localStorage destroys the PKCE verifier for OAuth
   localStorage.removeItem(authKey)
+  sessionStorage.removeItem(authKey)
+  
+  // Clear study progress keys
+  Object.keys(localStorage)
+    .filter(k => k.includes("-week-"))
+    .forEach(k => localStorage.removeItem(k))
+  
   window.location.href = window.location.origin
 }
 
