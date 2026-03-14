@@ -287,12 +287,12 @@ function DayCard({ dayPlan, weekNum, refreshProgress, userId, openAuth, progress
 
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-3 sm:p-4">
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center">
+            <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center">
             <AnimatePresence>
               {dayCompleted && (
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
                   transition={{ type: "spring", stiffness: 300 }}
-                  className="absolute inset-0 rounded-full bg-primary flex items-center justify-center"
+                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary flex items-center justify-center"
                 >
                   <Check className="w-5 h-5 text-white"/>
                 </motion.div>
