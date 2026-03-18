@@ -3,9 +3,57 @@ import { supabase } from "../_components/_lib/supabase"
 
 export default function AuthCallback() {
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if ((event === "SIGNED_IN" || event === "INITIAL_SESSION") && session?.user) {
         subscription.unsubscribe()
+
+        // Ensure a profiles row exists for OAuth users (e.g. GitHub)
+        // who never go through the normal signUp flow that inserts a row.
+        const user = session.user
+        const { data: existing } = await supabase
+          .from("profiles")
+          .select("id, username, avatar_url")
+          .eq("id", user.id)
+          .maybeSingle()
+
+        if (!existing) {
+          // Build a sensible default username from GitHub metadata
+          const meta        = user.user_metadata ?? {}
+          const rawUsername = (meta.user_name || meta.preferred_username || meta.name || "")
+            .toLowerCase()
+            .replace(/[^a-z0-9_]/g, "_")
+            .slice(0, 30) || "user"
+
+          // Avoid collisions by appending a short random suffix if needed
+          let finalUsername = rawUsername
+          const { data: taken } = await supabase
+            .from("profiles")
+            .select("username")
+            .eq("username", rawUsername)
+            .maybeSingle()
+          if (taken) {
+            finalUsername = `${rawUsername}_${Math.floor(Math.random() * 9000) + 1000}`
+          }
+
+          const avatarUrl = meta.avatar_url || meta.picture || null
+
+          await supabase.from("profiles").insert({
+            id:         user.id,
+            username:   finalUsername,
+            avatar_url: avatarUrl,
+          })
+        } else if (!existing.avatar_url) {
+          // Profile row exists but avatar may be missing — backfill from OAuth metadata
+          const meta      = user.user_metadata ?? {}
+          const avatarUrl = meta.avatar_url || meta.picture || null
+          if (avatarUrl) {
+            await supabase
+              .from("profiles")
+              .update({ avatar_url: avatarUrl })
+              .eq("id", user.id)
+          }
+        }
+
         if (window.opener && !window.opener.closed) {
           window.opener.postMessage({ type: "GITHUB_AUTH_SUCCESS" }, window.location.origin)
           window.close()

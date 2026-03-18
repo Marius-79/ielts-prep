@@ -5,6 +5,7 @@ import "./index.css"
 import App from "./App.jsx"
 import Profile from "./pages/Profile.jsx"
 import AuthCallback from "./pages/AuthCallback.jsx"
+import ResetPassword from "./pages/ResetPassword.jsx"
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -12,6 +13,7 @@ createRoot(document.getElementById("root")).render(
       <Route path="/" element={<App />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
     </Routes>
   </BrowserRouter>
 )

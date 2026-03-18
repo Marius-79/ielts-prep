@@ -19,11 +19,7 @@ export default function Index() {
   const [authOpen, setAuthOpen]         = useState(false)
   const [user, setUser]                 = useState(null)
 
-  // Track auth state globally so Notebook (and any other component) can use it
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-    })
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") setUser(null)
       else if (session?.user) setUser(session.user)
@@ -33,10 +29,8 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-
       <FloatingTopBar openAuth={() => setAuthOpen(true)} />
       <DailyReminder />
-
       <HeroSection />
       <OverviewSection />
       <SkillsSection />
@@ -44,21 +38,16 @@ export default function Index() {
       <ResourcesSection />
       <ContactSection />
       <Footer />
-
       <FloatingNotebookButton openNotebook={() => setNotebookOpen(true)} />
-
       <NotebookModal
         open={notebookOpen}
         onClose={() => setNotebookOpen(false)}
-        user={user}
         openAuth={() => { setNotebookOpen(false); setAuthOpen(true) }}
       />
-
       <AuthModal
         open={authOpen}
         onClose={() => setAuthOpen(false)}
       />
-
       <Toaster position="top-center" />
     </div>
   )

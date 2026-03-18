@@ -287,12 +287,12 @@ function DayCard({ dayPlan, weekNum, refreshProgress, userId, openAuth, progress
 
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-3 sm:p-4">
         <div className="flex items-center gap-3 sm:gap-4">
-            <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center">
+          <div className="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center">
             <AnimatePresence>
               {dayCompleted && (
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
                   transition={{ type: "spring", stiffness: 300 }}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-primary flex items-center justify-center"
+                  className="absolute inset-0 rounded-full bg-primary flex items-center justify-center"
                 >
                   <Check className="w-5 h-5 text-white"/>
                 </motion.div>
@@ -361,37 +361,68 @@ function bandColor(band) {
 }
 
 // ── ScoreTracker ───────────────────────────────────────────────────────────────
-function ScoreTracker({ user, openAuth, supabase }) {
+function ScoreTracker({ openAuth, supabase }) {
   const [open, setOpen]         = useState(false)
   const [showForm, setShowForm] = useState(false)
-  const [scores, setScores]     = useState([])
+  const [scores, setScores]     = useState(() => {
+    // Load cache instantly on first render
+    try { return JSON.parse(localStorage.getItem("ielts-scores") || "null") ?? [] } catch { return [] }
+  })
   const [loading, setLoading]   = useState(false)
   const [saving, setSaving]     = useState(false)
+  const [user, setUser]         = useState(null)
 
   const [listening, setListening] = useState("")
   const [reading,   setReading]   = useState("")
   const [writing,   setWriting]   = useState("")
   const [speaking,  setSpeaking]  = useState("")
 
+  // localStorage cache shown instantly via useState init, Supabase fetched in background
   useEffect(() => {
-    if (open && user) loadScores()
-  }, [open, user])
+    async function fetchFresh() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) { setLoading(false); return }
+      setUser(session.user)
+      const { data } = await supabase
+        .from("score_history").select("*")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false }).limit(20)
+      if (data) {
+        setScores(data)
+        localStorage.setItem("ielts-scores", JSON.stringify(data))
+      }
+      setLoading(false)
+    }
 
-  async function loadScores() {
-    setLoading(true)
-    const { data } = await supabase
-      .from("score_history")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(20)
-    if (data) setScores(data)
-    setLoading(false)
-  }
+    fetchFresh().catch(() => setLoading(false))
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT") {
+        setUser(null); setScores([])
+        localStorage.removeItem("ielts-scores")
+        return
+      }
+      if (event === "SIGNED_IN") {
+        setUser(session.user)
+        try {
+          const { data } = await supabase
+            .from("score_history").select("*")
+            .eq("user_id", session.user.id)
+            .order("created_at", { ascending: false }).limit(20)
+          if (data) {
+            setScores(data)
+            localStorage.setItem("ielts-scores", JSON.stringify(data))
+          }
+        } finally { setLoading(false) }
+      }
+    })
+    return () => listener.subscription.unsubscribe()
+  }, [])
+
+  // scores loaded from cache+background fetch on mount — no extra load needed
 
   async function saveScore() {
     if (!user) { openAuth(); return }
-    // At least one skill must be filled
     if (listening === "" && reading === "" && writing === "" && speaking === "") return
     setSaving(true)
     const payload = { user_id: user.id }
@@ -402,7 +433,11 @@ function ScoreTracker({ user, openAuth, supabase }) {
 
     const { data } = await supabase.from("score_history").insert(payload).select()
     if (data) {
-      setScores(prev => [data[0], ...prev])
+      setScores(prev => {
+        const updated = [data[0], ...prev]
+        localStorage.setItem("ielts-scores", JSON.stringify(updated))
+        return updated
+      })
       setListening(""); setReading(""); setWriting(""); setSpeaking("")
       setShowForm(false)
     }
@@ -411,7 +446,11 @@ function ScoreTracker({ user, openAuth, supabase }) {
 
   async function deleteScore(id) {
     await supabase.from("score_history").delete().eq("id", id)
-    setScores(prev => prev.filter(s => s.id !== id))
+    setScores(prev => {
+      const updated = prev.filter(s => s.id !== id)
+      localStorage.setItem("ielts-scores", JSON.stringify(updated))
+      return updated
+    })
   }
 
   const bandOpts = [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
@@ -746,7 +785,7 @@ export default function StudyPlanSection({ openAuth }) {
           </div>
         </div>
 
-        <ScoreTracker user={user} openAuth={openAuth} supabase={supabase} />
+        <ScoreTracker openAuth={openAuth} supabase={supabase} />
 
       </div>
     </section>

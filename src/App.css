@@ -45,27 +45,3 @@ section {
   scroll-margin-top: 120px;
 }
 
-.hero-smoke{
-  position:absolute;
-  inset:-30%;
-  pointer-events:none;
-  z-index:0;
-
-  background:
-    radial-gradient(circle at 30% 40%, rgba(255,255,255,0.03), transparent 60%),
-    radial-gradient(circle at 70% 60%, rgba(255,255,255,0.025), transparent 65%),
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.02), transparent 70%);
-
-  filter:blur(120px);
-
-  animation:smokeFloat 35s ease-in-out infinite alternate;
-}
-
-@keyframes smokeFloat{
-  0%{
-    transform:translate3d(-4%, -2%, 0) scale(1);
-  }
-  100%{
-    transform:translate3d(4%, 2%, 0) scale(1.05);
-  }
-}
