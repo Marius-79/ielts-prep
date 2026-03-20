@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react"
+import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "motion/react"
 import {
   X, Plus, Trash2, BookOpen, AlertCircle, FileText,
@@ -93,358 +94,1303 @@ function restoreSelection(range) {
   sel.addRange(range)
 }
 
-// ── RichToolbar ───────────────────────────────────────────────────────────────
-function RichToolbar({ editorRef, tool, setTool, color, setColor, thickness, setThickness, onUndo, onRedo, canUndo, canRedo, onMarkerInserted, activeMarker, onClearMarker }) {
-  const [savedRange,   setSavedRange]   = useState(null)
-  const [active,       setActive]       = useState({ bold: false, italic: false, underline: false, ul: false, ol: false })
-  const [showSize,     setShowSize]     = useState(false)
-  const [showFgColor,  setShowFgColor]  = useState(false)
-  const [showHL,       setShowHL]       = useState(false)
-  const [showList,     setShowList]     = useState(false)
-  const [showDrColor,  setShowDrColor]  = useState(false)
-  const [showThick,    setShowThick]    = useState(false)
-  const [curSize,      setCurSize]      = useState(FONT_SIZES[2])
-  const [curFg,        setCurFg]        = useState("#1e293b")
-  const [curHL,        setCurHL]        = useState("#fef08a")
+// ── FloatingSelectionBar — appears above selected text (Canva-style) ──────────
+// Rendered via portal so it floats above everything. Minimal essential tools.
+function FloatingSelectionBar({ editorRef, onMarkerInserted, activeMarker, onClearMarker }) {
+  const [pos,    setPos]    = useState(null)  // { top, left } in viewport px
+  const [active, setActive] = useState({ bold: false, italic: false, underline: false })
+  const [curFg,  setCurFg]  = useState("#1e293b")
+  const [curHL,  setCurHL]  = useState("#fef08a")
+  const [panel,  setPanel]  = useState(null)  // "color" | "highlight" | "marker" | null
+  const barRef   = useRef(null)
+  const savedRangeRef = useRef(null)
 
-  const sizeRef    = useRef(null)
-  const fgRef      = useRef(null)
-  const hlRef      = useRef(null)
-  const listRef    = useRef(null)
-  const drColorRef = useRef(null)
-  const thickRef   = useRef(null)
-
-  // Close all dropdowns on outside click
+  // Re-position bar whenever selection changes inside the editor
   useEffect(() => {
-    const pairs = [[sizeRef,setShowSize],[fgRef,setShowFgColor],[hlRef,setShowHL],[listRef,setShowList],[drColorRef,setShowDrColor],[thickRef,setShowThick]]
-    function h(e) { pairs.forEach(([r,s]) => { if (r.current && !r.current.contains(e.target)) s(false) }) }
-    document.addEventListener("mousedown", h)
-    return () => document.removeEventListener("mousedown", h)
-  }, [])
-
-  // Poll bold/italic/underline/list state on selection change
-  useEffect(() => {
-    function poll() {
+    function onSelChange() {
+      const sel = window.getSelection()
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) { setPos(null); setPanel(null); return }
       const el = editorRef.current
       if (!el) return
-      // Only poll when editor or a descendant is focused
-      if (!el.contains(document.activeElement) && document.activeElement !== el) return
+      // Only show if selection is inside our editor
+      const anchorNode = sel.anchorNode
+      if (!el.contains(anchorNode)) { setPos(null); setPanel(null); return }
+      // Position bar above the selection
+      const range = sel.getRangeAt(0)
+      const rect  = range.getBoundingClientRect()
+      if (rect.width === 0) { setPos(null); return }
+      // Save the range so we can restore it after toolbar clicks cause blur
+      savedRangeRef.current = range.cloneRange()
+      setPos({ top: rect.top + window.scrollY - 48, left: rect.left + window.scrollX + rect.width / 2 })
+      // Update format state
       setActive({
         bold:      document.queryCommandState("bold"),
         italic:    document.queryCommandState("italic"),
         underline: document.queryCommandState("underline"),
-        ul:        document.queryCommandState("insertUnorderedList"),
-        ol:        document.queryCommandState("insertOrderedList"),
       })
+      setCurFg(document.queryCommandValue("foreColor") || "#1e293b")
     }
-    document.addEventListener("selectionchange", poll)
-    document.addEventListener("keyup", poll)
-    document.addEventListener("mouseup", poll)
+    document.addEventListener("selectionchange", onSelChange)
+    document.addEventListener("mouseup", onSelChange)
     return () => {
-      document.removeEventListener("selectionchange", poll)
-      document.removeEventListener("keyup", poll)
-      document.removeEventListener("mouseup", poll)
+      document.removeEventListener("selectionchange", onSelChange)
+      document.removeEventListener("mouseup", onSelChange)
     }
   }, [editorRef])
 
-  // Capture selection before editor blur (toolbar click causes blur)
+  // Close panel on outside click
   useEffect(() => {
-    const el = editorRef.current
-    if (!el) return
-    function onBlur() { const r = saveSelection(); if (r) setSavedRange(r) }
-    el.addEventListener("blur", onBlur, true)
-    return () => el.removeEventListener("blur", onBlur, true)
-  }, [editorRef])
+    function h(e) {
+      if (barRef.current && !barRef.current.contains(e.target)) setPanel(null)
+    }
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [])
 
-  function focusAndRestore() {
+  function restoreAndFocus() {
     const el = editorRef.current
     if (!el) return
-    if (!el.contains(document.activeElement) && document.activeElement !== el) {
-      el.focus()
-      if (savedRange) restoreSelection(savedRange)
+    el.focus()
+    if (savedRangeRef.current) {
+      const sel = window.getSelection()
+      if (sel) { sel.removeAllRanges(); sel.addRange(savedRangeRef.current) }
     }
   }
 
-  function run(command, value = null) {
-    focusAndRestore()
-    document.execCommand(command, false, value)
-    // Refresh active states immediately
+  function run(cmd, val = null) {
+    restoreAndFocus()
+    document.execCommand(cmd, false, val)
     setActive({
       bold:      document.queryCommandState("bold"),
       italic:    document.queryCommandState("italic"),
       underline: document.queryCommandState("underline"),
-      ul:        document.queryCommandState("insertUnorderedList"),
-      ol:        document.queryCommandState("insertOrderedList"),
     })
     editorRef.current?.dispatchEvent(new Event("input", { bubbles: true }))
   }
 
-  function applyFontSize(fs) {
-    setCurSize(fs)
-    focusAndRestore()
-    // execCommand fontSize uses legacy 1-7 sizes — remap immediately to px
-    document.execCommand("fontSize", false, fs.size)
-    setTimeout(() => {
-      const el = editorRef.current
-      if (!el) return
-      el.querySelectorAll(`font[size="${fs.size}"]`).forEach(node => {
-        node.style.fontSize = fs.px
-        node.removeAttribute("size")
-      })
-      el.dispatchEvent(new Event("input", { bubbles: true }))
-    }, 0)
-  }
-
-  function applyFgColor(c) {
+  function applyColor(c) {
     setCurFg(c)
-    run("foreColor", c)
+    restoreAndFocus()
+    document.execCommand("foreColor", false, c)
+    editorRef.current?.dispatchEvent(new Event("input", { bubbles: true }))
+    setPanel(null)
   }
 
   function applyHL(c) {
     setCurHL(c)
-    focusAndRestore()
-    if (c === "transparent") {
+    restoreAndFocus()
+    if (c === "none") {
       document.execCommand("hiliteColor", false, "transparent")
       document.execCommand("backColor",   false, "transparent")
     } else {
       document.execCommand("hiliteColor", false, c)
     }
     editorRef.current?.dispatchEvent(new Event("input", { bubbles: true }))
+    setPanel(null)
   }
 
-  function insertMarker(marker) {
-    focusAndRestore()
-    const el = editorRef.current
-    if (!el) return
-    const isEmpty = el.textContent.trim() === ""
-    document.execCommand("insertText", false, (isEmpty ? "" : "\n") + marker + "\u00A0")
-    el.dispatchEvent(new Event("input", { bubbles: true }))
-    onMarkerInserted?.(marker)
+  function insertMarker(m) {
+    restoreAndFocus()
+    document.execCommand("insertText", false, m + "\u00A0")
+    editorRef.current?.dispatchEvent(new Event("input", { bubbles: true }))
+    onMarkerInserted?.(m)
+    setPanel(null)
+    setPos(null)
   }
 
-  const drawingTools = ["pen", "eraser", "circle", "rect", "line"]
-  const isDrawing    = drawingTools.includes(tool)
+  if (!pos) return null
 
-  const B  = "p-1.5 rounded transition text-[13px] leading-none"
-  const on = "bg-primary/15 text-primary"
-  const off = "text-foreground/60 hover:text-foreground hover:bg-secondary"
+  const BAR_W = 300
+  // Clamp horizontally so bar never goes off-screen
+  const clampedLeft = Math.max(8, Math.min(pos.left - BAR_W / 2, window.innerWidth - BAR_W - 8))
+
+  const Div = () => <div className="w-px h-4 bg-white/20 mx-0.5 flex-shrink-0"/>
+  const Btn = ({ onClick, active: isOn, title, children }) => (
+    <button
+      onMouseDown={e => { e.preventDefault(); onClick() }}
+      title={title}
+      className={`p-1.5 rounded-md transition flex-shrink-0 text-sm leading-none ${isOn ? "bg-white/25 text-white" : "text-white/80 hover:bg-white/15 hover:text-white"}`}
+    >{children}</button>
+  )
+
+  const FG_COLORS = ["#1e293b","#ef4444","#f97316","#eab308","#16a34a","#2563eb","#7c3aed","#ec4899","#ffffff"]
+  const HL_COLORS = [
+    { v:"#fef08a", label:"Yellow" }, { v:"#bbf7d0", label:"Green" },
+    { v:"#bfdbfe", label:"Blue"   }, { v:"#fecaca", label:"Red"   },
+    { v:"#e9d5ff", label:"Purple" }, { v:"none",    label:"None"  },
+  ]
+  const MARKERS = ["•","★","➤","✓","◆","—"]
+
+  return createPortal(
+    <div
+      ref={barRef}
+      style={{ position: "absolute", top: pos.top, left: clampedLeft, width: BAR_W, zIndex: 99999 }}
+    >
+      {/* Arrow pointing down */}
+      <div style={{ position: "absolute", bottom: -5, left: "50%", transform: "translateX(-50%)", width: 0, height: 0,
+        borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "5px solid #1e293b" }}/>
+
+      {/* Main bar */}
+      <div
+        className="flex items-center gap-0.5 px-2 py-1.5 rounded-xl shadow-2xl select-none"
+        style={{ background: "#1e293b", backdropFilter: "blur(8px)" }}
+        onMouseDown={e => e.preventDefault()}
+      >
+        {/* Bold */}
+        <Btn onClick={() => run("bold")}      active={active.bold}      title="Bold"><Bold size={13}/></Btn>
+        {/* Italic */}
+        <Btn onClick={() => run("italic")}    active={active.italic}    title="Italic"><Italic size={13}/></Btn>
+        {/* Underline */}
+        <Btn onClick={() => run("underline")} active={active.underline} title="Underline"><Underline size={13}/></Btn>
+
+        <Div/>
+
+        {/* Text color swatch trigger */}
+        <button
+          onMouseDown={e => { e.preventDefault(); setPanel(p => p === "color" ? null : "color") }}
+          title="Text color"
+          className="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-md text-white/80 hover:bg-white/15 hover:text-white transition"
+        >
+          <span className="text-[12px] font-bold leading-none">A</span>
+          <span className="w-3.5 h-[3px] rounded-full" style={{ backgroundColor: curFg === "rgb(255,255,255)" ? "#fff" : curFg }}/>
+        </button>
+
+        {/* Highlight swatch trigger */}
+        <button
+          onMouseDown={e => { e.preventDefault(); setPanel(p => p === "highlight" ? null : "highlight") }}
+          title="Highlight"
+          className="p-1.5 rounded-md text-white/80 hover:bg-white/15 hover:text-white transition"
+        >
+          <Highlighter size={13}/>
+        </button>
+
+        <Div/>
+
+        {/* Bullet list */}
+        <Btn onClick={() => { run("insertUnorderedList"); setPos(null) }} title="Bullet list">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24">
+            <circle cx="4" cy="6" r="2.2" fill="currentColor"/>
+            <circle cx="4" cy="12" r="2.2" fill="currentColor"/>
+            <line x1="9" y1="6" x2="21" y2="6" stroke="currentColor" strokeWidth="2.2"/>
+            <line x1="9" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="2.2"/>
+          </svg>
+        </Btn>
+
+        {/* Markers */}
+        <button
+          onMouseDown={e => { e.preventDefault(); setPanel(p => p === "marker" ? null : "marker") }}
+          title="Insert marker"
+          className={`p-1.5 rounded-md transition text-sm leading-none ${panel === "marker" ? "bg-white/25 text-white" : "text-white/80 hover:bg-white/15 hover:text-white"}`}
+        >
+          <List size={13}/>
+        </button>
+
+        <Div/>
+
+        {/* Clear formatting */}
+        <Btn onClick={() => { run("removeFormat"); setPos(null) }} title="Clear format">
+          <X size={13}/>
+        </Btn>
+      </div>
+
+      {/* Sub-panel: text color */}
+      {panel === "color" && (
+        <div className="absolute top-full mt-2 left-0 bg-white border border-border rounded-xl shadow-2xl p-3" style={{ minWidth: 168 }}>
+          <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Text Color</p>
+          <div className="flex flex-wrap gap-1.5">
+            {FG_COLORS.map(c => (
+              <button key={c} onMouseDown={e => { e.preventDefault(); applyColor(c) }}
+                className={`w-6 h-6 rounded-lg border-2 transition hover:scale-110 ${curFg === c ? "border-primary shadow" : "border-transparent"}`}
+                style={{ backgroundColor: c, boxShadow: c === "#ffffff" ? "inset 0 0 0 1px #e2e8f0" : undefined }}/>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sub-panel: highlight */}
+      {panel === "highlight" && (
+        <div className="absolute top-full mt-2 left-0 bg-white border border-border rounded-xl shadow-2xl p-3" style={{ minWidth: 168 }}>
+          <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Highlight</p>
+          <div className="flex flex-wrap gap-1.5">
+            {HL_COLORS.map(({ v, label }) => (
+              <button key={v} onMouseDown={e => { e.preventDefault(); applyHL(v) }}
+                title={label}
+                className="w-6 h-6 rounded-lg border-2 border-transparent transition hover:scale-110 flex items-center justify-center"
+                style={{ backgroundColor: v === "none" ? "#f1f5f9" : v }}>
+                {v === "none" && <X size={9} className="text-muted-foreground"/>}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sub-panel: markers */}
+      {panel === "marker" && (
+        <div className="absolute top-full mt-2 left-0 bg-white border border-border rounded-xl shadow-2xl p-3" style={{ minWidth: 168 }}>
+          <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Insert Marker</p>
+          <div className="flex flex-wrap gap-1.5">
+            {MARKERS.map(m => (
+              <button key={m} onMouseDown={e => { e.preventDefault(); insertMarker(m) }}
+                className={`w-8 h-8 rounded-lg text-base flex items-center justify-center transition hover:scale-110 border-2 ${activeMarker === m ? "border-primary bg-primary/5" : "border-transparent hover:bg-secondary"}`}>
+                {m}
+              </button>
+            ))}
+          </div>
+          {activeMarker && (
+            <button onMouseDown={e => { e.preventDefault(); onClearMarker?.(); setPanel(null) }}
+              className="mt-2 w-full text-[11px] text-red-400 hover:text-red-500 flex items-center justify-center gap-1 py-1 rounded-lg hover:bg-red-50 transition">
+              <X size={9}/> Stop list
+            </button>
+          )}
+        </div>
+      )}
+    </div>,
+    document.body
+  )
+}
+
+// ── DrawMiniBar — draw toolbar with shapes dropdown + text tool ───────────────
+function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, fontSize, setFontSize, onUndo, onRedo, canUndo, canRedo }) {
+  const [showColors,  setShowColors]  = useState(false)
+  const [showSizes,   setShowSizes]   = useState(false)
+  const [showShapes,  setShowShapes]  = useState(false)
+  const colorsRef  = useRef(null)
+  const sizesRef   = useRef(null)
+  const shapesRef  = useRef(null)
+
+  useEffect(() => {
+    function h(e) {
+      if (colorsRef.current  && !colorsRef.current.contains(e.target))  setShowColors(false)
+      if (sizesRef.current   && !sizesRef.current.contains(e.target))   setShowSizes(false)
+      if (shapesRef.current  && !shapesRef.current.contains(e.target))  setShowShapes(false)
+    }
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [])
+
+  const DRAW_COLORS = ["#1e293b","#ef4444","#f97316","#eab308","#22c55e","#0ea5e9","#7c3aed","#ec4899","#94a3b8","#ffffff"]
+  const SIZES = [1, 2, 3, 5, 8]
+  const FONT_SIZES_DRAW = [12, 14, 16, 20, 28, 36]
+
+  // Shapes grouped like Word/Canva
+  const SHAPE_GROUPS = [
+    {
+      label: "Lines",
+      shapes: [
+        { id:"line",        label:"Line",           svg: <line x1="3" y1="19" x2="19" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/> },
+        { id:"arrow",       label:"Arrow →",        svg: <><line x1="3" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="13,6 19,12 13,18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></> },
+        { id:"arrowLeft",   label:"Arrow ←",        svg: <><line x1="19" y1="12" x2="3" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="9,6 3,12 9,18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></> },
+        { id:"arrowDouble", label:"Arrow ↔",        svg: <><line x1="3" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="13,6 19,12 13,18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><polyline points="8,6 3,12 8,18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></> },
+        { id:"arrowUp",     label:"Arrow ↑",        svg: <><line x1="12" y1="19" x2="12" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="6,9 12,3 18,9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></> },
+        { id:"arrowDiag",   label:"Arrow ↗",        svg: <><line x1="4" y1="18" x2="18" y2="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="9,4 18,4 18,13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></> },
+      ]
+    },
+    {
+      label: "Basic Shapes",
+      shapes: [
+        { id:"rect",        label:"Rectangle",      svg: <rect x="3" y="5" width="16" height="12" rx="1" fill="none" stroke="currentColor" strokeWidth="2"/> },
+        { id:"roundedRect", label:"Rounded Rect",   svg: <rect x="3" y="5" width="16" height="12" rx="4" fill="none" stroke="currentColor" strokeWidth="2"/> },
+        { id:"circle",      label:"Ellipse",        svg: <ellipse cx="11" cy="11" rx="8" ry="6" fill="none" stroke="currentColor" strokeWidth="2"/> },
+        { id:"diamond",     label:"Diamond",        svg: <polygon points="11,3 20,11 11,19 2,11" fill="none" stroke="currentColor" strokeWidth="2"/> },
+        { id:"triangle",    label:"Triangle",       svg: <polygon points="11,3 20,20 2,20" fill="none" stroke="currentColor" strokeWidth="2"/> },
+        { id:"parallelogram",label:"Parallelogram", svg: <polygon points="5,18 8,4 18,4 15,18" fill="none" stroke="currentColor" strokeWidth="2"/> },
+      ]
+    },
+    {
+      label: "Flowchart",
+      shapes: [
+        { id:"process",     label:"Process",        svg: <rect x="2" y="6" width="18" height="10" fill="none" stroke="currentColor" strokeWidth="2"/> },
+        { id:"decision",    label:"Decision ◇",     svg: <polygon points="11,3 20,11 11,19 2,11" fill="none" stroke="currentColor" strokeWidth="2"/> },
+        { id:"terminator",  label:"Start/End",      svg: <rect x="2" y="6" width="18" height="10" rx="5" fill="none" stroke="currentColor" strokeWidth="2"/> },
+        { id:"cylinder",    label:"Database",       svg: <><ellipse cx="11" cy="6" rx="8" ry="3" fill="none" stroke="currentColor" strokeWidth="2"/><line x1="3" y1="6" x2="3" y2="16" stroke="currentColor" strokeWidth="2"/><line x1="19" y1="6" x2="19" y2="16" stroke="currentColor" strokeWidth="2"/><ellipse cx="11" cy="16" rx="8" ry="3" fill="none" stroke="currentColor" strokeWidth="2"/></> },
+        { id:"arrowBlock",  label:"Block Arrow",    svg: <polygon points="2,8 14,8 14,5 20,11 14,17 14,14 2,14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/> },
+        { id:"cloud",       label:"Cloud",          svg: <path d="M6.5 18H4a3 3 0 0 1 0-6 3 3 0 0 1 5.5-2A3 3 0 0 1 18 12a3 3 0 0 1 0 6H9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/> },
+      ]
+    },
+    {
+      label: "Callouts",
+      shapes: [
+        { id:"calloutRect",  label:"Callout Box",   svg: <><rect x="2" y="2" width="18" height="13" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/><polyline points="7,15 5,20 11,15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/></> },
+        { id:"calloutOval",  label:"Callout Oval",  svg: <><ellipse cx="11" cy="9" rx="8" ry="6" fill="none" stroke="currentColor" strokeWidth="2"/><polyline points="8,15 6,20 13,15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/></> },
+        { id:"star",         label:"Star",          svg: <polygon points="11,2 13.4,8.5 20.5,8.5 14.6,12.7 16.9,19.2 11,15.1 5.1,19.2 7.4,12.7 1.5,8.5 8.6,8.5" fill="none" stroke="currentColor" strokeWidth="1.5"/> },
+        { id:"hexagon",      label:"Hexagon",       svg: <polygon points="5.5,4 16.5,4 21,11 16.5,18 5.5,18 1,11" fill="none" stroke="currentColor" strokeWidth="2"/> },
+      ]
+    },
+  ]
+
+  const allShapes = SHAPE_GROUPS.flatMap(g => g.shapes)
+  const activeShape = allShapes.find(s => s.id === tool)
+
+  const B   = "p-1.5 rounded-lg transition flex-shrink-0"
+  const on  = "bg-primary/12 text-primary"
+  const off = "text-muted-foreground/60 hover:text-foreground hover:bg-secondary"
 
   return (
     <div
-      className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-border/60 bg-secondary/20 select-none"
-      onMouseDown={e => e.preventDefault()} // prevent editor blur
+      className="flex items-center gap-0.5 px-2.5 py-1.5 border-t border-border/40 bg-secondary/10 flex-wrap"
+      onMouseDown={e => e.preventDefault()}
     >
-      {/* Bold / Italic / Underline */}
-      <button onMouseDown={e => { e.preventDefault(); run("bold")      }} title="Bold (Ctrl+B)"      className={`${B} font-bold   ${active.bold      ? on : off}`}><Bold      size={13}/></button>
-      <button onMouseDown={e => { e.preventDefault(); run("italic")    }} title="Italic (Ctrl+I)"    className={`${B} italic      ${active.italic    ? on : off}`}><Italic    size={13}/></button>
-      <button onMouseDown={e => { e.preventDefault(); run("underline") }} title="Underline (Ctrl+U)" className={`${B}             ${active.underline ? on : off}`}><Underline size={13}/></button>
+      {/* Undo / Redo */}
+      <button onMouseDown={e=>{ e.preventDefault(); onUndo?.() }} disabled={!canUndo} title="Undo"
+        className={`${B} ${canUndo ? off : "text-muted-foreground/20 cursor-not-allowed"}`}><Undo2 size={12}/></button>
+      <button onMouseDown={e=>{ e.preventDefault(); onRedo?.() }} disabled={!canRedo} title="Redo"
+        className={`${B} ${canRedo ? off : "text-muted-foreground/20 cursor-not-allowed"}`}><Redo2 size={12}/></button>
 
-      <div className="w-px h-4 bg-border/50 mx-0.5"/>
+      <div className="w-px h-3.5 bg-border/50 mx-0.5"/>
 
-      {/* Font size */}
-      <div ref={sizeRef} className="relative">
-        <button onMouseDown={e=>{ e.preventDefault(); setShowSize(p=>!p); setShowFgColor(false); setShowHL(false); setShowList(false); setShowDrColor(false); setShowThick(false) }}
-          className={`${B} ${off} flex items-center gap-0.5 px-1.5`} title="Font size">
-          <span className="text-[11px] font-semibold w-5 text-center">{curSize.label}</span>
-          <ChevronDown size={9}/>
+      {/* Pen */}
+      <button onMouseDown={e=>{ e.preventDefault(); setTool(tool==="pen"?null:"pen") }}
+        title="Pen" className={`${B} ${tool==="pen" ? on : off}`}><PenLine size={13}/></button>
+
+      {/* Eraser */}
+      <button onMouseDown={e=>{ e.preventDefault(); setTool(tool==="eraser"?null:"eraser") }}
+        title="Eraser" className={`${B} ${tool==="eraser" ? on : off}`}><Eraser size={13}/></button>
+
+      {/* Text tool */}
+      <button onMouseDown={e=>{ e.preventDefault(); setTool(tool==="text"?null:"text") }}
+        title="Add text"
+        className={`${B} ${tool==="text" ? on : off} flex items-center gap-0.5 text-[11px] font-bold px-2`}>
+        T
+      </button>
+
+      <div className="w-px h-3.5 bg-border/50 mx-0.5"/>
+
+      {/* Shapes dropdown — Word/Canva style */}
+      <div ref={shapesRef} className="relative">
+        <button
+          onMouseDown={e=>{ e.preventDefault(); setShowShapes(p=>!p) }}
+          title="Shapes"
+          className={`${B} ${activeShape ? on : off} flex items-center gap-1 px-1.5`}
+        >
+          {activeShape
+            ? <svg width="14" height="14" viewBox="0 0 22 22" fill="none">{activeShape.svg}</svg>
+            : <svg width="14" height="14" viewBox="0 0 22 22" fill="none"><rect x="2" y="5" width="8" height="7" rx="1" stroke="currentColor" strokeWidth="2"/><circle cx="16" cy="14" r="4" stroke="currentColor" strokeWidth="2"/><line x1="2" y1="18" x2="9" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+          }
+          <span className="text-[10px]">Shapes</span>
+          <ChevronDown size={8}/>
         </button>
-        {showSize && (
-          <div className="absolute top-full left-0 mt-1 z-30 bg-white border border-border rounded-xl shadow-xl overflow-hidden" style={{minWidth:92}}>
-            {FONT_SIZES.map(fs => (
-              <button key={fs.size} onMouseDown={e=>{ e.preventDefault(); applyFontSize(fs); setShowSize(false) }}
-                className={`w-full flex items-center justify-between px-3 py-1.5 hover:bg-secondary/50 transition ${curSize.size===fs.size ? "text-primary font-semibold bg-primary/5" : "text-foreground/70"}`}>
-                <span style={{fontSize:fs.px}}>{fs.label}</span>
-                <span className="text-[10px] text-muted-foreground ml-4">{fs.px}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* Text color */}
-      <div ref={fgRef} className="relative">
-        <button onMouseDown={e=>{ e.preventDefault(); setShowFgColor(p=>!p); setShowSize(false); setShowHL(false); setShowList(false); setShowDrColor(false); setShowThick(false) }}
-          className={`${B} ${off} flex items-center gap-0.5 px-1.5`} title="Text color">
-          <span className="flex flex-col items-center gap-0.5">
-            <span className="text-[13px] font-bold leading-none">A</span>
-            <span className="w-3.5 h-[3px] rounded-full" style={{backgroundColor:curFg}}/>
-          </span>
-          <ChevronDown size={9}/>
-        </button>
-        {showFgColor && (
-          <div className="absolute top-full left-0 mt-1 z-30 bg-white border border-border rounded-xl shadow-xl p-2.5" style={{width:144}}>
-            <p className="text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-wide">Text Color</p>
-            <div className="grid grid-cols-5 gap-1.5">
-              {TEXT_FG_COLORS.map(c=>(
-                <button key={c} onMouseDown={e=>{ e.preventDefault(); applyFgColor(c); setShowFgColor(false) }}
-                  className={`w-7 h-7 rounded-lg border-2 transition hover:scale-110 ${curFg===c?"border-primary shadow":"border-transparent"}`}
-                  style={{backgroundColor:c, boxShadow:c==="#ffffff"?"inset 0 0 0 1px #e2e8f0":undefined}}/>
+        {showShapes && (
+          <div className="absolute bottom-full mb-2 left-0 z-50 bg-white border border-border rounded-2xl shadow-2xl shadow-black/12 overflow-hidden"
+            style={{ width: 260 }}>
+            <div className="px-3 py-2.5 border-b border-border/40">
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Shapes</p>
+            </div>
+            <div className="max-h-72 overflow-y-auto p-2">
+              {SHAPE_GROUPS.map(group => (
+                <div key={group.label} className="mb-3">
+                  <p className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-widest px-1.5 mb-1.5">{group.label}</p>
+                  <div className="grid grid-cols-6 gap-1">
+                    {group.shapes.map(shape => (
+                      <button
+                        key={shape.id}
+                        onMouseDown={e=>{ e.preventDefault(); setTool(tool===shape.id?null:shape.id); setShowShapes(false) }}
+                        title={shape.label}
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center transition hover:scale-110 border ${
+                          tool===shape.id ? "bg-primary/10 border-primary/40 text-primary" : "border-transparent hover:bg-secondary text-foreground/60 hover:text-foreground"
+                        }`}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 22 22" fill="none">{shape.svg}</svg>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
         )}
       </div>
 
-      {/* Highlight */}
-      <div ref={hlRef} className="relative">
-        <button onMouseDown={e=>{ e.preventDefault(); setShowHL(p=>!p); setShowSize(false); setShowFgColor(false); setShowList(false); setShowDrColor(false); setShowThick(false) }}
-          className={`${B} ${off} flex items-center gap-0.5 px-1.5`} title="Highlight">
-          <Highlighter size={13}/>
-          <span className="w-3 h-[3px] rounded-full" style={{backgroundColor:curHL==="transparent"?"#e2e8f0":curHL}}/>
-          <ChevronDown size={9}/>
+      <div className="w-px h-3.5 bg-border/50 mx-0.5"/>
+
+      {/* Color */}
+      <div ref={colorsRef} className="relative">
+        <button onMouseDown={e=>{ e.preventDefault(); setShowColors(p=>!p); setShowSizes(false) }}
+          title="Color" className={`${B} ${off} flex items-center gap-1`}>
+          <span className="w-3.5 h-3.5 rounded-full border-2 border-border/60 flex-shrink-0" style={{ backgroundColor: color }}/>
+          <ChevronDown size={8}/>
         </button>
-        {showHL && (
-          <div className="absolute top-full left-0 mt-1 z-30 bg-white border border-border rounded-xl shadow-xl p-2.5" style={{width:148}}>
-            <p className="text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-wide">Highlight</p>
+        {showColors && (
+          <div className="absolute bottom-full mb-2 left-0 bg-white border border-border rounded-xl shadow-xl p-2.5" style={{ minWidth: 148 }}>
+            <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Color</p>
             <div className="flex flex-wrap gap-1.5">
-              {HIGHLIGHT_COLORS.map(({v,name})=>(
-                <button key={v} onMouseDown={e=>{ e.preventDefault(); applyHL(v); setShowHL(false) }}
-                  title={name}
-                  className={`w-7 h-7 rounded-lg border-2 transition hover:scale-110 flex items-center justify-center ${curHL===v?"border-primary shadow":"border-transparent"}`}
-                  style={{backgroundColor:v==="transparent"?"#f1f5f9":v, boxShadow:v==="#ffffff"?"inset 0 0 0 1px #e2e8f0":undefined}}>
-                  {v==="transparent" && <X size={9} className="text-muted-foreground"/>}
-                </button>
+              {DRAW_COLORS.map(c => (
+                <button key={c} onMouseDown={e=>{ e.preventDefault(); setColor(c); setShowColors(false) }}
+                  className={`w-6 h-6 rounded-lg border-2 transition hover:scale-110 ${color===c?"border-primary":"border-transparent"}`}
+                  style={{ backgroundColor:c, boxShadow:c==="#ffffff"?"inset 0 0 0 1px #e2e8f0":undefined }}/>
               ))}
             </div>
           </div>
         )}
       </div>
 
-      <div className="w-px h-4 bg-border/50 mx-0.5"/>
-
-      {/* Alignment */}
-      <button onMouseDown={e=>{ e.preventDefault(); run("justifyLeft")   }} title="Left"   className={`${B} ${off}`}><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg></button>
-      <button onMouseDown={e=>{ e.preventDefault(); run("justifyCenter") }} title="Center" className={`${B} ${off}`}><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></button>
-      <button onMouseDown={e=>{ e.preventDefault(); run("justifyRight")  }} title="Right"  className={`${B} ${off}`}><svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="6" y1="18" x2="21" y2="18"/></svg></button>
-
-      <div className="w-px h-4 bg-border/50 mx-0.5"/>
-
-      {/* Bullet list */}
-      <button onMouseDown={e=>{ e.preventDefault(); run("insertUnorderedList") }} title="Bullet list"
-        className={`${B} ${active.ul ? on : off}`}>
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24">
-          <circle cx="4" cy="6"  r="2" fill="currentColor"/>
-          <circle cx="4" cy="12" r="2" fill="currentColor"/>
-          <circle cx="4" cy="18" r="2" fill="currentColor"/>
-          <line x1="9" y1="6"  x2="21" y2="6"  stroke="currentColor" strokeWidth="2"/>
-          <line x1="9" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="2"/>
-          <line x1="9" y1="18" x2="21" y2="18" stroke="currentColor" strokeWidth="2"/>
-        </svg>
-      </button>
-
-      {/* Numbered list */}
-      <button onMouseDown={e=>{ e.preventDefault(); run("insertOrderedList") }} title="Numbered list"
-        className={`${B} ${active.ol ? on : off}`}>
-        <svg width="13" height="13" fill="none" viewBox="0 0 24 24">
-          <text x="1" y="8"  fontSize="8" fill="currentColor" fontWeight="700">1.</text>
-          <text x="1" y="14" fontSize="8" fill="currentColor" fontWeight="700">2.</text>
-          <text x="1" y="20" fontSize="8" fill="currentColor" fontWeight="700">3.</text>
-          <line x1="11" y1="6"  x2="21" y2="6"  stroke="currentColor" strokeWidth="2"/>
-          <line x1="11" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="2"/>
-          <line x1="11" y1="18" x2="21" y2="18" stroke="currentColor" strokeWidth="2"/>
-        </svg>
-      </button>
-
-      {/* Extra markers dropdown */}
-      <div ref={listRef} className="relative">
-        <button onMouseDown={e=>{ e.preventDefault(); setShowList(p=>!p); setShowSize(false); setShowFgColor(false); setShowHL(false); setShowDrColor(false); setShowThick(false) }}
-          className={`${B} ${activeMarker ? on : off} flex items-center gap-0.5 px-1`} title="List markers">
-          <List size={12}/>
-          {activeMarker && <span className="text-[10px] font-bold leading-none ml-0.5">{activeMarker}</span>}
-          <ChevronDown size={9}/>
+      {/* Size (thickness or font size) */}
+      <div ref={sizesRef} className="relative">
+        <button onMouseDown={e=>{ e.preventDefault(); setShowSizes(p=>!p); setShowColors(false) }}
+          title={tool==="text" ? "Font size" : "Stroke width"}
+          className={`${B} ${off} flex items-center gap-1`}>
+          {tool === "text"
+            ? <span className="text-[10px] font-bold w-4 text-center">{fontSize}</span>
+            : <span className="rounded-full bg-foreground/50 flex-shrink-0 inline-block"
+                style={{ width: Math.min(thickness*2+2,10), height: Math.min(thickness*2+2,10) }}/>}
+          <ChevronDown size={8}/>
         </button>
-        {showList && (
-          <div className="absolute top-full left-0 mt-1 z-30 bg-white border border-border rounded-xl shadow-xl overflow-hidden" style={{minWidth:148}}>
-            <p className="text-[10px] text-muted-foreground px-3 pt-2.5 pb-1 font-medium uppercase tracking-wide">Insert Marker</p>
-            {[{m:"•",l:"Bullet"},{m:"1.",l:"Numbered"},{m:"★",l:"Star"},{m:"➤",l:"Arrow"},{m:"✓",l:"Check"},{m:"—",l:"Dash"},{m:"◆",l:"Diamond"}].map(({m,l})=>(
-              <button key={m} onMouseDown={e=>{ e.preventDefault(); insertMarker(m); setShowList(false) }}
-                className={`w-full flex items-center gap-3 px-3 py-1.5 hover:bg-secondary/50 transition text-sm ${activeMarker===m ? "text-primary font-semibold bg-primary/5" : "text-foreground/70 hover:text-foreground"}`}>
-                <span className="text-base w-5 text-center leading-none">{m}</span>
-                <span className="flex-1 text-left">{l}</span>
-                {activeMarker===m && <span className="text-[9px] text-primary font-bold">ACTIVE</span>}
-              </button>
-            ))}
-            {activeMarker && (
-              <button onMouseDown={e=>{ e.preventDefault(); onClearMarker?.(); setShowList(false) }}
-                className="w-full flex items-center gap-3 px-3 py-2 hover:bg-red-50 transition text-xs text-red-400 border-t border-border/40">
-                <span className="w-5 text-center">✕</span> Stop list
-              </button>
+        {showSizes && (
+          <div className="absolute bottom-full mb-2 left-0 bg-white border border-border rounded-xl shadow-xl p-3" style={{ minWidth: 130 }}>
+            {tool === "text" ? (
+              <>
+                <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Font Size</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {FONT_SIZES_DRAW.map(s => (
+                    <button key={s} onMouseDown={e=>{ e.preventDefault(); setFontSize(s); setShowSizes(false) }}
+                      className={`px-2 py-1 rounded-lg text-[11px] transition ${fontSize===s?"bg-primary/10 text-primary font-bold":"text-foreground/60 hover:bg-secondary"}`}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Stroke Width</p>
+                <div className="flex items-center gap-2.5">
+                  {SIZES.map(s => (
+                    <button key={s} onMouseDown={e=>{ e.preventDefault(); setThickness(s); setShowSizes(false) }}
+                      title={`${s}px`}
+                      className={`rounded-full bg-foreground/60 flex-shrink-0 transition ${thickness===s?"ring-2 ring-primary ring-offset-1":"opacity-50 hover:opacity-100 hover:ring-1 hover:ring-border"}`}
+                      style={{ width:s*2+6, height:s*2+6 }}/>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}
       </div>
 
-      <div className="w-px h-4 bg-border/50 mx-0.5"/>
 
-      {/* Undo / Redo (canvas drawing) */}
-      <button onMouseDown={e=>{ e.preventDefault(); onUndo?.() }} disabled={!canUndo} title="Undo drawing"
-        className={`${B} ${canUndo ? off : "text-muted-foreground/25 cursor-not-allowed"}`}><Undo2 size={13}/></button>
-      <button onMouseDown={e=>{ e.preventDefault(); onRedo?.() }} disabled={!canRedo} title="Redo drawing"
-        className={`${B} ${canRedo ? off : "text-muted-foreground/25 cursor-not-allowed"}`}><Redo2 size={13}/></button>
-
-      <div className="w-px h-4 bg-border/50 mx-0.5"/>
-
-      {/* Drawing tools */}
-      {[{id:"pen",icon:PenLine,title:"Pen"},{id:"eraser",icon:Eraser,title:"Eraser"},{id:"circle",icon:Circle,title:"Circle"},{id:"rect",icon:Square,title:"Rect"},{id:"line",icon:Minus,title:"Line"}].map(t=>(
-        <button key={t.id} onMouseDown={e=>{ e.preventDefault(); setTool(tool===t.id?null:t.id) }}
-          title={t.title} className={`${B} ${tool===t.id ? on : off}`}><t.icon size={13}/></button>
-      ))}
-
-      {/* Drawing color + thickness (only when a draw tool is active) */}
-      {isDrawing && <>
-        <div ref={drColorRef} className="relative">
-          <button onMouseDown={e=>{ e.preventDefault(); setShowDrColor(p=>!p); setShowThick(false) }}
-            className={`${B} ${off} flex items-center gap-0.5 px-1.5`} title="Stroke color">
-            <Palette size={12}/>
-            <span className="w-3 h-3 rounded-full border border-border/60" style={{backgroundColor:color}}/>
-            <ChevronDown size={9}/>
-          </button>
-          {showDrColor && (
-            <div className="absolute top-full left-0 mt-1 z-30 bg-white border border-border rounded-xl shadow-xl p-2.5" style={{width:130}}>
-              <p className="text-[10px] text-muted-foreground mb-2 font-medium uppercase tracking-wide">Stroke</p>
-              <div className="grid grid-cols-5 gap-1.5">
-                {["#1e293b","#ef4444","#f97316","#eab308","#22c55e","#0ea5e9","#7c3aed","#ec4899","#ffffff","#94a3b8"].map(c=>(
-                  <button key={c} onMouseDown={e=>{ e.preventDefault(); setColor(c); setShowDrColor(false) }}
-                    className={`w-6 h-6 rounded-lg border-2 transition hover:scale-110 ${color===c?"border-primary":"border-transparent"}`}
-                    style={{backgroundColor:c, boxShadow:c==="#ffffff"?"inset 0 0 0 1px #e2e8f0":undefined}}/>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div ref={thickRef} className="relative">
-          <button onMouseDown={e=>{ e.preventDefault(); setShowThick(p=>!p); setShowDrColor(false) }}
-            className={`${B} ${off} flex items-center gap-1 px-1.5`} title="Stroke width">
-            <span className="rounded-full bg-current inline-block" style={{width:Math.min(thickness*2+2,10), height:Math.min(thickness*2+2,10)}}/>
-            <ChevronDown size={9}/>
-          </button>
-          {showThick && (
-            <div className="absolute top-full left-0 mt-1 z-30 bg-white border border-border rounded-xl shadow-xl p-3 flex items-center gap-2.5">
-              {[1,2,3,5,8].map(t=>(
-                <button key={t} onMouseDown={e=>{ e.preventDefault(); setThickness(t); setShowThick(false) }}
-                  className={`rounded-full bg-foreground/60 flex-shrink-0 transition ${thickness===t?"ring-2 ring-primary ring-offset-1":"hover:ring-1 hover:ring-border"}`}
-                  style={{width:t*2+4, height:t*2+4}}/>
-              ))}
-            </div>
-          )}
-        </div>
-        <span className="text-[10px] text-muted-foreground/50 hidden sm:inline ml-0.5">draw below ↓</span>
-      </>}
     </div>
+  )
+}
+
+
+// ─── Shape tools that go to SVG layer (not burned onto canvas bitmap) ─────────
+const SHAPE_TOOLS = [
+  "line","arrow","arrowLeft","arrowDouble","arrowUp","arrowDiag",
+  "rect","roundedRect","circle","diamond","triangle","parallelogram",
+  "process","decision","terminator","cylinder","arrowBlock",
+  "calloutRect","calloutOval","star","hexagon"
+]
+
+function _newSid() {
+  return `sh-${Date.now()}-${Math.random().toString(36).slice(2,7)}`
+}
+
+// Build an SVG path string for the given shape type.
+// x,y = top-left, w,h = dimensions (always positive after normalisation)
+function _shapePath(type, x, y, w, h) {
+  // x,y,w,h are always normalised (top-left, positive size) — safe to use directly
+  const ex=x+w, ey=y+h, cx=x+w/2, cy=y+h/2
+  const l=12  // arrow head size
+  switch (type) {
+    case "line":        return `M${x},${y} L${ex},${ey}`
+    case "arrow": { const a=Math.atan2(ey-y,ex-x); return `M${x},${y} L${ex},${ey} M${ex},${ey} L${ex-l*Math.cos(a-0.4)},${ey-l*Math.sin(a-0.4)} M${ex},${ey} L${ex-l*Math.cos(a+0.4)},${ey-l*Math.sin(a+0.4)}` }
+    case "arrowLeft": { const a=Math.atan2(y-ey,x-ex); return `M${ex},${ey} L${x},${y} M${x},${y} L${x-l*Math.cos(a-0.4)},${y-l*Math.sin(a-0.4)} M${x},${y} L${x-l*Math.cos(a+0.4)},${y-l*Math.sin(a+0.4)}` }
+    case "arrowDouble": { const a1=Math.atan2(ey-y,ex-x),a2=Math.atan2(y-ey,x-ex); return `M${x},${y} L${ex},${ey} M${ex},${ey} L${ex-l*Math.cos(a1-0.4)},${ey-l*Math.sin(a1-0.4)} M${ex},${ey} L${ex-l*Math.cos(a1+0.4)},${ey-l*Math.sin(a1+0.4)} M${x},${y} L${x-l*Math.cos(a2-0.4)},${y-l*Math.sin(a2-0.4)} M${x},${y} L${x-l*Math.cos(a2+0.4)},${y-l*Math.sin(a2+0.4)}` }
+    case "arrowUp":
+    case "arrowDiag": { const a=Math.atan2(ey-y,ex-x); return `M${x},${y} L${ex},${ey} M${ex},${ey} L${ex-l*Math.cos(a-0.4)},${ey-l*Math.sin(a-0.4)} M${ex},${ey} L${ex-l*Math.cos(a+0.4)},${ey-l*Math.sin(a+0.4)}` }
+    case "rect":
+    case "process":     return `M${x},${y} L${ex},${y} L${ex},${ey} L${x},${ey} Z`
+    case "roundedRect": { const r=Math.min(16,w/3,h/3); return `M${x+r},${y} L${ex-r},${y} Q${ex},${y} ${ex},${y+r} L${ex},${ey-r} Q${ex},${ey} ${ex-r},${ey} L${x+r},${ey} Q${x},${ey} ${x},${ey-r} L${x},${y+r} Q${x},${y} ${x+r},${y} Z` }
+    case "circle":      return `M${cx},${y} A${w/2},${h/2} 0 1,1 ${cx-0.001},${y} Z`
+    case "diamond":
+    case "decision":    return `M${cx},${y} L${ex},${cy} L${cx},${ey} L${x},${cy} Z`
+    case "triangle":    return `M${cx},${y} L${ex},${ey} L${x},${ey} Z`
+    case "parallelogram": { const o=w*0.2; return `M${x+o},${y} L${ex},${y} L${ex-o},${ey} L${x},${ey} Z` }
+    case "star": { const oR=Math.min(w,h)/2,iR=oR*0.4,pts=[]; for(let i=0;i<10;i++){const r=i%2===0?oR:iR,a=(i*Math.PI/5)-Math.PI/2;pts.push(`${i===0?"M":"L"}${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`)} return pts.join(" ")+"Z" }
+    case "hexagon": { const r=Math.min(w,h)/2,pts=[]; for(let i=0;i<6;i++){const a=(Math.PI/3)*i-Math.PI/6;pts.push(`${i===0?"M":"L"}${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`)} return pts.join(" ")+"Z" }
+    case "terminator": { const rt=Math.min(h/2,w/3); return `M${x+rt},${y} L${ex-rt},${y} Q${ex},${y} ${ex},${cy} Q${ex},${ey} ${ex-rt},${ey} L${x+rt},${ey} Q${x},${ey} ${x},${cy} Q${x},${y} ${x+rt},${y} Z` }
+    case "arrowBlock": { const hW=w*0.35,tY=y+h*0.28,bY=ey-h*0.28; return `M${x},${tY} L${ex-hW},${tY} L${ex-hW},${y} L${ex},${cy} L${ex-hW},${ey} L${ex-hW},${bY} L${x},${bY} Z` }
+    case "calloutRect": { const tH=h*0.72; return `M${x},${y} L${ex},${y} L${ex},${y+tH} L${x+w*0.45},${y+tH} L${x+w*0.35},${ey} L${x+w*0.25},${y+tH} L${x},${y+tH} Z` }
+    case "calloutOval": { const ry=h*0.38; return `M${cx},${y} A${w/2},${ry} 0 1,1 ${cx-0.001},${y} Z M${cx-w*0.1},${y+ry*1.7} L${cx-w*0.2},${ey} L${cx+w*0.1},${y+ry*1.7}` }
+    case "cylinder": { const ry2=h*0.15; return `M${x},${y+ry2} A${w/2},${ry2} 0 1,1 ${ex},${y+ry2} L${ex},${ey-ry2} A${w/2},${ry2} 0 1,1 ${x},${ey-ry2} Z M${cx},${y} A${w/2},${ry2} 0 1,0 ${cx-0.001},${y} Z` }
+    case "cloud": { const r1=h*0.26,r2=w*0.17,r3=w*0.2; return `M${x+w*0.22},${ey} A${r1},${r1} 0 0,1 ${x+w*0.04},${y+h*0.68} A${r2},${r2} 0 0,1 ${x+w*0.2},${y+h*0.38} A${r3},${r3} 0 0,1 ${cx},${y+h*0.18} A${r3},${r3} 0 0,1 ${x+w*0.8},${y+h*0.38} A${r2},${r2} 0 0,1 ${x+w*0.96},${y+h*0.68} A${r1},${r1} 0 0,1 ${x+w*0.78},${ey} Z` }
+    default: return `M${x},${y} L${ex},${y} L${ex},${ey} L${x},${ey} Z`
+  }
+}
+
+// ── Single interactive shape ──────────────────────────────────────────────────
+// Behaviour:
+//   • First click-drag = draw (size grows while mouse held, no selection chrome shown)
+//   • After mouseup    = auto-selected, chrome appears
+//   • Click again      = select + can immediately drag to move
+//   • Corner handles   = proportional resize (Shift locks aspect)
+//   • Side handles     = stretch one axis independently
+//   • ✕ button        = delete
+function _ShapeItem({ shape, isSelected, isBeingDrawn, onSelect, onDelete, onChange, onMoveAll }) {
+  const { x, y, w, h, color, thickness, type } = shape
+  const sw  = thickness || 2
+  // Normalise top-left for rendering
+  const x1  = w >= 0 ? x : x + w
+  const y1  = h >= 0 ? y : y + h
+  const aw  = Math.abs(w)
+  const ah  = Math.abs(h)
+  const path = _shapePath(type, x1, y1, aw, ah)
+
+  // ── 4 corner handles only — premium Figma-style ──────────────────
+  const corners = [
+    { id:"nw", hx:x1,    hy:y1    },
+    { id:"ne", hx:x1+aw, hy:y1    },
+    { id:"se", hx:x1+aw, hy:y1+ah },
+    { id:"sw", hx:x1,    hy:y1+ah },
+  ]
+  const cornerCursors = { nw:"nw-resize", ne:"ne-resize", se:"se-resize", sw:"sw-resize" }
+
+  // Resize from a corner handle — Shift locks aspect ratio
+  function startCornerResize(e, corner) {
+    e.preventDefault(); e.stopPropagation()
+    const mx0=e.clientX, my0=e.clientY
+    const ox=shape.x, oy=shape.y, ow=shape.w, oh=shape.h
+    const asp = ow / oh
+    function move(ev) {
+      const dx=ev.clientX-mx0, dy=ev.clientY-my0
+      let nx=ox,ny=oy,nw=ow,nh=oh
+      if (corner==="se") { nw=Math.max(10,ow+dx); nh=ev.shiftKey?nw/asp:Math.max(10,oh+dy) }
+      else if (corner==="sw") { nw=Math.max(10,ow-dx); nx=ox+ow-nw; nh=ev.shiftKey?nw/asp:Math.max(10,oh+dy) }
+      else if (corner==="ne") { nw=Math.max(10,ow+dx); nh=ev.shiftKey?nw/asp:Math.max(10,oh-dy); ny=oy+oh-nh }
+      else if (corner==="nw") { nw=Math.max(10,ow-dx); nx=ox+ow-nw; nh=ev.shiftKey?nw/asp:Math.max(10,oh-dy); ny=oy+oh-nh }
+      // Clamp to viewBox
+      nx=Math.max(0,nx); ny=Math.max(0,ny)
+      nw=Math.min(nw, 600-nx); nh=Math.min(nh, 220-ny)
+      onChange({ x:nx, y:ny, w:nw, h:nh })
+    }
+    function up() { window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up) }
+    window.addEventListener("mousemove",move); window.addEventListener("mouseup",up)
+  }
+
+  // Move all selected shapes together
+  function startMove(e) {
+    e.preventDefault(); e.stopPropagation()
+    const mx0=e.clientX, my0=e.clientY
+    onMoveAll("start")
+    function move(ev) { onMoveAll("move", ev.clientX - mx0, ev.clientY - my0) }
+    function up() { window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up) }
+    window.addEventListener("mousemove",move); window.addEventListener("mouseup",up)
+  }
+
+  return (
+    <g>
+      {/* Wide invisible hit-area so clicking/dragging the shape is easy */}
+      <path
+        d={path}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={Math.max(24, sw + 16)}
+        style={{ cursor: isSelected ? "move" : "pointer", pointerEvents: "all" }}
+        onMouseDown={e => {
+          e.stopPropagation()
+          if (!isSelected) { onSelect(e); return }
+          startMove(e)
+        }}
+      />
+      {/* Visible shape */}
+      <path
+        d={path}
+        fill="none"
+        stroke={color || "#1e293b"}
+        strokeWidth={sw}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ pointerEvents: "none" }}
+      />
+
+      {/* Selection chrome — only visible after drawing is complete */}
+      {isSelected && !isBeingDrawn && (
+        <>
+          {/* Dashed bounding box */}
+          <rect
+            x={x1-5} y={y1-5} width={aw+10} height={ah+10}
+            fill="none"
+            stroke="#7c3aed"
+            strokeWidth={1.5}
+            strokeDasharray="5 3"
+            rx={3}
+            style={{ pointerEvents:"none" }}
+          />
+
+          {/* 4 corner handles — premium Figma-style: white circle with purple ring */}
+          {corners.map(h => (
+            <g key={h.id} style={{ cursor: cornerCursors[h.id], pointerEvents: "all" }}
+               onMouseDown={e => { e.stopPropagation(); startCornerResize(e, h.id) }}>
+              {/* Invisible larger hit area */}
+              <circle cx={h.hx} cy={h.hy} r={10} fill="transparent"/>
+              {/* Outer ring */}
+              <circle cx={h.hx} cy={h.hy} r={6}
+                fill="white" stroke="#7c3aed" strokeWidth={2}
+                style={{ filter:"drop-shadow(0 1px 4px rgba(124,58,237,0.35))" }}/>
+              {/* Inner dot */}
+              <circle cx={h.hx} cy={h.hy} r={2.5} fill="#7c3aed"/>
+            </g>
+          ))}
+
+          {/* ✕ delete button — premium top-right */}
+          <g
+            transform={`translate(${x1+aw+10},${y1-10})`}
+            style={{ cursor:"pointer", pointerEvents: "all" }}
+            onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
+            onClick={e => { e.stopPropagation(); onDelete() }}
+          >
+            <circle r={10} fill="#1e293b" stroke="white" strokeWidth={2}
+              style={{ filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.25))" }}/>
+            <line x1={-4} y1={-4} x2={4} y2={4} stroke="white" strokeWidth={2} strokeLinecap="round"/>
+            <line x1={4} y1={-4} x2={-4} y2={4} stroke="white" strokeWidth={2} strokeLinecap="round"/>
+          </g>
+        </>
+      )}
+    </g>
+  )
+}
+
+// ── ShapeLayer — SVG overlay that manages all interactive shapes ──────────────
+// Lives inside DrawingCanvas, layered above the bitmap canvas.
+// Handles: draw (first interaction), select, multi-select (Shift+click),
+//          selection-box drag, move, corner-resize, side-resize, delete.
+function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTexts, texts, onSelectedChange }) {
+  const [selectedIds, setSelectedIds] = useState(new Set())
+  const [drawingId,   setDrawingId]   = useState(null)   // shape being drawn rn
+  const [selBox,      setSelBox]      = useState(null)   // {sx,sy,x,y,w,h}
+  const svgRef    = useRef(null)
+  const drawState = useRef(null) // { id, sx, sy } while mouse held during draw
+
+  const isShapeTool = SHAPE_TOOLS.includes(tool)
+
+  // Click outside → deselect all
+  useEffect(() => {
+    function onDown(e) {
+      if (svgRef.current && !svgRef.current.contains(e.target)) setSelectedIds(new Set())
+    }
+    document.addEventListener("mousedown", onDown)
+    return () => document.removeEventListener("mousedown", onDown)
+  }, [])
+
+  // Keyboard: Delete removes selected, Escape deselects, arrows nudge
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === "Escape") { setSelectedIds(new Set()); return }
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedIds.size > 0) {
+        const ae = document.activeElement
+        if (!ae?.isContentEditable && ae?.tagName !== "INPUT" && ae?.tagName !== "TEXTAREA") {
+          e.preventDefault()
+          onShapesChange(prev => prev.filter(s => !selectedIds.has(s.id)))
+          setSelectedIds(new Set())
+        }
+      }
+      if (["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key) && selectedIds.size > 0) {
+        const ae = document.activeElement
+        if (!ae?.isContentEditable && ae?.tagName !== "INPUT" && ae?.tagName !== "TEXTAREA") {
+          e.preventDefault()
+          const d = e.shiftKey ? 10 : 1
+          const dx = e.key==="ArrowLeft"?-d:e.key==="ArrowRight"?d:0
+          const dy = e.key==="ArrowUp"?-d:e.key==="ArrowDown"?d:0
+          onShapesChange(prev => prev.map(s =>
+            selectedIds.has(s.id) ? { ...s, x:s.x+dx, y:s.y+dy } : s
+          ))
+        }
+      }
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }, [selectedIds]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Convert a MouseEvent to SVG coordinate space (600×220 viewBox)
+  // Notify parent of selection changes for copy/paste
+  useEffect(() => {
+    onSelectedChange?.(selectedIds)
+  }, [selectedIds]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function toSVG(e) {
+    const svg = svgRef.current
+    if (!svg) return { x:0, y:0 }
+    const rect = svg.getBoundingClientRect()
+    return {
+      x: (e.clientX - rect.left) * (600 / rect.width),
+      y: (e.clientY - rect.top)  * (220 / rect.height),
+    }
+  }
+
+  // ── Mousedown on blank SVG area ────────────────────────────────────────────
+  function handleSVGMouseDown(e) {
+    if (isShapeTool) {
+      // Draw a new shape
+      e.preventDefault(); e.stopPropagation()
+      const { x, y } = toSVG(e)
+      const id = _newSid()
+      onShapesChange(prev => [
+        ...prev,
+        { id, type:tool, x, y, w:1, h:1, color:color||"#1e293b", thickness:thickness||2 }
+      ])
+      setSelectedIds(new Set())  // no selection while drawing
+      setDrawingId(id)
+      drawState.current = { id, sx:x, sy:y }
+
+      function move(ev) {
+        if (!drawState.current) return
+        const { x:ex, y:ey } = toSVG(ev)
+        const { id:did, sx, sy } = drawState.current
+        // Clamp end point to viewBox so shape can't extend outside note card
+        const cex = Math.max(0, Math.min(ex, 600))
+        const cey = Math.max(0, Math.min(ey, 220))
+        onShapesChange(prev => prev.map(s =>
+          s.id === did ? { ...s, w:cex-sx, h:cey-sy } : s
+        ))
+      }
+      function up() {
+        if (!drawState.current) return
+        const fid = drawState.current.id
+        drawState.current = null
+        setDrawingId(null)
+        // Enforce minimum shape size — if user just clicked without dragging,
+        // give it a default 80x60 size so it's never an invisible dot
+        onShapesChange(prev => prev.map(s => {
+          if (s.id !== fid) return s
+          const minW = Math.abs(s.w) < 20 ? 80 : s.w
+          const minH = Math.abs(s.h) < 20 ? 60 : s.h
+          return { ...s, w: minW, h: minH }
+        }))
+        setSelectedIds(new Set([fid]))  // auto-select on release
+        window.removeEventListener("mousemove", move)
+        window.removeEventListener("mouseup", up)
+      }
+      window.addEventListener("mousemove", move)
+      window.addEventListener("mouseup", up)
+      return
+    }
+
+    if (tool === null || tool === "select") {
+      // Start selection box
+      e.preventDefault()
+      const { x, y } = toSVG(e)
+      setSelectedIds(new Set())
+      onSelectTexts?.(new Set())
+      setSelBox({ sx:x, sy:y, x, y, w:0, h:0 })
+
+      function move(ev) {
+        const { x:ex, y:ey } = toSVG(ev)
+        const bx = Math.min(x, ex), by = Math.min(y, ey)
+        const bw = Math.abs(ex-x), bh = Math.abs(ey-y)
+        setSelBox({ sx:x, sy:y, x:bx, y:by, w:bw, h:bh })
+
+        // Convert SVG box (600x220) to layer-relative pixel box for text hit-testing
+        const svg = svgRef.current
+        let pxBx=bx, pxBy=by, pxBw=bw, pxBh=bh
+        if (svg) {
+          const r = svg.getBoundingClientRect()
+          const sx2px = r.width / 600, sy2px = r.height / 220
+          pxBx = bx * sx2px; pxBy = by * sy2px
+          pxBw = bw * sx2px; pxBh = bh * sy2px
+        }
+
+        // Select shapes inside box
+        const shapeIds = new Set()
+        onShapesChange(prev => {
+          prev.forEach(s => {
+            const x1=Math.min(s.x,s.x+s.w), y1=Math.min(s.y,s.y+s.h)
+            const aw=Math.abs(s.w), ah=Math.abs(s.h)
+            if (x1>=bx && y1>=by && x1+aw<=bx+bw && y1+ah<=by+bh) shapeIds.add(s.id)
+          })
+          setSelectedIds(shapeIds)
+          return prev
+        })
+
+        // Select text boxes inside box (pixel space)
+        if (onSelectTexts && texts) {
+          const textIds = new Set()
+          texts.forEach(t => {
+            const tw = t.width || 100, th = (t.fontSize || 16) + 8
+            if (t.x >= pxBx && t.y >= pxBy && t.x + tw <= pxBx + pxBw && t.y + th <= pxBy + pxBh) {
+              textIds.add(String(t.id))
+            }
+          })
+          onSelectTexts(textIds)
+        }
+      }
+      function up() {
+        setSelBox(null)
+        window.removeEventListener("mousemove", move)
+        window.removeEventListener("mouseup", up)
+      }
+      window.addEventListener("mousemove", move)
+      window.addEventListener("mouseup", up)
+    }
+  }
+
+  return (
+    <svg
+      ref={svgRef}
+      viewBox="0 0 600 220"
+      preserveAspectRatio="none"
+      style={{
+        position:   "absolute",
+        inset:      0,
+        width:      "100%",
+        height:     "100%",
+        overflow:   "visible",
+        zIndex:     isShapeTool ? 10 : 2,
+        pointerEvents: "none",
+        cursor:     isShapeTool ? "crosshair" : "default",
+      }}
+      onClick={e => { if (e.target === svgRef.current && !isShapeTool) setSelectedIds(new Set()) }}
+    >
+      {/* Background — only captures clicks when shape tool active, otherwise passes through to text layer */}
+      <rect
+        x="0" y="0" width="600" height="220"
+        fill="transparent"
+        style={{ pointerEvents: (isShapeTool || tool === null) ? "all" : "none" }}
+        onMouseDown={handleSVGMouseDown}
+      />
+
+      {/* Selection box drag rectangle */}
+      {selBox && (
+        <rect
+          x={selBox.x} y={selBox.y} width={selBox.w} height={selBox.h}
+          fill="rgba(26,115,232,0.08)"
+          stroke="#7c3aed"
+          strokeWidth={1}
+          strokeDasharray="4 3"
+          style={{ pointerEvents:"none" }}
+        />
+      )}
+
+      {(shapes || []).map(shape => (
+        <_ShapeItem
+          key={shape.id}
+          shape={shape}
+          isSelected={selectedIds.has(shape.id)}
+          isBeingDrawn={drawingId === shape.id}
+          onSelect={e => {
+            if (e?.shiftKey) {
+              setSelectedIds(prev => { const n=new Set(prev); n.has(shape.id)?n.delete(shape.id):n.add(shape.id); return n })
+            } else {
+              setSelectedIds(new Set([shape.id]))
+            }
+          }}
+          onDelete={() => {
+            onShapesChange(prev => prev.filter(s => s.id !== shape.id))
+            setSelectedIds(prev => { const n=new Set(prev); n.delete(shape.id); return n })
+          }}
+          onChange={patch => onShapesChange(prev =>
+            prev.map(s => s.id === shape.id ? { ...s, ...patch } : s)
+          )}
+          onMoveAll={(() => {
+            const dragOrigins = {}
+            return (action, dx, dy) => {
+              if (action === "start") {
+                // Snapshot positions of all selected shapes
+                shapes.forEach(s => { if (selectedIds.has(s.id)) dragOrigins[s.id] = { x: s.x, y: s.y } })
+                return
+              }
+              onShapesChange(prev => prev.map(s => {
+                if (!selectedIds.has(s.id) || !dragOrigins[s.id]) return s
+                return {
+                  ...s,
+                  x: Math.max(0, Math.min(dragOrigins[s.id].x + dx, 600 - Math.abs(s.w))),
+                  y: Math.max(0, Math.min(dragOrigins[s.id].y + dy, 220 - Math.abs(s.h))),
+                }
+              }))
+            }
+          })()}
+        />
+      ))}
+    </svg>
   )
 }
 
 // ── Canvas overlay for drawing on top of a note card ─────────────────────────
 const MAX_HISTORY = 40
 
-function DrawingCanvas({ tool, color, thickness, canvasData, onSave, onHistoryChange, registerUndo, registerRedo }) {
-  const canvasRef   = useRef(null)
-  const drawing     = useRef(false)
-  const startPos    = useRef({ x: 0, y: 0 })
-  const snapshotRef = useRef(null)   // per-stroke pre-draw snapshot (for shape preview)
-  const historyRef  = useRef([])     // undo stack  — array of dataURL strings
-  const redoRef     = useRef([])     // redo stack
+// ── CanvasTextLayer — exact Canva text tool ─────────────────────────────────
+function newTid() { return `${Date.now()}-${Math.random().toString(36).slice(2,7)}` }
+const PLACEHOLDER = "Type something"
+
+// Each TextBox is its own component so the contentEditable node
+// NEVER unmounts between selected/editing/idle state changes.
+// Content is synced via ref only on first mount — never via dangerouslySetInnerHTML.
+// ── ColorPicker — swatch button + popover color table ────────────────────────
+function ColorPicker({ color, colors, onChange }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    function h(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
+  }, [])
+
+  return (
+    <div ref={ref} className="relative" onMouseDown={e => e.stopPropagation()}>
+      {/* Current color swatch button */}
+      <button
+        onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
+        onClick={e => { e.stopPropagation(); setOpen(p => !p) }}
+        className="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-secondary transition"
+        title="Text color"
+      >
+        <div className="w-3.5 h-3.5 rounded-sm border border-border/60 flex-shrink-0" style={{ backgroundColor: color }}/>
+        <span style={{ fontSize: 8 }} className="text-muted-foreground/60">▾</span>
+      </button>
+
+      {/* Color table popover */}
+      {open && (
+        <div
+          className="absolute top-full left-0 mt-1.5 z-50 bg-white border border-border/60 rounded-xl shadow-xl p-2"
+          style={{ width: 120 }}
+          onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
+        >
+          <div className="grid grid-cols-5 gap-1">
+            {colors.map(c => (
+              <button
+                key={c}
+                onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
+                onClick={e => { e.stopPropagation(); onChange(c); setOpen(false) }}
+                className="w-5 h-5 rounded-md border-2 transition hover:scale-110"
+                style={{
+                  backgroundColor: c,
+                  borderColor: c === color ? "#7c3aed" : "transparent",
+                  boxShadow: c === "#ffffff" ? "inset 0 0 0 1px #e2e8f0" : "none",
+                }}
+                title={c}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete, onDragStart }) {
+  const nodeRef     = useRef(null)
+  const didMount    = useRef(false)
+
+  // Sync HTML into DOM once on mount (never use dangerouslySetInnerHTML on a contentEditable)
+  useEffect(() => {
+    if (didMount.current) return
+    didMount.current = true
+    if (nodeRef.current && el.html) nodeRef.current.innerHTML = el.html
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Focus + select-all when entering edit mode
+  useEffect(() => {
+    if (!isEdit || !nodeRef.current) return
+    const node = nodeRef.current
+    node.focus()
+    const r = document.createRange()
+    r.selectNodeContents(node)
+    const s = window.getSelection()
+    s.removeAllRanges(); s.addRange(r)
+  }, [isEdit])
+
+  const COLORS = ["#1e293b","#ef4444","#f97316","#eab308","#16a34a","#2563eb","#7c3aed","#ec4899"]
+  const SIZES  = [12, 14, 16, 20, 24, 32]
+  const showCtrl = isSel || isEdit
+
+  // Single mousedown = select + start drag immediately (no double-click needed)
+  function handleBodyMouseDown(e) {
+    e.stopPropagation()
+    if (isEdit) return  // text editing mode — let browser handle it
+    onSelect()          // select (idempotent if already selected)
+    onDragStart(e)      // always start drag tracking from this press
+  }
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left:     el.x,
+        top:      el.y,
+        width:    el.width,           // hard width, not minWidth
+        zIndex:   showCtrl ? 20 : 10, // selected boxes float above others
+        pointerEvents: "all",  // always interactive even when parent has none
+      }}
+    >
+      {/* ── Controls bar ── */}
+      <div
+        style={{
+          position:    "absolute",
+          bottom:      "calc(100% + 6px)",
+          left:        0,
+          zIndex:      30,
+          whiteSpace:  "nowrap",
+          opacity:     showCtrl ? 1 : 0,
+          pointerEvents: showCtrl ? "auto" : "none",
+          transition:  "opacity 0.12s",
+          backdropFilter: "blur(8px)",
+        }}
+        className="flex items-center gap-1 bg-white/95 border border-border/70 rounded-xl shadow-lg px-2 py-1"
+        onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
+      >
+        {/* Drag grip */}
+        <div
+          className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-secondary"
+          onMouseDown={e => { e.stopPropagation(); onDragStart(e) }}
+        >
+          <GripVertical size={12} className="text-muted-foreground/60"/>
+        </div>
+        <div className="w-px h-3 bg-border/50"/>
+
+        {/* Size — compact select */}
+        <div className="relative" onMouseDown={e => e.stopPropagation()}>
+          <select
+            value={el.fontSize}
+            onChange={e => { e.stopPropagation(); onUpdate({ fontSize: Number(e.target.value) }) }}
+            className="text-[10px] font-mono border border-border/50 rounded px-1 py-0.5 bg-white focus:outline-none cursor-pointer"
+            style={{ fontSize: 10 }}
+          >
+            {SIZES.map(s => <option key={s} value={s}>{s}px</option>)}
+          </select>
+        </div>
+
+        <div className="w-px h-3 bg-border/50"/>
+
+        {/* Color — swatch button that toggles a color table popover */}
+        <ColorPicker color={el.color} colors={COLORS} onChange={c => onUpdate({ color: c })} />
+
+        <div className="w-px h-3 bg-border/50"/>
+
+        {/* Delete */}
+        <button
+          onMouseDown={e => e.preventDefault()}
+          onClick={e => { e.stopPropagation(); onDelete() }}
+          className="p-0.5 rounded text-red-400 hover:text-red-500 hover:bg-red-50 transition"
+        ><Trash2 size={10}/></button>
+      </div>
+
+      {/* ── Text body ── */}
+      <div
+        ref={nodeRef}
+        contentEditable
+        suppressContentEditableWarning
+        onFocus={onEnterEdit}
+        onBlur={e => onUpdate({ html: e.currentTarget.innerHTML })}
+        onInput={e => onUpdate({ html: e.currentTarget.innerHTML })}
+        onKeyDown={e => { if (e.key === "Escape") e.currentTarget.blur(); e.stopPropagation() }}
+        onMouseDown={handleBodyMouseDown}
+        onDoubleClick={e => { e.stopPropagation(); onEnterEdit() }}
+        className="outline-none break-words leading-snug w-full"
+        style={{
+          fontSize:     el.fontSize,
+          color:        el.color,
+          fontFamily:   "sans-serif",
+          padding:      "4px 8px",
+          minHeight:    el.fontSize + 14,
+          wordBreak:    "break-word",
+          whiteSpace:   "pre-wrap",
+          cursor:       isEdit ? "text" : isSel ? "move" : "default",
+          border:       isEdit ? "1.5px dashed #7c3aed"
+                      : isSel  ? "1.5px solid #c4b5fd"
+                      :          "1.5px dashed transparent",
+          borderRadius: 6,
+          background:   isEdit ? "rgba(255,255,255,0.92)"
+                      : isSel  ? "rgba(237,233,254,0.25)"
+                      :          "transparent",
+          boxShadow:    isEdit ? "0 2px 12px rgba(124,58,237,0.15)" : "none",
+          userSelect:   isEdit ? "text" : "none",
+        }}
+      />
+
+      {/* ── Resize handle (right edge + bottom-right corner) ── */}
+      {isSel && (
+        <>
+          {/* Bottom-right corner */}
+          <div
+            style={{
+              position: "absolute", right: -6, bottom: -6,
+              width: 14, height: 14, zIndex: 25,
+              background: "white", border: "2px solid #7c3aed",
+              borderRadius: "50%", cursor: "se-resize",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+            }}
+            onMouseDown={e => {
+              e.stopPropagation(); e.preventDefault()
+              const x0 = e.clientX, w0 = el.width
+              function move(ev) { onUpdate({ width: Math.max(60, w0 + ev.clientX - x0) }) }
+              function up() { window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up) }
+              window.addEventListener("mousemove", move); window.addEventListener("mouseup", up)
+            }}
+          />
+          {/* Right edge drag (also resizes width) */}
+          <div
+            style={{
+              position: "absolute", right: -4, top: "20%", bottom: "20%",
+              width: 8, cursor: "ew-resize", zIndex: 24,
+            }}
+            onMouseDown={e => {
+              e.stopPropagation(); e.preventDefault()
+              const x0 = e.clientX, w0 = el.width
+              function move(ev) { onUpdate({ width: Math.max(60, w0 + ev.clientX - x0) }) }
+              function up() { window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up) }
+              window.addEventListener("mousemove", move); window.addEventListener("mouseup", up)
+            }}
+          />
+        </>
+      )}
+    </div>
+  )
+}
+
+function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange, externalSelectedIds, onExternalSelectClear }) {
+  const [selectedIds, setSelectedIds] = useState(new Set())
+  const [editingId,   setEditingId]   = useState(null)
+  const layerRef = useRef(null)
+
+  // Expose selected ids upward for copy/paste
+  const selectedIdsRef = useRef(new Set())
+  selectedIdsRef.current = selectedIds
+
+  // Sync external multi-selection from drag-select
+  useEffect(() => {
+    if (externalSelectedIds && externalSelectedIds.size > 0) {
+      setSelectedIds(externalSelectedIds)
+      setEditingId(null)
+    }
+  }, [externalSelectedIds])
+
+  // Escape = deselect, Delete = delete selected box
+  useEffect(() => {
+    function onKey(e) {
+      if (e.key === "Escape") {
+        document.activeElement?.blur?.()
+        setSelectedIds(new Set()); setEditingId(null)
+      }
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedIds.size > 0 && !editingId) {
+        const ae = document.activeElement
+        if (!ae?.isContentEditable && ae?.tagName !== "INPUT" && ae?.tagName !== "TEXTAREA") {
+          e.preventDefault()
+          selectedIds.forEach(id => del(id))
+          setSelectedIds(new Set())
+        }
+      }
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }, [selectedIds, editingId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Click outside → deselect ───────────────────────────────────────────────
+  useEffect(() => {
+    function onDown(e) {
+      if (layerRef.current && !layerRef.current.contains(e.target)) {
+        setSelectedIds(new Set()); setEditingId(null)
+      }
+    }
+    document.addEventListener("mousedown", onDown)
+    return () => document.removeEventListener("mousedown", onDown)
+  }, [])
+
+  function upd(id, patch) {
+    onTextsChange(prev => prev.map(t => t.id === id ? { ...t, ...patch } : t))
+  }
+  function del(id) {
+    onTextsChange(prev => prev.filter(t => t.id !== id))
+    setSelectedId(null); setEditingId(null)
+  }
+
+  // ── Place new text box ─────────────────────────────────────────────────────
+  function handleLayerClick(e) {
+    if (tool !== "text") return
+    if (e.target !== layerRef.current) return
+    const rect = layerRef.current.getBoundingClientRect()
+    const id = newTid()
+    onTextsChange(prev => [...prev, {
+      id,
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+      html:     PLACEHOLDER,
+      fontSize: fontSize || 16,
+      color:    color || "#1e293b",
+      width:    200,
+    }])
+    setTool(null)                        // T deactivates immediately
+    setSelectedIds(new Set([id])); setEditingId(id)  // enter edit right away
+    // selectAll happens inside TextBox's useEffect when isEdit becomes true
+  }
+
+  // ── Deselect on empty-area click ───────────────────────────────────────────
+  function handleLayerMouseDown(e) {
+    if (e.target === layerRef.current) { setSelectedIds(new Set()); setEditingId(null); onExternalSelectClear?.() }
+  }
+
+  // ── Drag with movement threshold — clamped to drawing area bounds ──────────
+  function startDrag(e, el) {
+    if (e.button !== 0) return
+    e.preventDefault(); e.stopPropagation()
+    const x0 = e.clientX, y0 = e.clientY, ox = el.x, oy = el.y
+
+    function getBounds() {
+      if (!layerRef.current) return { w: 9999, h: 9999 }
+      const r = layerRef.current.getBoundingClientRect()
+      return { w: r.width, h: r.height }
+    }
+
+    let dragged = false
+    function move(ev) {
+      const dx = ev.clientX - x0, dy = ev.clientY - y0
+      if (!dragged && Math.sqrt(dx*dx + dy*dy) < 4) return
+      dragged = true
+      const { w, h } = getBounds()
+      const nx = Math.max(0, Math.min(ox + dx, w - (el.width || 100)))
+      const ny = Math.max(0, Math.min(oy + dy, h - (el.fontSize || 16) - 8))
+      upd(el.id, { x: nx, y: ny })
+    }
+    function up() {
+      window.removeEventListener("mousemove", move)
+      window.removeEventListener("mouseup", up)
+    }
+    window.addEventListener("mousemove", move)
+    window.addEventListener("mouseup", up)
+  }
+
+  // When a shape tool is active the whole div must be transparent so clicks
+  // reach the SVG ShapeLayer below. Individual TextBox nodes keep pointer-events:all.
+  const SHAPE_TOOL_IDS = ["line","arrow","arrowLeft","arrowDouble","arrowUp","arrowDiag",
+    "rect","roundedRect","circle","diamond","triangle","parallelogram",
+    "process","decision","terminator","cylinder","arrowBlock",
+    "calloutRect","calloutOval","star","hexagon","cloud"]
+  const isShapeTool = SHAPE_TOOL_IDS.includes(tool)
+  return (
+    <div
+      ref={layerRef}
+      className="absolute inset-0"
+      style={{ pointerEvents: tool === "text" ? "auto" : "none", cursor: tool === "text" ? "crosshair" : "default", position: "absolute", inset: 0, zIndex: tool === "text" ? 10 : 3 }}
+      onClick={handleLayerClick}
+      onMouseDown={handleLayerMouseDown}
+    >
+      {(texts || []).map((el, idx) => (
+        <TextBox
+          key={`tb-${String(el.id)}-${idx}`}
+          el={el}
+          isSel={selectedIds.has(String(el.id))}
+          isEdit={editingId === el.id}
+          onSelect={()      => { setSelectedIds(new Set([String(el.id)])); setEditingId(null); onExternalSelectClear?.() }}
+          onEnterEdit={()   => { setSelectedIds(new Set([String(el.id)])); setEditingId(el.id) }}
+          onUpdate={patch   => upd(el.id, patch)}
+          onDelete={()      => del(el.id)}
+          onDragStart={e    => startDrag(e, el)}
+        />
+      ))}
+    </div>
+  )
+}
+
+
+function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, canvasTexts, canvasShapes, onSave, onTextsChange, onShapesChange, onHistoryChange, registerUndo, registerRedo, visible }) {
+  const canvasRef         = useRef(null)
+  const containerRef      = useRef(null)
+  const [selectedTextIds, setSelectedTextIds] = useState(new Set())
+  const clipboardRef      = useRef(null)  // { shapes:[], texts:[] }
+  const shapeSelectedIds  = useRef(new Set())
+  const drawing        = useRef(false)
+  const startPos       = useRef({ x: 0, y: 0 })
+  const snapshotRef    = useRef(null)
+  const historyRef     = useRef([])
+  const redoRef        = useRef([])
 
   function notifyHistory() {
     onHistoryChange?.({
@@ -453,19 +1399,17 @@ function DrawingCanvas({ tool, color, thickness, canvasData, onSave, onHistoryCh
     })
   }
 
-  // Push current canvas state onto undo stack before a new stroke
   function pushHistory() {
     const url = canvasRef.current.toDataURL()
     historyRef.current.push(url)
     if (historyRef.current.length > MAX_HISTORY) historyRef.current.shift()
-    redoRef.current = []   // new stroke clears redo
+    redoRef.current = []
     notifyHistory()
   }
 
-  // Restore a dataURL onto the canvas
   function restoreDataUrl(url) {
     const canvas = canvasRef.current
-    const ctx    = canvas.getContext("2d")
+    const ctx    = canvas.getContext("2d", { willReadFrequently: true })
     ctx.clearRect(0, 0, canvas.width, canvas.height)
     if (!url) { onSave(canvas.toDataURL()); notifyHistory(); return }
     const img = new Image()
@@ -478,7 +1422,6 @@ function DrawingCanvas({ tool, color, thickness, canvasData, onSave, onHistoryCh
     img.src = url
   }
 
-  // Register undo/redo handlers with the parent NoteCard
   useEffect(() => {
     registerUndo?.(() => {
       if (historyRef.current.length === 0) return
@@ -496,14 +1439,50 @@ function DrawingCanvas({ tool, color, thickness, canvasData, onSave, onHistoryCh
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Restore saved drawing on mount (only once)
+  // ── Copy / Paste (Ctrl+C / Ctrl+V) ────────────────────────────────────────
+  useEffect(() => {
+    function onKey(e) {
+      const ae = document.activeElement
+      if (ae?.isContentEditable || ae?.tagName === "INPUT" || ae?.tagName === "TEXTAREA") return
+      if ((e.ctrlKey || e.metaKey) && e.key === "c") {
+        // Copy selected shapes + texts
+        const selectedShapes = (canvasShapes || []).filter(s => shapeSelectedIds.current.has(s.id))
+        const selectedTexts  = (canvasTexts  || []).filter(t => selectedTextIds.has(String(t.id ?? t.id)))
+        if (selectedShapes.length > 0 || selectedTexts.length > 0) {
+          clipboardRef.current = {
+            shapes: selectedShapes.map(s => ({ ...s })),
+            texts:  selectedTexts.map(t => ({ ...t })),
+          }
+          e.preventDefault()
+        }
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "v") {
+        if (!clipboardRef.current) return
+        e.preventDefault()
+        const OFFSET = 20
+        const newShapes = clipboardRef.current.shapes.map(s => ({
+          ...s, id: `sh-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+          x: s.x + OFFSET, y: s.y + OFFSET,
+        }))
+        const newTexts = clipboardRef.current.texts.map(t => ({
+          ...t, id: `txt-${Date.now()}-${Math.random().toString(36).slice(2,6)}`,
+          x: t.x + OFFSET, y: t.y + OFFSET,
+        }))
+        if (newShapes.length > 0) onShapesChange(prev => [...prev, ...newShapes])
+        if (newTexts.length  > 0) onTextsChange(prev  => [...prev, ...newTexts])
+      }
+    }
+    document.addEventListener("keydown", onKey)
+    return () => document.removeEventListener("keydown", onKey)
+  }) // runs every render so closures are fresh
+
   const restoredRef = useRef(false)
   useEffect(() => {
     if (restoredRef.current || !canvasData || !canvasRef.current) return
     restoredRef.current = true
     const img = new Image()
     img.onload = () => {
-      const ctx = canvasRef.current.getContext("2d")
+      const ctx = canvasRef.current.getContext("2d", { willReadFrequently: true })
       ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
       ctx.drawImage(img, 0, 0)
     }
@@ -519,70 +1498,98 @@ function DrawingCanvas({ tool, color, thickness, canvasData, onSave, onHistoryCh
     return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY }
   }
 
-  function onDown(e) {
-    if (!tool) return
-    e.preventDefault()
-    const canvas = canvasRef.current
-    const ctx    = canvas.getContext("2d")
-    const pos    = getPos(e, canvas)
-    drawing.current  = true
-    startPos.current = pos
+  function drawShape(ctx, t, sx, sy, ex, ey) {
+    ctx.strokeStyle = color
+    ctx.lineWidth   = thickness
+    ctx.lineCap     = "round"
+    ctx.lineJoin    = "round"
 
-    // Save state BEFORE this stroke for undo
-    pushHistory()
-    snapshotRef.current = ctx.getImageData(0, 0, canvas.width, canvas.height)
-
-    if (tool === "pen" || tool === "eraser") {
+    function arrowHead(x1, y1, x2, y2) {
+      const angle = Math.atan2(y2 - y1, x2 - x1)
+      const len   = Math.max(10, thickness * 4)
       ctx.beginPath()
-      ctx.moveTo(pos.x, pos.y)
+      ctx.moveTo(x2, y2)
+      ctx.lineTo(x2 - len*Math.cos(angle-0.4), y2 - len*Math.sin(angle-0.4))
+      ctx.moveTo(x2, y2)
+      ctx.lineTo(x2 - len*Math.cos(angle+0.4), y2 - len*Math.sin(angle+0.4))
+      ctx.stroke()
+    }
+
+    const w = ex - sx, h = ey - sy
+    ctx.beginPath()
+
+    switch (t) {
+      case "line": ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke(); break
+      case "arrow": ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke(); arrowHead(sx,sy,ex,ey); break
+      case "arrowLeft": ctx.moveTo(ex,ey); ctx.lineTo(sx,sy); ctx.stroke(); arrowHead(ex,ey,sx,sy); break
+      case "arrowDouble": ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke(); arrowHead(sx,sy,ex,ey); arrowHead(ex,ey,sx,sy); break
+      case "arrowUp": ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke(); arrowHead(sx,sy,ex,ey); break
+      case "arrowDiag": ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke(); arrowHead(sx,sy,ex,ey); break
+      case "rect": ctx.rect(sx,sy,w,h); ctx.stroke(); break
+      case "roundedRect": { const r=Math.min(12,Math.abs(w)/4,Math.abs(h)/4); ctx.moveTo(sx+r,sy); ctx.lineTo(sx+w-r,sy); ctx.arcTo(sx+w,sy,sx+w,sy+r,r); ctx.lineTo(sx+w,sy+h-r); ctx.arcTo(sx+w,sy+h,sx+w-r,sy+h,r); ctx.lineTo(sx+r,sy+h); ctx.arcTo(sx,sy+h,sx,sy+h-r,r); ctx.lineTo(sx,sy+r); ctx.arcTo(sx,sy,sx+r,sy,r); ctx.closePath(); ctx.stroke(); break }
+      case "circle": { const rx=w/2,ry=h/2; ctx.ellipse(sx+rx,sy+ry,Math.abs(rx),Math.abs(ry),0,0,2*Math.PI); ctx.stroke(); break }
+      case "diamond": { const cx=sx+w/2,cy=sy+h/2; ctx.moveTo(cx,sy); ctx.lineTo(sx+w,cy); ctx.lineTo(cx,sy+h); ctx.lineTo(sx,cy); ctx.closePath(); ctx.stroke(); break }
+      case "triangle": { ctx.moveTo(sx+w/2,sy); ctx.lineTo(sx+w,sy+h); ctx.lineTo(sx,sy+h); ctx.closePath(); ctx.stroke(); break }
+      case "parallelogram": { const o=Math.abs(w)*0.2; ctx.moveTo(sx+o,sy); ctx.lineTo(sx+w,sy); ctx.lineTo(sx+w-o,sy+h); ctx.lineTo(sx,sy+h); ctx.closePath(); ctx.stroke(); break }
+      case "process": ctx.rect(sx,sy,w,h); ctx.stroke(); break
+      case "decision": { const cx=sx+w/2,cy=sy+h/2; ctx.moveTo(cx,sy); ctx.lineTo(sx+w,cy); ctx.lineTo(cx,sy+h); ctx.lineTo(sx,cy); ctx.closePath(); ctx.stroke(); break }
+      case "terminator": { const r2=Math.abs(h)/2; ctx.moveTo(sx+r2,sy); ctx.arcTo(sx+w,sy,sx+w,sy+h,r2); ctx.arcTo(sx+w,sy+h,sx,sy+h,r2); ctx.arcTo(sx,sy+h,sx,sy,r2); ctx.arcTo(sx,sy,sx+w,sy,r2); ctx.closePath(); ctx.stroke(); break }
+      case "cylinder": { const ry2=Math.abs(h)*0.15; ctx.ellipse(sx+w/2,sy+ry2,Math.abs(w/2),ry2,0,0,2*Math.PI); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sx,sy+ry2); ctx.lineTo(sx,sy+h-ry2); ctx.moveTo(sx+w,sy+ry2); ctx.lineTo(sx+w,sy+h-ry2); ctx.stroke(); ctx.beginPath(); ctx.ellipse(sx+w/2,sy+h-ry2,Math.abs(w/2),ry2,0,0,Math.PI); ctx.stroke(); break }
+      case "arrowBlock": { const hW=Math.abs(w)*0.35,tY=sy+Math.abs(h)*0.28,bY=sy+h-Math.abs(h)*0.28; ctx.moveTo(sx,tY); ctx.lineTo(sx+w-hW,tY); ctx.lineTo(sx+w-hW,sy); ctx.lineTo(sx+w,sy+h/2); ctx.lineTo(sx+w-hW,sy+h); ctx.lineTo(sx+w-hW,bY); ctx.lineTo(sx,bY); ctx.closePath(); ctx.stroke(); break }
+      case "star": { const cx3=sx+w/2,cy3=sy+h/2,oR=Math.min(Math.abs(w),Math.abs(h))/2,iR=oR*0.4; for(let i=0;i<10;i++){const r=i%2===0?oR:iR,a=(i*Math.PI/5)-Math.PI/2; if(i===0)ctx.moveTo(cx3+r*Math.cos(a),cy3+r*Math.sin(a)); else ctx.lineTo(cx3+r*Math.cos(a),cy3+r*Math.sin(a))} ctx.closePath(); ctx.stroke(); break }
+      case "hexagon": { const cx4=sx+w/2,cy4=sy+h/2,r4=Math.min(Math.abs(w),Math.abs(h))/2; for(let i=0;i<6;i++){const a=(Math.PI/3)*i-Math.PI/6; if(i===0)ctx.moveTo(cx4+r4*Math.cos(a),cy4+r4*Math.sin(a)); else ctx.lineTo(cx4+r4*Math.cos(a),cy4+r4*Math.sin(a))} ctx.closePath(); ctx.stroke(); break }
+      case "calloutRect": { ctx.rect(sx,sy,w,Math.abs(h)*0.7); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sx+w*0.25,sy+Math.abs(h)*0.7); ctx.lineTo(sx+w*0.12,sy+h); ctx.lineTo(sx+w*0.43,sy+Math.abs(h)*0.7); ctx.stroke(); break }
+      case "calloutOval": { const ry3=Math.abs(h)*0.35; ctx.ellipse(sx+w/2,sy+ry3,Math.abs(w/2),ry3,0,0,2*Math.PI); ctx.stroke(); ctx.beginPath(); ctx.moveTo(sx+w*0.3,sy+ry3*1.8); ctx.lineTo(sx+w*0.15,sy+h); ctx.lineTo(sx+w*0.5,sy+ry3*1.8); ctx.stroke(); break }
+      case "cloud": {
+        const aw=Math.abs(w), ah=Math.abs(h)
+        const bx=w<0?sx+w:sx, by=h<0?sy+h:sy
+        ctx.moveTo(bx+aw*0.25, by+ah)
+        ctx.arc(bx+aw*0.12, by+ah*0.72, ah*0.28, Math.PI*0.5, Math.PI*1.5, false)
+        ctx.arc(bx+aw*0.35, by+ah*0.35, aw*0.18, Math.PI*1.1, Math.PI*0, false)
+        ctx.arc(bx+aw*0.6,  by+ah*0.2,  aw*0.22, Math.PI*1.0, Math.PI*0, false)
+        ctx.arc(bx+aw*0.85, by+ah*0.55, aw*0.18, Math.PI*1.5, Math.PI*0.5, false)
+        ctx.arc(bx+aw*0.65, by+ah*0.88, ah*0.18, Math.PI*0, Math.PI, false)
+        ctx.closePath()
+        ctx.stroke()
+        break
+      }
+      default: break
     }
   }
 
-  function onMove(e) {
-    if (!drawing.current || !tool) return
+  function onDown(e) {
+    if (!tool || tool === "text" || SHAPE_TOOLS.includes(tool)) return
     e.preventDefault()
     const canvas = canvasRef.current
-    const ctx    = canvas.getContext("2d")
+    const ctx    = canvas.getContext("2d", { willReadFrequently: true })
+    const pos    = getPos(e, canvas)
+    drawing.current  = true
+    startPos.current = pos
+    pushHistory()
+    snapshotRef.current = ctx.getImageData(0, 0, canvas.width, canvas.height)
+    if (tool === "pen" || tool === "eraser") { ctx.beginPath(); ctx.moveTo(pos.x, pos.y) }
+  }
+
+  function onMove(e) {
+    if (!drawing.current || !tool || tool === "text" || SHAPE_TOOLS.includes(tool)) return
+    e.preventDefault()
+    const canvas = canvasRef.current
+    const ctx    = canvas.getContext("2d", { willReadFrequently: true })
     const pos    = getPos(e, canvas)
 
     if (tool === "eraser") {
       ctx.globalCompositeOperation = "destination-out"
-      ctx.lineWidth = thickness * 6   // eraser is wider
-      ctx.lineCap   = "round"
-      ctx.lineJoin  = "round"
-      ctx.lineTo(pos.x, pos.y)
-      ctx.stroke()
+      ctx.lineWidth = thickness * 6; ctx.lineCap = "round"; ctx.lineJoin = "round"
+      ctx.lineTo(pos.x, pos.y); ctx.stroke()
       ctx.globalCompositeOperation = "source-over"
     } else if (tool === "pen") {
       ctx.globalCompositeOperation = "source-over"
-      ctx.strokeStyle = color
-      ctx.lineWidth   = thickness
-      ctx.lineCap     = "round"
-      ctx.lineJoin    = "round"
-      ctx.lineTo(pos.x, pos.y)
-      ctx.stroke()
+      ctx.strokeStyle = color; ctx.lineWidth = thickness; ctx.lineCap = "round"; ctx.lineJoin = "round"
+      ctx.lineTo(pos.x, pos.y); ctx.stroke()
     } else {
-      // Shape tools — restore snapshot for live preview
       ctx.putImageData(snapshotRef.current, 0, 0)
       ctx.globalCompositeOperation = "source-over"
-      ctx.strokeStyle = color
-      ctx.lineWidth   = thickness
-      ctx.lineCap     = "round"
-      ctx.lineJoin    = "round"
-      const sx = startPos.current.x
-      const sy = startPos.current.y
-      ctx.beginPath()
-      if (tool === "circle") {
-        const rx = (pos.x - sx) / 2
-        const ry = (pos.y - sy) / 2
-        ctx.ellipse(sx + rx, sy + ry, Math.abs(rx), Math.abs(ry), 0, 0, 2 * Math.PI)
-      } else if (tool === "rect") {
-        ctx.rect(sx, sy, pos.x - sx, pos.y - sy)
-      } else if (tool === "line") {
-        ctx.moveTo(sx, sy)
-        ctx.lineTo(pos.x, pos.y)
-      }
-      ctx.stroke()
+      drawShape(ctx, tool, startPos.current.x, startPos.current.y, pos.x, pos.y)
     }
   }
 
@@ -592,52 +1599,113 @@ function DrawingCanvas({ tool, color, thickness, canvasData, onSave, onHistoryCh
     onSave(canvasRef.current.toDataURL())
   }
 
-  const cursor = tool === "eraser" ? "cell" : tool ? "crosshair" : "default"
+  const _isShTool = SHAPE_TOOLS.includes(tool)
+  const cursor = (tool === "text" || _isShTool) ? "default" : tool === "eraser" ? "cell" : tool ? "crosshair" : "default"
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    canvas.addEventListener("touchstart", onDown, { passive: false })
+    canvas.addEventListener("touchmove",  onMove, { passive: false })
+    canvas.addEventListener("touchend",   onUp,   { passive: false })
+    return () => {
+      canvas.removeEventListener("touchstart", onDown)
+      canvas.removeEventListener("touchmove",  onMove)
+      canvas.removeEventListener("touchend",   onUp)
+    }
+  })
 
   return (
-    <canvas
-      ref={canvasRef}
-      width={600} height={200}
-      onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
-      onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}
-      className="w-full rounded-b-xl"
+    <div
+      ref={containerRef}
+      className="relative w-full"
       style={{
-        cursor,
-        display: "block",
-        touchAction: tool ? "none" : "auto",
-        background: "transparent",
         borderTop: "1px dashed rgba(0,0,0,0.08)",
+        display: visible ? "block" : "none",
       }}
-    />
+    >
+      <canvas
+        ref={canvasRef}
+        width={600} height={220}
+        onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
+        className="w-full block"
+        style={{
+          cursor,
+          touchAction: (tool === "pen" || tool === "eraser") ? "none" : "auto",
+          background: "transparent",
+          position: "absolute",
+          top: 0, left: 0,
+          width: "100%",
+          pointerEvents: (tool === "pen" || tool === "eraser") ? "all" : "none",
+          zIndex: (tool === "pen" || tool === "eraser") ? 10 : 1,
+        }}
+      />
+      {/* Spacer div so the container has height matching the canvas */}
+      <div style={{ width: "100%", paddingBottom: `${(220/600)*100}%` }}/>
+      <CanvasTextLayer
+        tool={tool}
+        setTool={setTool}
+        color={color}
+        fontSize={fontSize}
+        texts={(canvasTexts || []).map((el, i) => ({
+          ...el,
+          id: String(el.id ?? `legacy-${i}-${Date.now()}`),
+        }))}
+        onTextsChange={onTextsChange}
+        containerRef={containerRef}
+        externalSelectedIds={selectedTextIds}
+        onExternalSelectClear={() => setSelectedTextIds(new Set())}
+      />
+      <ShapeLayer
+        tool={tool}
+        color={color}
+        thickness={thickness}
+        shapes={canvasShapes || []}
+        onShapesChange={onShapesChange}
+        texts={(canvasTexts || []).map((el, i) => ({ ...el, id: String(el.id ?? `legacy-${i}`) }))}
+        onSelectTexts={ids => setSelectedTextIds(ids)}
+        onSelectedChange={ids => { shapeSelectedIds.current = ids }}
+      />
+    </div>
   )
 }
 
 // ── Single Note Card ──────────────────────────────────────────────────────────
-function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, toolThickness }) {
+function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, toolThickness, gripHandlers, draggingIdx }) {
   const editorRef        = useRef(null)
   const undoRef          = useRef(null)
   const redoRef          = useRef(null)
+  const latestShapesRef  = useRef([])  // always holds latest canvasShapes — fixes stale closure in drag
   const [tool,           setTool]           = useState(null)
   const [color,          setColor]          = useState(toolColor  || "#1e293b")
   const [thickness,      setThickness]      = useState(toolThickness || 2)
+  const [fontSize,       setFontSize]       = useState(16)
   const [showCardColors, setShowCardColors] = useState(false)
   const [canUndo,        setCanUndo]        = useState(false)
   const [canRedo,        setCanRedo]        = useState(false)
-  const [activeMarker,   setActiveMarker]   = useState(null) // "•" | "★" | "1." | etc.
-  const markerCounterRef = useRef(1) // for auto-incrementing numbered lists
+  const [activeMarker,   setActiveMarker]   = useState(null)
+  const markerCounterRef = useRef(1)
   const colorBtnRef = useRef(null)
 
-  const drawingTools = ["pen", "eraser", "circle", "rect", "line"]
+  const drawingTools = ["pen","eraser","line","arrow","arrowLeft","arrowDouble","arrowUp","arrowDiag","rect","roundedRect","circle","diamond","triangle","parallelogram","process","decision","terminator","cylinder","arrowBlock","cloud","calloutRect","calloutOval","star","hexagon"]
   const isDrawing    = drawingTools.includes(tool)
+  // Canvas visible when: any draw tool active, text tool active, or saved content exists
+  const canvasVisible = isDrawing || tool === "text" || SHAPE_TOOLS.includes(tool) || !!(note.canvasData || (note.canvasTexts && note.canvasTexts.length > 0) || (note.canvasShapes && note.canvasShapes.length > 0))
 
   useEffect(() => { if (activeTool) setTool(activeTool) }, [activeTool])
   useEffect(() => { if (toolColor) setColor(toolColor) }, [toolColor])
 
+  const syncedIdRef = useRef(null)
+  // Keep latestShapesRef in sync with note.canvasShapes
+  // This runs every render so the ref is always fresh
+  latestShapesRef.current = note.canvasShapes || []
+
   useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== (note.html || "")) {
+    if (editorRef.current && syncedIdRef.current !== (note._id ?? index)) {
+      syncedIdRef.current = note._id ?? index
       editorRef.current.innerHTML = note.html || ""
     }
-  }, []) // only on mount
+  })
 
   useEffect(() => {
     function h(e) { if (colorBtnRef.current && !colorBtnRef.current.contains(e.target)) setShowCardColors(false) }
@@ -662,7 +1730,7 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
         style={{ borderBottom: `1px solid ${cardColor.border}` }}>
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
           {/* Grip — dragging initiates from here visually, but the whole wrapper is draggable */}
-          <GripVertical size={13} className="text-muted-foreground/40 flex-shrink-0" style={{ cursor: "grab" }} />
+          <GripVertical size={13} className="text-muted-foreground/40 flex-shrink-0" onPointerDown={e => gripHandlers?.onGripDown(e, index)} onPointerMove={e => gripHandlers?.onGripMove(e)} onPointerUp={e => gripHandlers?.onGripUp(e)} onPointerCancel={e => gripHandlers?.onGripUp(e)} style={{ cursor: draggingIdx === index ? "grabbing" : "grab", touchAction: "none", userSelect: "none", flexShrink: 0 }} />
           <input
             value={note.title || ""}
             onChange={e => onUpdate(index, "title", e.target.value)}
@@ -702,15 +1770,9 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
         </div>
       </div>
 
-      {/* Rich text toolbar */}
-      <RichToolbar
+      {/* Floating selection bar — appears on text select via portal */}
+      <FloatingSelectionBar
         editorRef={editorRef}
-        tool={tool} setTool={setTool}
-        color={color} setColor={setColor}
-        thickness={thickness} setThickness={setThickness}
-        onUndo={() => undoRef.current?.()}
-        onRedo={() => redoRef.current?.()}
-        canUndo={canUndo} canRedo={canRedo}
         activeMarker={activeMarker}
         onClearMarker={() => { setActiveMarker(null); markerCounterRef.current = 1 }}
         onMarkerInserted={marker => {
@@ -792,40 +1854,52 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
         }}
       />
 
-      {/* Drawing canvas — only rendered when a drawing tool is selected */}
-      {isDrawing && (
-        <DrawingCanvas
-          tool={tool}
-          color={color}
-          thickness={thickness}
-          canvasData={note.canvasData}
-          onSave={data => onUpdate(index, "canvasData", data)}
-          onHistoryChange={({ canUndo: u, canRedo: r }) => { setCanUndo(u); setCanRedo(r) }}
-          registerUndo={fn => { undoRef.current = fn }}
-          registerRedo={fn => { redoRef.current = fn }}
-        />
-      )}
+      {/* Draw mini-bar */}
+      <DrawMiniBar
+        tool={tool} setTool={setTool}
+        color={color} setColor={setColor}
+        thickness={thickness} setThickness={setThickness}
+        fontSize={fontSize} setFontSize={setFontSize}
+        onUndo={() => undoRef.current?.()}
+        onRedo={() => redoRef.current?.()}
+        canUndo={canUndo} canRedo={canRedo}
+      />
 
-      {/* Show saved drawing even when no tool is active */}
-      {!isDrawing && note.canvasData && (
-        <div
-          onMouseDown={e => e.stopPropagation()}
-          className="px-3 pb-3"
-        >
-          <img
-            src={note.canvasData}
-            alt="drawing"
-            className="w-full rounded-lg border border-border/40"
-            style={{ display: "block", imageRendering: "crisp-edges" }}
-          />
-        </div>
-      )}
+      {/* DrawingCanvas is ALWAYS mounted so the canvas bitmap and text elements
+          are never lost when switching tools. Hidden via CSS when no tool active. */}
+      <DrawingCanvas
+        tool={tool}
+        setTool={setTool}
+        color={color}
+        thickness={thickness}
+        fontSize={fontSize}
+        canvasData={note.canvasData}
+        canvasTexts={note.canvasTexts || []}
+        canvasShapes={note.canvasShapes || []}
+        onSave={data => onUpdate(index, "canvasData", data)}
+        onTextsChange={updater => {
+          const current = note.canvasTexts || []
+          const next = typeof updater === "function" ? updater(current) : updater
+          onUpdate(index, "canvasTexts", next)
+        }}
+        onShapesChange={updater => {
+          // Use latestShapesRef to avoid stale closure during shape drag
+          const current = latestShapesRef.current
+          const next = typeof updater === "function" ? updater(current) : updater
+          latestShapesRef.current = next
+          onUpdate(index, "canvasShapes", next)
+        }}
+        onHistoryChange={({ canUndo: u, canRedo: r }) => { setCanUndo(u); setCanRedo(r) }}
+        registerUndo={fn => { undoRef.current = fn }}
+        registerRedo={fn => { redoRef.current = fn }}
+        visible={canvasVisible}
+      />
     </div>
   )
 }
 
 // ── Vocabulary Card ───────────────────────────────────────────────────────────
-function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccent }) {
+function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccent, gripHandlers, draggingIdx }) {
   const exampleRef       = useRef(null)
   const [activeMarker,   setActiveMarker]   = useState(null)
   const markerCounterRef = useRef(1)
@@ -840,8 +1914,7 @@ function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccen
     const el = exampleRef.current
     if (!el) return
     el.focus()
-    const isEmpty = el.textContent.trim() === ""
-    document.execCommand("insertText", false, (isEmpty ? "" : "\n") + marker + "\u00A0")
+    document.execCommand("insertText", false, marker + "\u00A0")
     el.dispatchEvent(new Event("input", { bubbles: true }))
     setActiveMarker(marker)
     if (marker === "1.") markerCounterRef.current = 2
@@ -854,7 +1927,7 @@ function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccen
     >
       {/* Top row: grip + word + meaning + delete */}
       <div className="flex items-start gap-2 p-3 pb-2">
-        <GripVertical size={14} className="text-muted-foreground/30 mt-2 flex-shrink-0" style={{ cursor: "grab" }} />
+        <GripVertical size={14} className="text-muted-foreground/30 mt-2 flex-shrink-0" onPointerDown={e => gripHandlers?.onGripDown(e, ri)} onPointerMove={e => gripHandlers?.onGripMove(e)} onPointerUp={e => gripHandlers?.onGripUp(e)} onPointerCancel={e => gripHandlers?.onGripUp(e)} style={{ cursor: draggingIdx === ri ? "grabbing" : "grab", touchAction: "none", userSelect: "none" }} />
         <div className="flex flex-col sm:flex-row gap-2 flex-1 min-w-0">
           <input
             value={v.word || ""}
@@ -970,7 +2043,7 @@ function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccen
 }
 
 // ── Mistake Card ──────────────────────────────────────────────────────────────
-function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectionAccent }) {
+function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectionAccent, gripHandlers, draggingIdx }) {
   const reasonRef        = useRef(null)
   const [activeMarker,   setActiveMarker]   = useState(null)
   const markerCounterRef = useRef(1)
@@ -985,8 +2058,7 @@ function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectio
     const el = reasonRef.current
     if (!el) return
     el.focus()
-    const isEmpty = el.textContent.trim() === ""
-    document.execCommand("insertText", false, (isEmpty ? "" : "\n") + marker + "\u00A0")
+    document.execCommand("insertText", false, marker + "\u00A0")
     el.dispatchEvent(new Event("input", { bubbles: true }))
     setActiveMarker(marker)
     if (marker === "1.") markerCounterRef.current = 2
@@ -999,7 +2071,7 @@ function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectio
     >
       {/* Top row: grip + source + mistake + delete */}
       <div className="flex items-start gap-2 p-3 pb-2">
-        <GripVertical size={14} className="text-muted-foreground/30 mt-2 flex-shrink-0" style={{ cursor: "grab" }} />
+        <GripVertical size={14} className="text-muted-foreground/30 mt-2 flex-shrink-0" onPointerDown={e => gripHandlers?.onGripDown(e, ri)} onPointerMove={e => gripHandlers?.onGripMove(e)} onPointerUp={e => gripHandlers?.onGripUp(e)} onPointerCancel={e => gripHandlers?.onGripUp(e)} style={{ cursor: draggingIdx === ri ? "grabbing" : "grab", touchAction: "none", userSelect: "none" }} />
         <div className="flex flex-col sm:flex-row gap-2 flex-1 min-w-0">
           <input
             value={m.source || ""}
@@ -1198,81 +2270,105 @@ function SectionDropdown({ sections, activeSection, setActiveSection, counts, dd
 }
 
 // ── Generic draggable list wrapper ────────────────────────────────────────────
+// Pointer-capture drag on GripVertical only — works on desktop + mobile touch.
+// Shows a floating ghost card that lifts and follows the finger/cursor.
 function DraggableList({ items, onReorder, renderItem, className = "space-y-2" }) {
-  const [dragging,   setDragging]   = useState(null)  // index being dragged
-  const [dropTarget, setDropTarget] = useState(null)  // index being hovered over
-  const dragIdx     = useRef(null)
-  const dragOverIdx = useRef(null)
+  const [draggingIdx, setDraggingIdx] = useState(null)
+  const [overIdx,     setOverIdx]     = useState(null)
+  const [ghost,       setGhost]       = useState(null)  // {top,left,width}
+  const containerRef = useRef(null)
+  const stateRef     = useRef(null)  // {fromIdx,currentOver,offsetY}
 
-  function handleDragStart(e, i) {
-    dragIdx.current = i
-    setDragging(i)
-    e.dataTransfer.effectAllowed = "move"
-    // Transparent drag image so it doesn't look broken
-    const ghost = document.createElement("div")
-    ghost.style.position = "absolute"
-    ghost.style.top = "-9999px"
-    document.body.appendChild(ghost)
-    e.dataTransfer.setDragImage(ghost, 0, 0)
-    setTimeout(() => document.body.removeChild(ghost), 0)
+  function getIndexFromY(clientY) {
+    if (!containerRef.current) return 0
+    const kids = Array.from(containerRef.current.children).filter(k => !k.dataset.ghost)
+    for (let i = 0; i < kids.length; i++) {
+      const r = kids[i].getBoundingClientRect()
+      if (clientY < r.top + r.height / 2) return i
+    }
+    return kids.length - 1
   }
 
-  function handleDragEnter(e, i) {
+  function onGripDown(e, idx) {
+    if (e.button !== undefined && e.button !== 0) return
     e.preventDefault()
-    if (dragIdx.current === i) return
-    dragOverIdx.current = i
-    setDropTarget(i)
+    e.stopPropagation()
+    e.currentTarget.setPointerCapture(e.pointerId)
+    const cardEl   = containerRef.current?.children[idx]
+    const rect     = cardEl ? cardEl.getBoundingClientRect() : { top: e.clientY, left: 0, width: 300 }
+    const contRect = containerRef.current?.getBoundingClientRect()
+    stateRef.current = { fromIdx: idx, currentOver: idx, offsetY: e.clientY - rect.top }
+    setDraggingIdx(idx)
+    setOverIdx(idx)
+    setGhost({ top: e.clientY - (e.clientY - rect.top), left: contRect?.left ?? rect.left, width: contRect?.width ?? rect.width })
   }
 
-  function handleDragOver(e) {
+  function onGripMove(e) {
+    if (!stateRef.current) return
     e.preventDefault()
-    e.dataTransfer.dropEffect = "move"
+    const { offsetY } = stateRef.current
+    const contRect = containerRef.current?.getBoundingClientRect()
+    setGhost(g => ({ ...g, top: e.clientY - offsetY, left: contRect?.left ?? g.left, width: contRect?.width ?? g.width }))
+    const to = getIndexFromY(e.clientY)
+    if (to !== stateRef.current.currentOver) {
+      stateRef.current.currentOver = to
+      setOverIdx(to)
+    }
   }
 
-  function handleDrop(e, i) {
-    e.preventDefault()
-    const from = dragIdx.current
-    const to   = i
-    if (from !== null && to !== null && from !== to) onReorder(from, to)
-    dragIdx.current     = null
-    dragOverIdx.current = null
-    setDragging(null)
-    setDropTarget(null)
+  function onGripUp() {
+    if (!stateRef.current) return
+    const { fromIdx, currentOver } = stateRef.current
+    stateRef.current = null
+    setDraggingIdx(null)
+    setOverIdx(null)
+    setGhost(null)
+    if (fromIdx !== currentOver) onReorder(fromIdx, currentOver)
   }
 
-  function handleDragEnd() {
-    dragIdx.current     = null
-    dragOverIdx.current = null
-    setDragging(null)
-    setDropTarget(null)
-  }
+  const gripHandlers = { onGripDown, onGripMove, onGripUp }
 
   return (
-    <div className={className}>
+    <div ref={containerRef} className={className} style={{ position: "relative" }}>
       {items.map((item, i) => {
-        const isDragging  = dragging   === i
-        const isDropZone  = dropTarget === i && dragging !== i
+        const isDragging = draggingIdx === i
+        const isOver     = overIdx === i && draggingIdx !== null && draggingIdx !== i
         return (
           <div
-            key={i}
-            draggable
-            onDragStart={e => handleDragStart(e, i)}
-            onDragEnter={e => handleDragEnter(e, i)}
-            onDragOver={handleDragOver}
-            onDrop={e => handleDrop(e, i)}
-            onDragEnd={handleDragEnd}
+            key={item._id || i}
             style={{
-              opacity:      isDragging ? 0.35 : 1,
-              transform:    isDropZone ? "translateY(-2px)" : "none",
-              boxShadow:    isDropZone ? "0 0 0 2px #7c3aed, 0 4px 12px rgba(124,58,237,0.15)" : "none",
+              opacity:      isDragging ? 0 : 1,
+              transform:    isOver ? "translateY(6px)" : "none",
+              boxShadow:    isOver ? "0 0 0 2px #7c3aed, 0 4px 16px rgba(124,58,237,0.18)" : "none",
               borderRadius: 12,
-              transition:   "opacity 0.15s, transform 0.12s, box-shadow 0.12s",
+              transition:   "transform 0.12s, box-shadow 0.12s, opacity 0.06s",
             }}
           >
-            {renderItem(item, i)}
+            {renderItem(item, i, gripHandlers, draggingIdx)}
           </div>
         )
       })}
+
+      {/* Floating ghost follows finger/cursor while dragging */}
+      {ghost && draggingIdx !== null && items[draggingIdx] && (
+        <div
+          data-ghost="1"
+          style={{
+            position:      "fixed",
+            top:           ghost.top,
+            left:          ghost.left,
+            width:         ghost.width,
+            zIndex:        9999,
+            pointerEvents: "none",
+            transform:     "rotate(1.5deg) scale(1.03)",
+            boxShadow:     "0 16px 48px rgba(0,0,0,0.25), 0 2px 8px rgba(0,0,0,0.12)",
+            borderRadius:  12,
+            opacity:       0.96,
+          }}
+        >
+          {renderItem(items[draggingIdx], draggingIdx, null, null)}
+        </div>
+      )}
     </div>
   )
 }
@@ -1316,22 +2412,57 @@ export default function NotebookModal({ open, onClose, openAuth }) {
   }, [])
 
   // ── Normalize helpers ──────────────────────────────────────────────────────
-  function normalizeSectioned(raw, empty, legacyField) {
-    if (raw && typeof raw === "object" && !Array.isArray(raw) && Object.keys(empty).some(k => k in raw)) {
-      return { ...empty, ...Object.fromEntries(Object.keys(empty).map(k => [k, Array.isArray(raw[k]) ? raw[k] : []])) }
+
+  // Recursively unwrap JSON strings until we get a plain object/array or give up
+  function deepParse(val) {
+    if (typeof val !== "string") return val
+    try {
+      const parsed = JSON.parse(val)
+      // Only keep recursing if we got an object/array (not a primitive)
+      if (parsed !== null && typeof parsed === "object") return deepParse(parsed)
+      return parsed
+    } catch {
+      return val
     }
-    // Old flat array → migrate to general
-    const arr = Array.isArray(raw) ? raw : []
+  }
+
+  // Return true if a string looks like it contains JSON data rather than user text
+  function looksLikeJSON(s) {
+    if (typeof s !== "string") return false
+    const t = s.trim()
+    return (t.startsWith("{") || t.startsWith("[")) && (t.endsWith("}") || t.endsWith("]"))
+  }
+
+  // Scrub a note item — if its html field is corrupted JSON, clear it
+  function scrubNote(n) {
+    if (!n || typeof n !== "object") return null
+    const html = n.html || ""
+    if (looksLikeJSON(html)) return { ...n, html: "" }
+    return n
+  }
+
+  function normalizeSectioned(raw, empty) {
+    const val = deepParse(raw)
+    if (val && typeof val === "object" && !Array.isArray(val) && Object.keys(empty).some(k => k in val)) {
+      return { ...empty, ...Object.fromEntries(Object.keys(empty).map(k => [k, Array.isArray(val[k]) ? val[k] : []])) }
+    }
+    const arr = Array.isArray(val) ? val : []
     return { ...empty, general: arr }
   }
 
   function normalizeNotes(raw) {
-    if (raw && typeof raw === "object" && !Array.isArray(raw) && Object.keys(EMPTY_NOTES).some(k => k in raw)) {
-      return { ...EMPTY_NOTES, ...Object.fromEntries(NOTE_SECTIONS.map(s => [s.id, Array.isArray(raw[s.id]) ? raw[s.id] : []])) }
+    const val = deepParse(raw)
+    if (val && typeof val === "object" && !Array.isArray(val) && Object.keys(EMPTY_NOTES).some(k => k in val)) {
+      return {
+        ...EMPTY_NOTES,
+        ...Object.fromEntries(NOTE_SECTIONS.map(s => [
+          s.id,
+          Array.isArray(val[s.id]) ? val[s.id].map(scrubNote).filter(Boolean) : []
+        ]))
+      }
     }
-    let arr = []
-    if (Array.isArray(raw)) arr = raw
-    else if (typeof raw === "string" && raw.trim()) arr = [{ html: raw.replace(/\n/g, "<br>"), cardColor: "#ffffff", canvasData: null, title: "" }]
+    // Legacy flat array
+    const arr = Array.isArray(val) ? val.map(scrubNote).filter(Boolean) : []
     return { ...EMPTY_NOTES, general: arr }
   }
 
@@ -1348,7 +2479,6 @@ export default function NotebookModal({ open, onClose, openAuth }) {
     try {
       const cached = JSON.parse(localStorage.getItem("ielts-notebook") || "null")
       if (cached) {
-        // Migrate old flat arrays from cache
         const normalized = {
           vocabulary: normalizeSectioned(cached.vocabulary, EMPTY_VOCAB),
           mistakes:   normalizeSectioned(cached.mistakes,   EMPTY_MISTAKES),
@@ -1358,7 +2488,10 @@ export default function NotebookModal({ open, onClose, openAuth }) {
         loaded.current = true
         setLoading(false)
       }
-    } catch {}
+    } catch {
+      // Corrupted cache — wipe it so we fall through to Supabase
+      try { localStorage.removeItem("ielts-notebook") } catch {}
+    }
 
     async function fetchFresh() {
       const { data: { session } } = await supabase.auth.getSession()
@@ -1445,7 +2578,8 @@ export default function NotebookModal({ open, onClose, openAuth }) {
 
   // ── Generic sectioned helpers ─────────────────────────────────────────────
   function addItem(tab, section, template) {
-    setData(d => ({ ...d, [tab]: { ...d[tab], [section]: [template, ...d[tab][section]] } }))
+    const item = { _id: `${Date.now()}-${Math.random().toString(36).slice(2)}`, ...template }
+    setData(d => ({ ...d, [tab]: { ...d[tab], [section]: [item, ...d[tab][section]] } }))
   }
   function updateItem(tab, section, i, field, val) {
     setData(d => {
@@ -1476,7 +2610,7 @@ export default function NotebookModal({ open, onClose, openAuth }) {
   const removeMistake  = (i) => removeItem("mistakes", mistakeSection, i)
   const reorderMistake = (f, t) => reorderItems("mistakes", mistakeSection, f, t)
 
-  const addNote      = () => addItem("notes", noteSection, { title: "", html: "", cardColor: "#ffffff", canvasData: null })
+  const addNote      = () => addItem("notes", noteSection, { title: "", html: "", cardColor: "#ffffff", canvasData: null, canvasTexts: [], canvasShapes: [] })
   const updateNote   = (i, f, v) => updateItem("notes", noteSection, i, f, v)
   const removeNote   = (i) => removeItem("notes", noteSection, i)
   const reorderNote  = (f, t) => reorderItems("notes", noteSection, f, t)
@@ -1637,17 +2771,19 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                       <DraggableList
                         items={currentVocab}
                         onReorder={reorderVocab}
-                        renderItem={(v, i) => {
+                        renderItem={(v, i, gripHandlers, draggingIdx) => {
                           const ri = (data.vocabulary[vocabSection] || []).indexOf(v)
                           return (
                             <VocabCard
-                              key={ri}
+                              key={v._id || ri}
                               v={v}
                               ri={ri}
                               updateVocab={updateVocab}
                               removeVocab={removeVocab}
                               sectionColor={currentVocabSection.color}
                               sectionAccent={currentVocabSection.accent}
+                              gripHandlers={gripHandlers}
+                              draggingIdx={draggingIdx}
                             />
                           )
                         }}
@@ -1673,17 +2809,19 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                       <DraggableList
                         items={currentMistakes}
                         onReorder={reorderMistake}
-                        renderItem={(m, i) => {
+                        renderItem={(m, i, gripHandlers, draggingIdx) => {
                           const ri = (data.mistakes[mistakeSection] || []).indexOf(m)
                           return (
                             <MistakeCard
-                              key={ri}
+                              key={m._id || ri}
                               m={m}
                               ri={ri}
                               updateMistake={updateMistake}
                               removeMistake={removeMistake}
                               sectionColor={currentMistakeSection.color}
                               sectionAccent={currentMistakeSection.accent}
+                              gripHandlers={gripHandlers}
+                              draggingIdx={draggingIdx}
                             />
                           )
                         }}
@@ -1715,8 +2853,9 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                         items={currentNotes}
                         onReorder={reorderNote}
                         className="space-y-3"
-                        renderItem={(note, i) => (
+                        renderItem={(note, i, gripHandlers, draggingIdx) => (
                           <NoteCard
+                            key={note._id || i}
                             note={note}
                             index={i}
                             onUpdate={updateNote}
@@ -1724,6 +2863,8 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                             activeTool={null}
                             toolColor="#1e293b"
                             toolThickness={2}
+                            gripHandlers={gripHandlers}
+                            draggingIdx={draggingIdx}
                           />
                         )}
                       />
@@ -1749,4 +2890,3 @@ export default function NotebookModal({ open, onClose, openAuth }) {
     </AnimatePresence>
   )
 }
-
