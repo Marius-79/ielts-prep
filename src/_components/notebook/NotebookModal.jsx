@@ -1191,9 +1191,10 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
         position: "absolute",
         left:     el.x,
         top:      el.y,
-        width:    el.width,           // hard width, not minWidth
-        zIndex:   showCtrl ? 20 : 10, // selected boxes float above others
-        pointerEvents: "all",  // always interactive even when parent has none
+        width:    el.width,
+        zIndex:   showCtrl ? 20 : 10,
+        pointerEvents: "all",
+        touchAction: isEdit ? "auto" : "none",  // allow text scrolling only in edit mode
       }}
     >
       {/* ── Controls bar ── */}
@@ -1211,13 +1212,15 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
         }}
         className="flex items-center gap-1 bg-white/95 border border-border/70 rounded-xl shadow-lg px-2 py-1"
         onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
+        onTouchStart={e => { e.stopPropagation() }}
       >
-        {/* Drag grip */}
+        {/* Drag grip — works on both mouse and touch */}
         <div
-          className="cursor-grab active:cursor-grabbing p-0.5 rounded hover:bg-secondary"
+          className="cursor-grab active:cursor-grabbing p-1.5 rounded hover:bg-secondary touch-manipulation"
           onMouseDown={e => { e.stopPropagation(); onDragStart(e) }}
+          onTouchStart={e => { e.stopPropagation(); onDragStart(e) }}
         >
-          <GripVertical size={12} className="text-muted-foreground/60"/>
+          <GripVertical size={13} className="text-muted-foreground/60"/>
         </div>
         <div className="w-px h-3 bg-border/50"/>
 
@@ -1244,8 +1247,9 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
         <button
           onMouseDown={e => e.preventDefault()}
           onClick={e => { e.stopPropagation(); onDelete() }}
-          className="p-0.5 rounded text-red-400 hover:text-red-500 hover:bg-red-50 transition"
-        ><Trash2 size={10}/></button>
+          onTouchEnd={e => { e.preventDefault(); e.stopPropagation(); onDelete() }}
+          className="p-1.5 rounded text-red-400 hover:text-red-500 hover:bg-red-50 transition touch-manipulation"
+        ><Trash2 size={11}/></button>
       </div>
 
       {/* ── Text body ── */}
@@ -1260,15 +1264,38 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
         onMouseDown={handleBodyMouseDown}
         onTouchStart={e => {
           e.stopPropagation()
-          if (isEdit) return  // already editing, let browser handle
+          if (isEdit) return  // already editing — let browser handle text cursor
+
+          e.preventDefault()
           if (isSel) {
-            // Second tap on already-selected box → enter edit mode
-            e.preventDefault()
-            onEnterEdit()
+            // Already selected: start tracking for drag OR enter edit on tap-without-move
+            const startX = e.touches[0].clientX
+            const startY = e.touches[0].clientY
+            let moved = false
+
+            function onTM(ev) {
+              const dx = ev.touches[0].clientX - startX
+              const dy = ev.touches[0].clientY - startY
+              if (Math.sqrt(dx*dx + dy*dy) > 6) { moved = true }
+            }
+            function onTE() {
+              window.removeEventListener("touchmove", onTM)
+              window.removeEventListener("touchend",  onTE)
+              if (!moved) {
+                // Short tap on selected = enter edit
+                onEnterEdit()
+              }
+            }
+            window.addEventListener("touchmove", onTM, { passive: true })
+            window.addEventListener("touchend",  onTE, { passive: true })
+
+            // Also start drag tracking so moving works immediately
+            onDragStart(e)
           } else {
-            // First tap → just select, no keyboard
-            e.preventDefault()
+            // First tap → select only, no keyboard
             onSelect()
+            // Start drag tracking too so immediate drag is possible
+            onDragStart(e)
           }
         }}
         onDoubleClick={e => { e.stopPropagation(); onEnterEdit() }}
@@ -1297,14 +1324,15 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
       {/* ── Resize handle (right edge + bottom-right corner) ── */}
       {isSel && (
         <>
-          {/* Bottom-right corner */}
+          {/* Bottom-right corner resize — mouse + touch */}
           <div
             style={{
-              position: "absolute", right: -6, bottom: -6,
-              width: 14, height: 14, zIndex: 25,
-              background: "white", border: "2px solid #7c3aed",
+              position: "absolute", right: -8, bottom: -8,
+              width: 22, height: 22, zIndex: 25,
+              background: "white", border: "2.5px solid #7c3aed",
               borderRadius: "50%", cursor: "se-resize",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+              boxShadow: "0 1px 6px rgba(124,58,237,0.3)",
+              touchAction: "none",
             }}
             onMouseDown={e => {
               e.stopPropagation(); e.preventDefault()
@@ -1313,19 +1341,13 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
               function up() { window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up) }
               window.addEventListener("mousemove", move); window.addEventListener("mouseup", up)
             }}
-          />
-          {/* Right edge drag (also resizes width) */}
-          <div
-            style={{
-              position: "absolute", right: -4, top: "20%", bottom: "20%",
-              width: 8, cursor: "ew-resize", zIndex: 24,
-            }}
-            onMouseDown={e => {
+            onTouchStart={e => {
               e.stopPropagation(); e.preventDefault()
-              const x0 = e.clientX, w0 = el.width
-              function move(ev) { onUpdate({ width: Math.max(60, w0 + ev.clientX - x0) }) }
-              function up() { window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up) }
-              window.addEventListener("mousemove", move); window.addEventListener("mouseup", up)
+              const x0 = e.touches[0].clientX, w0 = el.width
+              function move(ev) { if(ev.cancelable)ev.preventDefault(); onUpdate({ width: Math.max(60, w0 + ev.touches[0].clientX - x0) }) }
+              function up() { window.removeEventListener("touchmove", move); window.removeEventListener("touchend", up) }
+              window.addEventListener("touchmove", move, { passive: false })
+              window.addEventListener("touchend",  up,   { passive: false })
             }}
           />
         </>
@@ -1435,17 +1457,26 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
   }
 
   // ── Drag — moves ALL selected texts + selected shapes together ─────────────
+  // Helper: extract coords from either MouseEvent or TouchEvent
+  function getXY(ev) {
+    if (ev.touches && ev.touches.length > 0) return { x: ev.touches[0].clientX, y: ev.touches[0].clientY }
+    if (ev.changedTouches && ev.changedTouches.length > 0) return { x: ev.changedTouches[0].clientX, y: ev.changedTouches[0].clientY }
+    return { x: ev.clientX, y: ev.clientY }
+  }
+
   function startDrag(e, el) {
-    if (e.button !== 0 && !e.touches) return
+    // Allow touch events; for mouse only allow left button
+    if (!e.touches && e.button !== 0) return
     e.preventDefault(); e.stopPropagation()
-    const x0 = e.clientX, y0 = e.clientY
+
+    const { x: x0, y: y0 } = getXY(e)
 
     // Snapshot origins of ALL selected texts at drag start
     const textOrigins = {}
     texts.forEach(t => {
       if (selectedIds.has(String(t.id))) textOrigins[String(t.id)] = { x: t.x, y: t.y }
     })
-    // If the dragged text is not in selection, add it alone
+    // If the dragged element is not in selection, use it alone
     if (Object.keys(textOrigins).length === 0) textOrigins[String(el.id)] = { x: el.x, y: el.y }
 
     // Snapshot shapes too
@@ -1459,11 +1490,14 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
 
     let dragged = false
     function move(ev) {
-      const dx = ev.clientX - x0, dy = ev.clientY - y0
-      if (!dragged && Math.sqrt(dx*dx + dy*dy) < 4) return
+      if (ev.cancelable) ev.preventDefault()
+      const { x, y } = getXY(ev)
+      const dx = x - x0, dy = y - y0
+      // Use a larger threshold on touch (fingers move more accidentally)
+      const threshold = ev.touches ? 6 : 4
+      if (!dragged && Math.sqrt(dx*dx + dy*dy) < threshold) return
       dragged = true
       const { w, h } = getBounds()
-      // Move all selected texts
       onTextsChange(prev => prev.map(t => {
         const tid = String(t.id)
         if (!textOrigins[tid]) return t
@@ -1473,19 +1507,18 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
           y: Math.max(0, Math.min(textOrigins[tid].y + dy, h - (t.fontSize || 16) - 8)),
         }
       }))
-      // Move selected shapes with pixel→SVG conversion
       onMoveShapes?.("move", dx, dy)
     }
     function up() {
       window.removeEventListener("mousemove", move)
-      window.removeEventListener("mouseup", up)
+      window.removeEventListener("mouseup",   up)
+      window.removeEventListener("touchmove", move)
+      window.removeEventListener("touchend",  up)
     }
-    function touchMoveText(ev) { ev.preventDefault(); move(ev) }
-    function touchUpText()   { up(); window.removeEventListener("touchmove", touchMoveText); window.removeEventListener("touchend", touchUpText) }
     window.addEventListener("mousemove", move)
-    window.addEventListener("mouseup", up)
-    window.addEventListener("touchmove", touchMoveText, { passive: false })
-    window.addEventListener("touchend",  touchUpText,   { passive: false })
+    window.addEventListener("mouseup",   up)
+    window.addEventListener("touchmove", move, { passive: false })
+    window.addEventListener("touchend",  up,   { passive: false })
   }
 
   // When a shape tool is active the whole div must be transparent so clicks
@@ -1499,7 +1532,7 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
     <div
       ref={layerRef}
       className="absolute inset-0"
-      style={{ pointerEvents: tool === "text" ? "auto" : "none", cursor: tool === "text" ? "crosshair" : "default", position: "absolute", inset: 0, zIndex: tool === "text" ? 10 : 3 }}
+      style={{ pointerEvents: tool === "text" ? "auto" : "none", cursor: tool === "text" ? "crosshair" : "default", position: "absolute", inset: 0, zIndex: tool === "text" ? 10 : 3, touchAction: "none" }}
       onClick={handleLayerClick}
       onMouseDown={handleLayerMouseDown}
       onTouchEnd={e => {
@@ -1771,14 +1804,15 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
     const ctx    = canvas.getContext("2d", { willReadFrequently: true })
     const pos    = getPos(e, canvas)
 
+    const isTouch = !!(e.touches || e.changedTouches)
     if (tool === "eraser") {
       ctx.globalCompositeOperation = "destination-out"
-      ctx.lineWidth = thickness * 6; ctx.lineCap = "round"; ctx.lineJoin = "round"
+      ctx.lineWidth = isTouch ? thickness * 9 : thickness * 6; ctx.lineCap = "round"; ctx.lineJoin = "round"
       ctx.lineTo(pos.x, pos.y); ctx.stroke()
       ctx.globalCompositeOperation = "source-over"
     } else if (tool === "pen") {
       ctx.globalCompositeOperation = "source-over"
-      ctx.strokeStyle = color; ctx.lineWidth = thickness; ctx.lineCap = "round"; ctx.lineJoin = "round"
+      ctx.strokeStyle = color; ctx.lineWidth = isTouch ? thickness * 1.5 : thickness; ctx.lineCap = "round"; ctx.lineJoin = "round"
       ctx.lineTo(pos.x, pos.y); ctx.stroke()
     } else {
       ctx.putImageData(snapshotRef.current, 0, 0)
@@ -1816,7 +1850,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
       style={{
         borderTop: "1px dashed rgba(0,0,0,0.08)",
         display: visible ? "block" : "none",
-        touchAction: (tool && tool !== null) ? "none" : "auto",
+        touchAction: "none",
       }}
       onContextMenu={e => {
         e.preventDefault()
