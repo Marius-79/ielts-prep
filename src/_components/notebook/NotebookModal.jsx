@@ -1251,14 +1251,26 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
       {/* ── Text body ── */}
       <div
         ref={nodeRef}
-        contentEditable
+        contentEditable={isEdit ? "true" : "false"}
         suppressContentEditableWarning
         onFocus={onEnterEdit}
-        onBlur={e => onUpdate({ html: e.currentTarget.innerHTML })}
+        onBlur={e => { onUpdate({ html: e.currentTarget.innerHTML }) }}
         onInput={e => onUpdate({ html: e.currentTarget.innerHTML })}
         onKeyDown={e => { if (e.key === "Escape") e.currentTarget.blur(); e.stopPropagation() }}
         onMouseDown={handleBodyMouseDown}
-        onTouchStart={e => { e.stopPropagation(); if (isEdit) return; onSelect(); onDragStart(e) }}
+        onTouchStart={e => {
+          e.stopPropagation()
+          if (isEdit) return  // already editing, let browser handle
+          if (isSel) {
+            // Second tap on already-selected box → enter edit mode
+            e.preventDefault()
+            onEnterEdit()
+          } else {
+            // First tap → just select, no keyboard
+            e.preventDefault()
+            onSelect()
+          }
+        }}
         onDoubleClick={e => { e.stopPropagation(); onEnterEdit() }}
         className="outline-none break-words leading-snug w-full"
         style={{
@@ -1339,18 +1351,22 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
     }
   }, [externalSelectedIds])
 
-  // Click outside the layer → deselect all text boxes
+  // Click/touch outside the layer → deselect all text boxes
   useEffect(() => {
     function onDown(e) {
       if (!layerRef.current) return
-      // If click is outside the drawing area entirely, deselect
       if (!layerRef.current.contains(e.target)) {
         setSelectedIds(new Set())
         setEditingId(null)
+        document.activeElement?.blur?.()
       }
     }
     document.addEventListener("mousedown", onDown)
-    return () => document.removeEventListener("mousedown", onDown)
+    document.addEventListener("touchstart", onDown, { passive: true })
+    return () => {
+      document.removeEventListener("mousedown", onDown)
+      document.removeEventListener("touchstart", onDown)
+    }
   }, [])
 
   // Escape = deselect, Delete = delete selected box
@@ -1373,16 +1389,7 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
     return () => document.removeEventListener("keydown", onKey)
   }, [selectedIds, editingId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Click outside → deselect ───────────────────────────────────────────────
-  useEffect(() => {
-    function onDown(e) {
-      if (layerRef.current && !layerRef.current.contains(e.target)) {
-        setSelectedIds(new Set()); setEditingId(null)
-      }
-    }
-    document.addEventListener("mousedown", onDown)
-    return () => document.removeEventListener("mousedown", onDown)
-  }, [])
+  // ── Click/touch outside → deselect (also covered above, this is a safety net) ──
 
   function upd(id, patch) {
     onTextsChange(prev => prev.map(t => t.id === id ? { ...t, ...patch } : t))
@@ -1407,14 +1414,24 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
       color:    color || "#1e293b",
       width:    200,
     }])
-    setTool(null)                        // T deactivates immediately
-    setSelectedIds(new Set([id])); setEditingId(id)  // enter edit right away
-    // selectAll happens inside TextBox's useEffect when isEdit becomes true
+    setTool(null)  // T deactivates immediately
+    setSelectedIds(new Set([id]))
+    // On mobile (touch device): just select — user taps again to edit (no keyboard popup)
+    // On desktop: enter edit immediately for fast workflow
+    const isTouchDevice = window.matchMedia("(hover: none) and (pointer: coarse)").matches
+    if (!isTouchDevice) {
+      setEditingId(id)  // desktop: enter edit right away
+    }
+    // Mobile: editingId stays null, user double-taps to edit
   }
 
-  // ── Deselect on empty-area click ───────────────────────────────────────────
+  // ── Deselect on empty-area tap/click ─────────────────────────────────────
   function handleLayerMouseDown(e) {
-    if (e.target === layerRef.current) { setSelectedIds(new Set()); setEditingId(null); onExternalSelectClear?.() }
+    if (e.target === layerRef.current) {
+      setSelectedIds(new Set()); setEditingId(null)
+      document.activeElement?.blur?.()
+      onExternalSelectClear?.()
+    }
   }
 
   // ── Drag — moves ALL selected texts + selected shapes together ─────────────
@@ -1485,6 +1502,27 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
       style={{ pointerEvents: tool === "text" ? "auto" : "none", cursor: tool === "text" ? "crosshair" : "default", position: "absolute", inset: 0, zIndex: tool === "text" ? 10 : 3 }}
       onClick={handleLayerClick}
       onMouseDown={handleLayerMouseDown}
+      onTouchEnd={e => {
+        // Place text on touch when text tool active
+        if (tool === "text" && e.target === layerRef.current) {
+          e.preventDefault()
+          const rect = layerRef.current.getBoundingClientRect()
+          const t = e.changedTouches[0]
+          const id = newTid()
+          onTextsChange(prev => [...prev, {
+            id,
+            x: t.clientX - rect.left,
+            y: t.clientY - rect.top,
+            html:     PLACEHOLDER,
+            fontSize: fontSize || 16,
+            color:    color || "#1e293b",
+            width:    200,
+          }])
+          setTool(null)
+          setSelectedIds(new Set([id]))
+          // No setEditingId — user taps again to edit on mobile
+        }
+      }}
     >
       {(texts || []).map((el, idx) => (
         <TextBox
