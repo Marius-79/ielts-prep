@@ -390,12 +390,8 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
     {
       label: "Lines",
       shapes: [
-        { id:"line",        label:"Line",           svg: <line x1="3" y1="19" x2="19" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/> },
-        { id:"arrow",       label:"Arrow →",        svg: <><line x1="3" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="13,6 19,12 13,18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></> },
-        { id:"arrowLeft",   label:"Arrow ←",        svg: <><line x1="19" y1="12" x2="3" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="9,6 3,12 9,18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></> },
-        { id:"arrowDouble", label:"Arrow ↔",        svg: <><line x1="3" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="13,6 19,12 13,18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><polyline points="8,6 3,12 8,18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></> },
-        { id:"arrowUp",     label:"Arrow ↑",        svg: <><line x1="12" y1="19" x2="12" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="6,9 12,3 18,9" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></> },
-        { id:"arrowDiag",   label:"Arrow ↗",        svg: <><line x1="4" y1="18" x2="18" y2="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="9,4 18,4 18,13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></> },
+        { id:"line",  label:"Line — drag any direction",  svg: <line x1="3" y1="19" x2="19" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/> },
+        { id:"arrow", label:"Arrow — drag to set direction", svg: <><line x1="3" y1="19" x2="17" y2="5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><polyline points="9,5 17,5 17,13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></> },
       ]
     },
     {
@@ -620,7 +616,7 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
 
 // ─── Shape tools that go to SVG layer (not burned onto canvas bitmap) ─────────
 const SHAPE_TOOLS = [
-  "line","arrow","arrowLeft","arrowDouble","arrowUp","arrowDiag",
+  "line","arrow",
   "rect","roundedRect","circle","diamond","triangle","parallelogram",
   "process","decision","terminator","cylinder","arrowBlock",
   "calloutRect","calloutOval","star","hexagon","cloud"
@@ -631,18 +627,19 @@ function _newSid() {
 }
 
 // Build an SVG path string for the given shape type.
-// x,y = top-left, w,h = dimensions (always positive after normalisation)
+// For line/arrow: x,y = start point, w,h = signed delta (end = x+w, y+h) — direction is preserved.
+// For all other shapes: x,y = top-left, w,h = positive dimensions.
 function _shapePath(type, x, y, w, h) {
-  // x,y,w,h are always normalised (top-left, positive size) — safe to use directly
   const ex=x+w, ey=y+h, cx=x+w/2, cy=y+h/2
   const l=12  // arrow head size
   switch (type) {
-    case "line":        return `M${x},${y} L${ex},${ey}`
-    case "arrow": { const a=Math.atan2(ey-y,ex-x); return `M${x},${y} L${ex},${ey} M${ex},${ey} L${ex-l*Math.cos(a-0.4)},${ey-l*Math.sin(a-0.4)} M${ex},${ey} L${ex-l*Math.cos(a+0.4)},${ey-l*Math.sin(a+0.4)}` }
-    case "arrowLeft": { const a=Math.atan2(y-ey,x-ex); return `M${ex},${ey} L${x},${y} M${x},${y} L${x-l*Math.cos(a-0.4)},${y-l*Math.sin(a-0.4)} M${x},${y} L${x-l*Math.cos(a+0.4)},${y-l*Math.sin(a+0.4)}` }
-    case "arrowDouble": { const a1=Math.atan2(ey-y,ex-x),a2=Math.atan2(y-ey,x-ex); return `M${x},${y} L${ex},${ey} M${ex},${ey} L${ex-l*Math.cos(a1-0.4)},${ey-l*Math.sin(a1-0.4)} M${ex},${ey} L${ex-l*Math.cos(a1+0.4)},${ey-l*Math.sin(a1+0.4)} M${x},${y} L${x-l*Math.cos(a2-0.4)},${y-l*Math.sin(a2-0.4)} M${x},${y} L${x-l*Math.cos(a2+0.4)},${y-l*Math.sin(a2+0.4)}` }
-    case "arrowUp":
-    case "arrowDiag": { const a=Math.atan2(ey-y,ex-x); return `M${x},${y} L${ex},${ey} M${ex},${ey} L${ex-l*Math.cos(a-0.4)},${ey-l*Math.sin(a-0.4)} M${ex},${ey} L${ex-l*Math.cos(a+0.4)},${ey-l*Math.sin(a+0.4)}` }
+    // Lines/arrows use raw signed coords — start point (x,y) → end point (ex,ey)
+    case "line":  return `M${x},${y} L${ex},${ey}`
+    case "arrow": {
+      const a=Math.atan2(ey-y, ex-x)
+      return `M${x},${y} L${ex},${ey} M${ex},${ey} L${ex-l*Math.cos(a-0.4)},${ey-l*Math.sin(a-0.4)} M${ex},${ey} L${ex-l*Math.cos(a+0.4)},${ey-l*Math.sin(a+0.4)}`
+    }
+    // All other shapes: x,y = top-left, w,h = positive dimensions
     case "rect":
     case "process":     return `M${x},${y} L${ex},${y} L${ex},${ey} L${x},${ey} Z`
     case "roundedRect": { const r=Math.min(16,w/3,h/3); return `M${x+r},${y} L${ex-r},${y} Q${ex},${y} ${ex},${y+r} L${ex},${ey-r} Q${ex},${ey} ${ex-r},${ey} L${x+r},${ey} Q${x},${ey} ${x},${ey-r} L${x},${y+r} Q${x},${y} ${x+r},${y} Z` }
@@ -679,7 +676,12 @@ function _ShapeItem({ shape, isSelected, isBeingDrawn, onSelect, onDelete, onCha
   const y1  = h >= 0 ? y : y + h
   const aw  = Math.abs(w)
   const ah  = Math.abs(h)
-  const path = _shapePath(type, x1, y1, aw, ah)
+  // For line/arrow: preserve exact start→end direction using raw (signed) coordinates.
+  // x,y = drag start, x+w,y+h = drag end — this is the full vector.
+  const isLineTool = type === "line" || type === "arrow"
+  const path = isLineTool
+    ? _shapePath(type, x, y, w, h)   // pass raw signed values so direction is correct
+    : _shapePath(type, x1, y1, aw, ah)
 
   // ── 4 corner handles only — premium Figma-style ──────────────────
   const corners = [
@@ -770,19 +772,70 @@ function _ShapeItem({ shape, isSelected, isBeingDrawn, onSelect, onDelete, onCha
       {/* Selection chrome — only visible after drawing is complete */}
       {isSelected && !isBeingDrawn && (
         <>
-          {/* Dashed bounding box */}
-          <rect
-            x={x1-5} y={y1-5} width={aw+10} height={ah+10}
-            fill="none"
-            stroke="#7c3aed"
-            strokeWidth={1.5}
-            strokeDasharray="5 3"
-            rx={3}
-            style={{ pointerEvents:"none" }}
-          />
+          {/* Dashed bounding box — hidden for lines/arrows (endpoints are shown instead) */}
+          {!isLineTool && (
+            <rect
+              x={x1-5} y={y1-5} width={aw+10} height={ah+10}
+              fill="none"
+              stroke="#7c3aed"
+              strokeWidth={1.5}
+              strokeDasharray="5 3"
+              rx={3}
+              style={{ pointerEvents:"none" }}
+            />
+          )}
 
-          {/* 4 corner handles — premium Figma-style: white circle with purple ring */}
-          {corners.map(h => (
+          {/* Line/arrow: 2 endpoint handles (start + end) — drag to reposition each end */}
+          {isLineTool && [
+            { id:"start", hx:x,    hy:y,    cursor:"crosshair" },
+            { id:"end",   hx:x+w,  hy:y+h,  cursor:"crosshair" },
+          ].map(ep => (
+            <g key={ep.id} style={{ cursor: ep.cursor, pointerEvents:"all", touchAction:"none" }}
+               onMouseDown={e => {
+                 e.preventDefault(); e.stopPropagation()
+                 const src0 = e.touches ? e.touches[0] : e
+                 const mx0=src0.clientX, my0=src0.clientY
+                 const ox=shape.x, oy=shape.y, ow=shape.w, oh=shape.h
+                 function move(ev) {
+                   const src = ev.touches ? ev.touches[0] : ev
+                   const dx=src.clientX-mx0, dy=src.clientY-my0
+                   if (ep.id === "start") onChange({ x:ox+dx, y:oy+dy, w:ow-dx, h:oh-dy })
+                   else                  onChange({ w:ow+dx, h:oh+dy })
+                 }
+                 function up() {
+                   window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up)
+                   window.removeEventListener("touchmove",move); window.removeEventListener("touchend",up)
+                 }
+                 window.addEventListener("mousemove",move); window.addEventListener("mouseup",up)
+                 window.addEventListener("touchmove",move,{passive:false}); window.addEventListener("touchend",up,{passive:false})
+               }}
+               onTouchStart={e => {
+                 e.preventDefault(); e.stopPropagation()
+                 const src0 = e.touches[0]
+                 const mx0=src0.clientX, my0=src0.clientY
+                 const ox=shape.x, oy=shape.y, ow=shape.w, oh=shape.h
+                 function move(ev) {
+                   ev.preventDefault()
+                   const src = ev.touches[0]
+                   const dx=src.clientX-mx0, dy=src.clientY-my0
+                   if (ep.id === "start") onChange({ x:ox+dx, y:oy+dy, w:ow-dx, h:oh-dy })
+                   else                  onChange({ w:ow+dx, h:oh+dy })
+                 }
+                 function up() {
+                   window.removeEventListener("touchmove",move); window.removeEventListener("touchend",up)
+                 }
+                 window.addEventListener("touchmove",move,{passive:false}); window.addEventListener("touchend",up,{passive:false})
+               }}>
+              <circle cx={ep.hx} cy={ep.hy} r={18} fill="transparent"/>
+              <circle cx={ep.hx} cy={ep.hy} r={7}
+                fill="white" stroke="#7c3aed" strokeWidth={2.5}
+                style={{ filter:"drop-shadow(0 1px 4px rgba(124,58,237,0.35))" }}/>
+              <circle cx={ep.hx} cy={ep.hy} r={3} fill="#7c3aed"/>
+            </g>
+          ))}
+
+          {/* Regular shapes: 4 corner handles — premium Figma-style */}
+          {!isLineTool && corners.map(h => (
             <g key={h.id} style={{ cursor: cornerCursors[h.id], pointerEvents: "all", touchAction: "none" }}
                onMouseDown={e => { e.stopPropagation(); startCornerResize(e, h.id) }}
                onTouchStart={e => { e.preventDefault(); e.stopPropagation(); startCornerResize(e, h.id) }}>
@@ -797,7 +850,7 @@ function _ShapeItem({ shape, isSelected, isBeingDrawn, onSelect, onDelete, onCha
             </g>
           ))}
 
-          {/* ✕ delete button — premium top-right */}
+          {/* ✕ delete button — top-right of bounding box */}
           <g
             transform={`translate(${x1+aw+10},${y1-10})`}
             style={{ cursor:"pointer", pointerEvents: "all", touchAction: "none" }}
@@ -859,9 +912,10 @@ function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTe
 
   const isShapeTool = SHAPE_TOOLS.includes(tool)
 
-  // Click outside → deselect all
+  // Click outside → deselect all (skip on right-click so context menu keeps selection)
   useEffect(() => {
     function onDown(e) {
+      if (e.button === 2) return  // right-click — preserve selection for context menu
       if (svgRef.current && !svgRef.current.contains(e.target)) setSelectedIds(new Set())
     }
     document.addEventListener("mousedown", onDown)
@@ -945,10 +999,20 @@ function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTe
         const fid = drawState.current.id
         drawState.current = null
         setDrawingId(null)
-        // Enforce minimum shape size — if user just clicked without dragging,
-        // give it a default 80x60 size so it's never an invisible dot
+        // Enforce minimum size on mouseup:
+        //   • line/arrow: enforce minimum LENGTH while preserving direction
+        //   • all other shapes: enforce minimum w and h independently
         onShapesChange(prev => prev.map(s => {
           if (s.id !== fid) return s
+          if (s.type === "line" || s.type === "arrow") {
+            const len = Math.sqrt(s.w * s.w + s.h * s.h)
+            if (len < 40) {
+              if (len < 1) return { ...s, w: 60, h: 0 }  // no drag at all → default right arrow
+              const scale = 60 / len
+              return { ...s, w: s.w * scale, h: s.h * scale }
+            }
+            return s
+          }
           const minW = Math.abs(s.w) < 20 ? 80 : s.w
           const minH = Math.abs(s.h) < 20 ? 60 : s.h
           return { ...s, w: minW, h: minH }
@@ -1386,9 +1450,10 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
     }
   }, [externalSelectedIds])
 
-  // Click/touch outside the layer → deselect all text boxes
+  // Click/touch outside the layer → deselect all text boxes (skip right-click)
   useEffect(() => {
     function onDown(e) {
+      if (e.button === 2) return  // right-click — preserve selection for context menu
       if (!layerRef.current) return
       if (!layerRef.current.contains(e.target)) {
         setSelectedIds(new Set())
@@ -1536,7 +1601,7 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
 
   // When a shape tool is active the whole div must be transparent so clicks
   // reach the SVG ShapeLayer below. Individual TextBox nodes keep pointer-events:all.
-  const SHAPE_TOOL_IDS = ["line","arrow","arrowLeft","arrowDouble","arrowUp","arrowDiag",
+  const SHAPE_TOOL_IDS = ["line","arrow",
     "rect","roundedRect","circle","diamond","triangle","parallelogram",
     "process","decision","terminator","cylinder","arrowBlock",
     "calloutRect","calloutOval","star","hexagon","cloud"]
@@ -1654,7 +1719,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
   // ── Context menu actions ───────────────────────────────────────────────────
   function doCopy() {
     const selectedShapes = (canvasShapes || []).filter(s => shapeSelectedIds.current.has(s.id))
-    const selectedTexts  = (canvasTexts  || []).filter(t => selectedTextIds.has(String(t.id)))
+    const selectedTexts  = (canvasTexts  || []).filter(t => selectedTextIdsRef.current.has(String(t.id)))
     if (selectedShapes.length > 0 || selectedTexts.length > 0)
       clipboardRef.current = { shapes: selectedShapes.map(s=>({...s})), texts: selectedTexts.map(t=>({...t})) }
     setCtxMenu(null)
@@ -1678,12 +1743,28 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
     setCtxMenu(null)
   }
   const hasSelection = shapeSelectedIds.current.size > 0 || selectedTextIds.size > 0
+  // Keep a ref too so context-menu buttons read the latest value synchronously
+  const hasSelectionRef = useRef(false)
+  hasSelectionRef.current = hasSelection
 
   // ── Copy / Paste (Ctrl+C / Ctrl+V) ────────────────────────────────────────
   useEffect(() => {
     function onKey(e) {
       const ae = document.activeElement
-      if (ae?.isContentEditable || ae?.tagName === "INPUT" || ae?.tagName === "TEXTAREA") return
+      // Block if user is actively typing in a regular input, textarea, or a contentEditable
+      // that is NOT part of the canvas (i.e. the note body editor, vocab inputs, etc.)
+      // We allow copy/paste through when the active element is the canvas container or body
+      const isTypingInInput = ae?.tagName === "INPUT" || ae?.tagName === "TEXTAREA"
+      const isTypingInEditor = ae?.isContentEditable &&
+        containerRef.current && containerRef.current.contains(ae) === false
+      // Also block if typing in a contentEditable INSIDE the canvas container
+      // but only if it's in edit mode (the TextBox sets contentEditable="true" only when editing)
+      const isEditingCanvasText = ae?.isContentEditable &&
+        containerRef.current && containerRef.current.contains(ae)
+      if (isTypingInInput || isTypingInEditor) return
+      // If actively editing a canvas text box, let browser handle Ctrl+C/V for text selection
+      if (isEditingCanvasText) return
+
       if ((e.ctrlKey || e.metaKey) && e.key === "c") {
         // Copy selected shapes + texts
         const selectedShapes = (canvasShapes || []).filter(s => shapeSelectedIds.current.has(s.id))
@@ -1883,7 +1964,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
         >
           <div className="bg-background border border-border/60 rounded-xl shadow-2xl py-1 overflow-hidden"
             style={{ backdropFilter: "blur(8px)" }}>
-            <button onClick={doCopy} disabled={!hasSelection}
+            <button onClick={doCopy} disabled={!hasSelectionRef.current}
               className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-secondary transition disabled:opacity-30 disabled:cursor-not-allowed">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               <span className="font-medium text-foreground">Copy</span>
@@ -1896,7 +1977,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
               <span className="ml-auto text-[10px] text-muted-foreground">Ctrl+V</span>
             </button>
             <div className="h-px bg-border/50 my-1"/>
-            <button onClick={doDelete} disabled={!hasSelection}
+            <button onClick={doDelete} disabled={!hasSelectionRef.current}
               className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-red-500/10 transition disabled:opacity-30 disabled:cursor-not-allowed">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
               <span className="font-medium text-red-500">Delete</span>
@@ -2005,6 +2086,7 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
   const undoRef          = useRef(null)
   const redoRef          = useRef(null)
   const latestShapesRef  = useRef([])  // always holds latest canvasShapes — fixes stale closure in drag
+  const latestTextsRef   = useRef([])  // always holds latest canvasTexts  — fixes stale closure in drag
   const [tool,           setTool]           = useState(null)
   const [color,          setColor]          = useState(toolColor  || "#1e293b")
   const [thickness,      setThickness]      = useState(toolThickness || 2)
@@ -2016,7 +2098,7 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
   const markerCounterRef = useRef(1)
   const colorBtnRef = useRef(null)
 
-  const drawingTools = ["pen","eraser","line","arrow","arrowLeft","arrowDouble","arrowUp","arrowDiag","rect","roundedRect","circle","diamond","triangle","parallelogram","process","decision","terminator","cylinder","arrowBlock","cloud","calloutRect","calloutOval","star","hexagon"]
+  const drawingTools = ["pen","eraser","line","arrow","rect","roundedRect","circle","diamond","triangle","parallelogram","process","decision","terminator","cylinder","arrowBlock","cloud","calloutRect","calloutOval","star","hexagon"]
   const isDrawing    = drawingTools.includes(tool)
   // Canvas visible when: any draw tool active, text tool active, or saved content exists
   const canvasVisible = isDrawing || tool === "text" || SHAPE_TOOLS.includes(tool) || !!(note.canvasData || (note.canvasTexts && note.canvasTexts.length > 0) || (note.canvasShapes && note.canvasShapes.length > 0))
@@ -2028,6 +2110,7 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
   // Keep latestShapesRef in sync with note.canvasShapes
   // This runs every render so the ref is always fresh
   latestShapesRef.current = note.canvasShapes || []
+  latestTextsRef.current  = note.canvasTexts  || []
 
   useEffect(() => {
     if (editorRef.current && syncedIdRef.current !== (note._id ?? index)) {
@@ -2207,8 +2290,10 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
         canvasShapes={note.canvasShapes || []}
         onSave={data => onUpdate(index, "canvasData", data)}
         onTextsChange={updater => {
-          const current = note.canvasTexts || []
+          // Use latestTextsRef to avoid stale closure during text drag
+          const current = latestTextsRef.current
           const next = typeof updater === "function" ? updater(current) : updater
+          latestTextsRef.current = next
           onUpdate(index, "canvasTexts", next)
         }}
         onShapesChange={updater => {
