@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react"
-import React, { useState, useEffect, useRef } from "react"
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { createPortal } from "react-dom"
 import {
   Sun, Moon, CheckCircle2, Circle, ChevronDown, Check,
@@ -172,7 +172,7 @@ function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, p
         <div className="flex items-center gap-3 mb-3">
           <div className="relative flex-shrink-0" style={{ width: R_SIZE, height: R_SIZE }}>
             <svg width={R_SIZE} height={R_SIZE} className="absolute inset-0" style={{ transform: "rotate(-90deg)" }}>
-              <circle cx={R_SIZE/2} cy={R_SIZE/2} r={R_RADIUS} fill="none" stroke="#f3f4f6" strokeWidth={R_STROKE} />
+              <circle cx={R_SIZE/2} cy={R_SIZE/2} r={R_RADIUS} fill="none" stroke="var(--border)" strokeWidth={R_STROKE} />
               <circle ref={arcRef} cx={R_SIZE/2} cy={R_SIZE/2} r={R_RADIUS} fill="none" strokeWidth={R_STROKE}
                 strokeLinecap="round" strokeDasharray={R_CIRC} strokeDashoffset={R_CIRC}
                 stroke="rgb(196,181,253)" style={{ transition: "stroke-dashoffset 0.4s ease, stroke 0.4s ease" }} />
@@ -188,7 +188,7 @@ function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, p
           {allDone && (
             <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 300 }}
-              className="flex-shrink-0 flex items-center gap-1 text-[10px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full">
+              className="flex-shrink-0 flex items-center gap-1 text-[10px] font-bold text-violet-600 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 rounded-full">
               <Check size={9} /> Done
             </motion.div>
           )}
@@ -207,14 +207,14 @@ function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, p
                     : <Circle className="w-5 h-5 text-muted-foreground/50" />}
                 </button>
                 <span onClick={() => toggleItem(i)}
-                  className={`flex-1 cursor-pointer text-sm leading-snug ${checked ? "text-muted-foreground/70 line-through" : "text-foreground/80"}`}>
+                  className={`flex-1 cursor-pointer text-sm leading-snug ${checked ? "text-muted-foreground/60 line-through" : "text-foreground"}`}>
                   {label}
                 </span>
                 {detail && (
                   <button
                     onClick={() => { if (!userId) { openAuth(); return } setActiveHint({ label, detail }) }}
                     className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition touch-manipulation ${
-                      checked ? "border-border text-muted-foreground/70" : "border-primary/25 text-violet-600 bg-primary/8 active:bg-violet-100"
+                      checked ? "border-border text-muted-foreground" : "border-primary/25 text-violet-600 dark:text-violet-300 bg-primary/8 active:bg-violet-100 dark:active:bg-violet-900/30"
                     }`}>
                     <BookOpen size={9} />HOW
                   </button>
@@ -231,7 +231,12 @@ function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, p
 // ── DayCard ────────────────────────────────────────────────────────────────────
 function DayCard({ dayPlan, weekNum, planId, refreshProgress, userId, openAuth, progressTrigger }) {
   const [open, setOpen] = useState(false)
+  const cardRef   = useRef(null)
+  const celebrate = useConfetti()
   const globalDay = (weekNum - 1) * 5 + dayPlan.day
+
+  // Stable key that identifies this specific day completion across re-mounts
+  const celebratedKey = `ielts-celebrated-${planId}-w${weekNum}-d${globalDay}`
 
   let totalTasks = 0, completedTasks = 0
   ;[dayPlan.morning, dayPlan.afternoon].forEach(task => {
@@ -246,10 +251,26 @@ function DayCard({ dayPlan, weekNum, planId, refreshProgress, userId, openAuth, 
   const dayProgress = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100)
   const dayDone = dayProgress === 100
 
+  // Fire confetti exactly once per day completion — persisted in localStorage
+  // so it never re-fires on re-mount (e.g. "View Days" toggle) or re-render
+  const prevDoneRef = useRef(dayDone)
+  useEffect(() => {
+    const alreadyCelebrated = localStorage.getItem(celebratedKey) === "1"
+    if (dayDone && !prevDoneRef.current && !alreadyCelebrated) {
+      // Transitioned from incomplete → done right now
+      localStorage.setItem(celebratedKey, "1")
+      setTimeout(() => celebrate(cardRef.current), 320)
+    }
+    prevDoneRef.current = dayDone
+    // Reset flag when day is un-done (tasks unchecked)
+    if (!dayDone) localStorage.removeItem(celebratedKey)
+  }, [dayDone])
+
   return (
     <motion.div
+      ref={cardRef}
       className={`border rounded-2xl overflow-hidden transition-all ${dayDone ? "border-green-500/30 bg-green-500/10" : "border-border bg-background"}`}
-      animate={dayDone ? { scale: [1, 1.005, 1] } : {}} transition={{ duration: 0.5 }}
+      animate={dayDone ? { scale: [1, 1.01, 1] } : {}} transition={{ duration: 0.4 }}
     >
       <div className="h-1 w-full bg-secondary">
         <motion.div className="h-full bg-violet-400 rounded-full"
@@ -545,8 +566,8 @@ function PlanPicker({ selectedPlan, onSelect }) {
               onClick={() => onSelect(plan.id)}
               className="flex-shrink-0 snap-start flex items-center gap-2.5 px-4 py-3 rounded-2xl border-2 transition-all touch-manipulation"
               style={{
-                borderColor: selected ? plan.color : "#e5e7eb",
-                background: selected ? `linear-gradient(135deg, ${plan.accent}, #ffffff)` : "white",
+                borderColor: selected ? plan.color : undefined,
+                background: selected ? `linear-gradient(135deg, ${plan.color}20 0%, var(--background) 70%)` : undefined,
                 minWidth: 160,
               }}
             >
@@ -577,7 +598,7 @@ function PlanPicker({ selectedPlan, onSelect }) {
               }`}
               style={{
                 borderColor: selected ? plan.color : undefined,
-                background: selected ? `linear-gradient(135deg, ${plan.accent} 0%, #ffffff 55%)` : undefined,
+                background: selected ? `linear-gradient(135deg, ${plan.color}18 0%, var(--background) 65%)` : undefined,
               }}
             >
               {plan.badge && (
@@ -605,7 +626,7 @@ function PlanPicker({ selectedPlan, onSelect }) {
                 <div className="flex items-start justify-between mb-2 gap-2">
                   <div>
                     <p className="text-base font-bold text-foreground">{plan.label}</p>
-                    <p className="text-xs text-muted-foreground/70 mt-0.5">{plan.days} days</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{plan.days} days</p>
                   </div>
                   <span className="text-xs font-bold px-2 py-0.5 rounded-lg text-white flex-shrink-0 mt-0.5"
                     style={{ backgroundColor: plan.color }}>
@@ -614,7 +635,7 @@ function PlanPicker({ selectedPlan, onSelect }) {
                 </div>
 
                 {/* Stats */}
-                <div className="flex items-center gap-2 mb-3 py-2.5 px-3 rounded-xl" style={{ backgroundColor: plan.accent }}>
+                <div className="flex items-center gap-2 mb-3 py-2.5 px-3 rounded-xl" style={{ backgroundColor: plan.color + "15" }}>
                   {[
                     { value: plan.weeks, label: "weeks" },
                     { value: plan.mocks, label: "mocks" },
@@ -624,18 +645,18 @@ function PlanPicker({ selectedPlan, onSelect }) {
                       <div className="text-center flex-1">
                         <p className={`font-bold leading-none ${s.small ? "text-[11px]" : "text-base"}`}
                           style={{ color: plan.color }}>{s.value}</p>
-                        <p className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mt-0.5">{s.label}</p>
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">{s.label}</p>
                       </div>
-                      {i < arr.length - 1 && <div className="w-px h-8 bg-black/8 flex-shrink-0" />}
+                      {i < arr.length - 1 && <div className="w-px h-8 flex-shrink-0" style={{ backgroundColor: plan.color + "30" }} />}
                     </React.Fragment>
                   ))}
                 </div>
 
-                <p className="text-xs text-muted-foreground leading-relaxed mb-3">{plan.description}</p>
+                <p className="text-xs text-foreground leading-relaxed mb-3 opacity-80">{plan.description}</p>
 
                 <ul className="space-y-1 mb-3">
                   {plan.highlights.map((h, i) => (
-                    <li key={i} className="flex items-center gap-1.5 text-xs text-foreground/70">
+                    <li key={i} className="flex items-center gap-1.5 text-xs text-foreground">
                       <Check size={10} style={{ color: plan.color }} className="flex-shrink-0" />
                       {h}
                     </li>
@@ -643,7 +664,7 @@ function PlanPicker({ selectedPlan, onSelect }) {
                 </ul>
 
                 <div className={`w-full py-2 rounded-xl text-xs font-semibold text-center transition-all ${
-                  selected ? "text-white" : "text-muted-foreground border border-border"
+                  selected ? "text-white" : "text-foreground/70 dark:text-muted-foreground border border-border"
                 }`} style={selected ? { backgroundColor: plan.color } : {}}>
                   {selected
                     ? <span className="flex items-center justify-center gap-1.5"><Check size={11}/> Selected</span>
@@ -717,6 +738,236 @@ function calcOverall(l, r, w, s) {
 function bandColor(b) {
   if (b >= 8) return "#059669"; if (b >= 7) return "#7c3aed"
   if (b >= 6) return "#d97706"; return "#ef4444"
+}
+
+// ── MiniLineChart — ResizeObserver-based + hover tooltip ─────────────────────
+function MiniLineChart({ vals, entries, color }) {
+  const containerRef = useRef(null)
+  const [width,      setWidth]      = useState(200)
+  const [hovered,    setHovered]    = useState(null)  // index of hovered dot, or null
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const ro = new ResizeObserver(es => { for (const e of es) setWidth(e.contentRect.width) })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  const H = 56, pad = 8
+  const minV = Math.min(...vals) - 0.5
+  const maxV = Math.max(...vals) + 0.5
+  const rng  = maxV - minV || 1
+
+  const pts = vals.map((v, i) => {
+    const x = vals.length === 1 ? width / 2 : pad + (i / (vals.length - 1)) * (width - pad * 2)
+    const y = H - pad - ((v - minV) / rng) * (H - pad * 2)
+    return [x, y]
+  })
+
+  function smoothPath(points) {
+    if (points.length < 2) return ""
+    let d = `M ${points[0][0]},${points[0][1]}`
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[Math.max(0, i - 1)]
+      const p1 = points[i]
+      const p2 = points[i + 1]
+      const p3 = points[Math.min(points.length - 1, i + 2)]
+      const cp1x = p1[0] + (p2[0] - p0[0]) / 6
+      const cp1y = p1[1] + (p2[1] - p0[1]) / 6
+      const cp2x = p2[0] - (p3[0] - p1[0]) / 6
+      const cp2y = p2[1] - (p3[1] - p1[1]) / 6
+      d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2[0]},${p2[1]}`
+    }
+    return d
+  }
+
+  const linePath = smoothPath(pts)
+  const last     = pts[pts.length - 1]
+  const areaPath = pts.length > 1 ? linePath + ` L ${last[0]},${H} L ${pts[0][0]},${H} Z` : ""
+  const gradId   = "lg-" + color.replace("#", "")
+
+  // Tooltip: clamp so it never overflows left or right
+  function tooltipX(cx) {
+    const TW = 74  // approximate tooltip width in SVG units
+    return Math.max(TW / 2 + 2, Math.min(width - TW / 2 - 2, cx))
+  }
+
+  return (
+    <div ref={containerRef} className="relative mb-3 rounded-xl overflow-visible bg-secondary/30" style={{ height: H }}>
+      <svg
+        width={width} height={H}
+        viewBox={`0 0 ${width} ${H}`}
+        style={{ display: "block", overflow: "visible" }}
+        onMouseLeave={() => setHovered(null)}
+      >
+        <defs>
+          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity="0.22" />
+            <stop offset="100%" stopColor={color} stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+        {[0.25, 0.5, 0.75].map(f => (
+          <line key={f} x1={pad} y1={pad + f * (H - pad*2)} x2={width - pad} y2={pad + f * (H - pad*2)}
+            stroke="currentColor" strokeOpacity="0.06" strokeWidth="1" />
+        ))}
+        {areaPath && <path d={areaPath} fill={`url(#${gradId})`} />}
+        {linePath  && <path d={linePath} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
+
+        {/* Vertical crosshair on hover */}
+        {hovered !== null && (
+          <line x1={pts[hovered][0]} y1={pad} x2={pts[hovered][0]} y2={H}
+            stroke={color} strokeOpacity="0.25" strokeWidth="1" strokeDasharray="3 2" />
+        )}
+
+        {/* Dots with large invisible hit areas */}
+        {pts.map(([cx, cy], i) => {
+          const isLast    = i === pts.length - 1
+          const isHovered = hovered === i
+          return (
+            <g key={i}
+              onMouseEnter={() => setHovered(i)}
+              style={{ cursor: "pointer" }}
+            >
+              {/* Invisible large hit area */}
+              <circle cx={cx} cy={cy} r={12} fill="transparent" />
+              {/* Visible dot */}
+              <circle cx={cx} cy={cy}
+                r={isHovered ? 5.5 : isLast ? 4.5 : 3}
+                fill={isHovered || isLast ? color : "var(--background)"}
+                stroke={color}
+                strokeWidth={isHovered ? 2.5 : isLast ? 0 : 1.5}
+                style={{ transition: "r 0.12s ease" }}
+              />
+            </g>
+          )
+        })}
+
+        {/* Tooltip bubble — shown on hover */}
+        {hovered !== null && (() => {
+          const [cx, cy] = pts[hovered]
+          const tx   = tooltipX(cx)
+          const ty   = cy - 28  // above the dot
+          const entry = entries?.[hovered]
+          const dateStr = entry?.created_at
+            ? new Date(entry.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })
+            : ""
+          const score = vals[hovered]
+          return (
+            <g style={{ pointerEvents: "none" }}>
+              {/* Shadow */}
+              <rect x={tx - 36} y={ty - 11} width={72} height={22} rx={6}
+                fill="rgba(0,0,0,0.18)" transform="translate(0,2)" />
+              {/* Bubble */}
+              <rect x={tx - 36} y={ty - 11} width={72} height={22} rx={6} fill={color} />
+              {/* Score */}
+              <text x={tx - 10} y={ty + 4}
+                textAnchor="end" fontSize="11" fontWeight="800" fill="white">
+                {score}
+              </text>
+              {/* Divider */}
+              <line x1={tx - 4} y1={ty - 6} x2={tx - 4} y2={ty + 6}
+                stroke="rgba(255,255,255,0.4)" strokeWidth="1" />
+              {/* Date */}
+              <text x={tx + 2} y={ty + 4}
+                textAnchor="start" fontSize="8.5" fontWeight="500" fill="rgba(255,255,255,0.9)">
+                {dateStr}
+              </text>
+              {/* Pointer triangle */}
+              <polygon
+                points={`${cx-4},${cy - 10} ${cx+4},${cy - 10} ${cx},${cy - 4}`}
+                fill={color}
+              />
+            </g>
+          )
+        })()}
+
+        {/* Value label on last dot (only when not hovering last) */}
+        {last && hovered !== pts.length - 1 && (
+          <text x={last[0]} y={last[1] - 9}
+            textAnchor="middle" fontSize="9" fontWeight="700" fill={color}>
+            {vals[vals.length - 1]}
+          </text>
+        )}
+      </svg>
+    </div>
+  )
+}
+
+// ── Confetti celebration — pure canvas, no dependencies ──────────────────────
+// Best-in-class SaaS pattern: short burst (2.5s), brand colors, auto-cleanup.
+function useConfetti() {
+  return useCallback((originEl) => {
+    const canvas = document.createElement("canvas")
+    canvas.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999"
+    canvas.width  = window.innerWidth
+    canvas.height = window.innerHeight
+    document.body.appendChild(canvas)
+    const ctx = canvas.getContext("2d")
+
+    // Origin point — centre of the element that triggered it, or screen centre
+    const rect   = originEl?.getBoundingClientRect?.()
+    const ox     = rect ? rect.left + rect.width  / 2 : window.innerWidth  / 2
+    const oy     = rect ? rect.top  + rect.height / 2 : window.innerHeight * 0.45
+
+    // Brand-aligned palette
+    const COLORS = ["#7c3aed","#a78bfa","#10b981","#34d399","#f59e0b","#fbbf24","#0ea5e9","#38bdf8","#ec4899","#f9a8d4"]
+
+    const TOTAL = 110
+    const particles = Array.from({ length: TOTAL }, (_, i) => {
+      const angle  = (Math.PI * 2 * i) / TOTAL + (Math.random() - 0.5) * 0.6
+      const speed  = 6 + Math.random() * 8
+      const isRect = Math.random() > 0.45
+      return {
+        x:  ox, y: oy,
+        vx: Math.cos(angle) * speed * (0.5 + Math.random()),
+        vy: Math.sin(angle) * speed * (0.5 + Math.random()) - 4,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+        w: isRect ? 6 + Math.random() * 4 : 4 + Math.random() * 3,
+        h: isRect ? 3 + Math.random() * 2 : 4 + Math.random() * 3,
+        rot: Math.random() * Math.PI * 2,
+        drot: (Math.random() - 0.5) * 0.3,
+        isRect,
+        opacity: 1,
+      }
+    })
+
+    const START = performance.now()
+    const DURATION = 2200
+
+    function frame(now) {
+      const elapsed = now - START
+      if (elapsed > DURATION) { document.body.removeChild(canvas); return }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      const t = elapsed / DURATION  // 0→1
+
+      particles.forEach(p => {
+        p.vy += 0.22  // gravity
+        p.vx *= 0.985 // air resistance
+        p.x  += p.vx
+        p.y  += p.vy
+        p.rot += p.drot
+        p.opacity = Math.max(0, 1 - Math.pow(t, 1.8))
+
+        ctx.save()
+        ctx.globalAlpha = p.opacity
+        ctx.translate(p.x, p.y)
+        ctx.rotate(p.rot)
+        ctx.fillStyle = p.color
+        if (p.isRect) {
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h)
+        } else {
+          ctx.beginPath()
+          ctx.arc(0, 0, p.w / 2, 0, Math.PI * 2)
+          ctx.fill()
+        }
+        ctx.restore()
+      })
+      requestAnimationFrame(frame)
+    }
+    requestAnimationFrame(frame)
+  }, [])
 }
 
 // ── ScoreTracker ───────────────────────────────────────────────────────────────
@@ -833,49 +1084,27 @@ function ScoreTracker({ openAuth, supabase, onScoresChange }) {
     const best    = Math.max(...vals)
     const latest  = vals[vals.length - 1]
     const trend   = vals.length >= 2 ? latest - vals[0] : 0
-    const minV    = 4, maxV = 9, rng = maxV - minV
-    const W = 200, H = 44, pad = 6
-    const pts = vals.map((v, i) => {
-      const x = vals.length === 1 ? W/2 : pad + (i / (vals.length - 1)) * (W - pad*2)
-      const y = H - pad - ((v - minV) / rng) * (H - pad*2)
-      return [x, y]
-    })
-    const polyPts = pts.map(p => p.join(",")).join(" ")
-    const areaD   = pts.length > 1
-      ? "M" + pts[0].join(",") + " L" + pts.slice(1).map(p => p.join(",")).join(" L") + " L" + pts[pts.length-1][0] + "," + H + " L" + pts[0][0] + "," + H + " Z"
-      : ""
 
     return (
       <motion.div key={sk.key} initial={{ opacity:0, y:4 }} animate={{ opacity:1, y:0 }}
-        className="p-4 rounded-2xl border border-border/50 bg-background">
+        className="p-4 rounded-2xl border border-border bg-card">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
               style={{ backgroundColor: sk.color }}>{sk.key}</div>
             <div>
               <p className="text-sm font-semibold text-foreground">{sk.label}</p>
-              <p className="text-[11px] text-muted-foreground/60">{entries.length} entr{entries.length===1?"y":"ies"}</p>
+              <p className="text-[11px] text-muted-foreground">{entries.length} entr{entries.length===1?"y":"ies"}</p>
             </div>
           </div>
           <div className="text-right">
             <p className="text-xl font-bold leading-none" style={{ color: bandColor(latest) }}>{latest}</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-0.5">latest</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">latest</p>
           </div>
         </div>
 
         {vals.length >= 2 && (
-          <div className="mb-3 rounded-xl overflow-hidden bg-secondary/20" style={{ height: 48 }}>
-            <svg width="100%" height="48" viewBox={"0 0 " + W + " " + H} preserveAspectRatio="none">
-              {areaD !== "" && <path d={areaD} fill={sk.color} opacity="0.1" />}
-              <polyline points={polyPts} fill="none" stroke={sk.color} strokeWidth="2"
-                strokeLinecap="round" strokeLinejoin="round" />
-              {pts.map(([cx, cy], i) => {
-                const isLast = i === pts.length - 1
-                return <circle key={i} cx={cx} cy={cy} r={isLast ? 3.5 : 2.5}
-                  fill={isLast ? sk.color : "white"} stroke={sk.color} strokeWidth={isLast ? 0 : 1.5} />
-              })}
-            </svg>
-          </div>
+          <MiniLineChart vals={vals} entries={entries} color={sk.color} />
         )}
 
         <div className="grid grid-cols-3 gap-2 mb-3">
@@ -909,7 +1138,7 @@ function ScoreTracker({ openAuth, supabase, onScoresChange }) {
               <div className="flex items-center gap-2 flex-shrink-0">
                 <div className="h-1.5 w-14 bg-secondary rounded-full overflow-hidden">
                   <div className="h-full rounded-full"
-                    style={{ width: ((e[sk.field] - minV) / rng * 100) + "%", backgroundColor: sk.color }} />
+                    style={{ width: ((e[sk.field] - 4) / 5 * 100) + "%", backgroundColor: sk.color }} />
                 </div>
                 <span className="text-xs font-bold w-5 text-right" style={{ color: bandColor(e[sk.field]) }}>
                   {e[sk.field]}
@@ -1163,7 +1392,7 @@ function ScoreTracker({ openAuth, supabase, onScoresChange }) {
               )}
 
               {view === "skills" && (
-                <div className="space-y-3">
+                <div>
                   {scores.length === 0 ? (
                     <div className="text-center py-8">
                       <p className="text-sm font-medium text-muted-foreground/70">No scores yet</p>
@@ -1173,7 +1402,10 @@ function ScoreTracker({ openAuth, supabase, onScoresChange }) {
                       </button>
                     </div>
                   ) : (
-                    skillDefs.map(sk => renderSkillCard(sk))
+                    <div className="space-y-3 overflow-y-auto pr-0.5"
+                      style={{ maxHeight: 580, scrollbarWidth: "thin", scrollbarColor: "var(--border) transparent" }}>
+                      {skillDefs.map(sk => renderSkillCard(sk))}
+                    </div>
                   )}
                 </div>
               )}

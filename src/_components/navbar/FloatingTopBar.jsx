@@ -238,52 +238,72 @@ export default function FloatingTopBar({ openAuth }) {
                   <div ref={dropdownRef} className="relative">
                     <button
                       onClick={() => setDropdownOpen(p => !p)}
-                      className="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full bg-secondary hover:opacity-80 transition touch-manipulation"
+                      className="flex items-center gap-2 pl-0.5 pr-2.5 py-0.5 rounded-full hover:bg-secondary/80 transition-all duration-200 touch-manipulation group"
                     >
-                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        {avatarUrl
-                          ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
-                          : <span className="text-[9px] sm:text-[10px] font-bold text-primary">{initials}</span>}
+                      {/* Avatar with ring */}
+                      <div className="relative flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-primary/30 group-hover:ring-primary/60 transition-all duration-200 bg-primary/10 flex items-center justify-center">
+                          {avatarUrl
+                            ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                            : <span className="text-xs font-bold text-primary">{initials}</span>}
+                        </div>
+                        {/* Online dot */}
+                        <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-green-400 border-2 border-white dark:border-gray-900" />
                       </div>
-                      <span className="text-xs sm:text-sm truncate max-w-[50px] sm:max-w-[90px] hidden xs:block">
-                        {username || "Me"}
+                      {/* Username — visible sm+ */}
+                      <span className="text-xs sm:text-sm font-medium text-foreground truncate max-w-[80px] hidden sm:block">
+                        {username || "Account"}
                       </span>
                     </button>
 
                     <AnimatePresence>
                       {dropdownOpen && (
                         <motion.div
-                          initial={{ opacity: 0, y: -6, scale: 0.96 }}
+                          initial={{ opacity: 0, y: -8, scale: 0.95 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -6, scale: 0.96 }}
-                          transition={{ type: "spring", stiffness: 320, damping: 24 }}
-                          className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 border border-border rounded-xl shadow-lg overflow-hidden z-50"
+                          exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                          transition={{ type: "spring", stiffness: 320, damping: 26 }}
+                          className="absolute right-0 mt-3 w-56 bg-background border border-border rounded-2xl shadow-xl overflow-hidden z-50"
                         >
-                          <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60">
-                            <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              {avatarUrl
-                                ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
-                                : <span className="text-xs font-bold text-primary">{initials}</span>}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold truncate">{username || "Account"}</p>
-                              <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                          {/* Profile header */}
+                          <div className="px-4 pt-4 pb-3 border-b border-border/60">
+                            <div className="flex items-center gap-3">
+                              <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-primary/20 flex-shrink-0 bg-primary/10 flex items-center justify-center">
+                                {avatarUrl
+                                  ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                                  : <span className="text-sm font-bold text-primary">{initials}</span>}
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-semibold text-foreground truncate">{username || "Account"}</p>
+                                <p className="text-[11px] text-muted-foreground truncate mt-0.5">{user.email}</p>
+                              </div>
                             </div>
                           </div>
-                          <button
-                            onClick={() => { setDropdownOpen(false); setProfileOpen(true) }}
-                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition"
-                          >
-                            <Settings size={14} className="text-muted-foreground" />
-                            Edit profile
-                          </button>
-                          <button
-                            onClick={logout}
-                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition border-t border-border/60"
-                          >
-                            <LogOut size={14} />
-                            Log out
-                          </button>
+
+                          {/* Menu items */}
+                          <div className="py-1">
+                            <button
+                              onClick={() => { setDropdownOpen(false); setProfileOpen(true) }}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                                <Settings size={13} className="text-muted-foreground" />
+                              </div>
+                              Edit profile
+                            </button>
+                          </div>
+
+                          <div className="border-t border-border/60 py-1">
+                            <button
+                              onClick={logout}
+                              className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/8 transition-colors"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                                <LogOut size={13} className="text-red-400" />
+                              </div>
+                              Log out
+                            </button>
+                          </div>
                         </motion.div>
                       )}
                     </AnimatePresence>
