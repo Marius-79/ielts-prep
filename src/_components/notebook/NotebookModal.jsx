@@ -680,11 +680,13 @@ function _ShapeItem({ shape, isSelected, isBeingDrawn, onSelect, onDelete, onCha
   // Resize from a corner handle — Shift locks aspect ratio
   function startCornerResize(e, corner) {
     e.preventDefault(); e.stopPropagation()
-    const mx0=e.clientX, my0=e.clientY
+    const src0 = e.touches ? e.touches[0] : e
+    const mx0=src0.clientX, my0=src0.clientY
     const ox=shape.x, oy=shape.y, ow=shape.w, oh=shape.h
     const asp = ow / oh
     function move(ev) {
-      const dx=ev.clientX-mx0, dy=ev.clientY-my0
+      const src = ev.touches ? ev.touches[0] : ev
+      const dx=src.clientX-mx0, dy=src.clientY-my0
       let nx=ox,ny=oy,nw=ow,nh=oh
       if (corner==="se") { nw=Math.max(10,ow+dx); nh=ev.shiftKey?nw/asp:Math.max(10,oh+dy) }
       else if (corner==="sw") { nw=Math.max(10,ow-dx); nx=ox+ow-nw; nh=ev.shiftKey?nw/asp:Math.max(10,oh+dy) }
@@ -695,18 +697,30 @@ function _ShapeItem({ shape, isSelected, isBeingDrawn, onSelect, onDelete, onCha
       nw=Math.min(nw, 600-nx); nh=Math.min(nh, 220-ny)
       onChange({ x:nx, y:ny, w:nw, h:nh })
     }
-    function up() { window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up) }
+    function up() {
+      window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up)
+      window.removeEventListener("touchmove",move); window.removeEventListener("touchend",up)
+    }
     window.addEventListener("mousemove",move); window.addEventListener("mouseup",up)
+    window.addEventListener("touchmove",move,{passive:false}); window.addEventListener("touchend",up,{passive:false})
   }
 
   // Move all selected shapes together
   function startMove(e) {
     e.preventDefault(); e.stopPropagation()
-    const mx0=e.clientX, my0=e.clientY
+    const src0 = e.touches ? e.touches[0] : e
+    const mx0=src0.clientX, my0=src0.clientY
     onMoveAll("start")
-    function move(ev) { onMoveAll("move", ev.clientX - mx0, ev.clientY - my0) }
-    function up() { window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up) }
+    function move(ev) {
+      const src = ev.touches ? ev.touches[0] : ev
+      onMoveAll("move", src.clientX - mx0, src.clientY - my0)
+    }
+    function up() {
+      window.removeEventListener("mousemove",move); window.removeEventListener("mouseup",up)
+      window.removeEventListener("touchmove",move); window.removeEventListener("touchend",up)
+    }
     window.addEventListener("mousemove",move); window.addEventListener("mouseup",up)
+    window.addEventListener("touchmove",move,{passive:false}); window.addEventListener("touchend",up,{passive:false})
   }
 
   return (
@@ -719,6 +733,11 @@ function _ShapeItem({ shape, isSelected, isBeingDrawn, onSelect, onDelete, onCha
         strokeWidth={Math.max(24, sw + 16)}
         style={{ cursor: isSelected ? "move" : "pointer", pointerEvents: "all" }}
         onMouseDown={e => {
+          e.stopPropagation()
+          if (!isSelected) { onSelect(e); return }
+          startMove(e)
+        }}
+        onTouchStart={e => {
           e.stopPropagation()
           if (!isSelected) { onSelect(e); return }
           startMove(e)
@@ -872,9 +891,10 @@ function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTe
     const svg = svgRef.current
     if (!svg) return { x:0, y:0 }
     const rect = svg.getBoundingClientRect()
+    const src = e.touches ? e.touches[0] || e.changedTouches[0] : e
     return {
-      x: (e.clientX - rect.left) * (600 / rect.width),
-      y: (e.clientY - rect.top)  * (220 / rect.height),
+      x: (src.clientX - rect.left) * (600 / rect.width),
+      y: (src.clientY - rect.top)  * (220 / rect.height),
     }
   }
 
@@ -921,8 +941,12 @@ function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTe
         window.removeEventListener("mousemove", move)
         window.removeEventListener("mouseup", up)
       }
+      function touchMove(ev) { ev.preventDefault(); move(ev) }
+      function touchUp(ev) { up(); window.removeEventListener("touchmove", touchMove); window.removeEventListener("touchend", touchUp) }
       window.addEventListener("mousemove", move)
       window.addEventListener("mouseup", up)
+      window.addEventListener("touchmove", touchMove, { passive: false })
+      window.addEventListener("touchend", touchUp, { passive: false })
       return
     }
 
@@ -981,8 +1005,12 @@ function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTe
         window.removeEventListener("mousemove", move)
         window.removeEventListener("mouseup", up)
       }
+      function touchMoveSelBox(ev) { ev.preventDefault(); move(ev) }
+      function touchUpSelBox(ev) { up(); window.removeEventListener("touchmove", touchMoveSelBox); window.removeEventListener("touchend", touchUpSelBox) }
       window.addEventListener("mousemove", move)
       window.addEventListener("mouseup", up)
+      window.addEventListener("touchmove", touchMoveSelBox, { passive: false })
+      window.addEventListener("touchend", touchUpSelBox, { passive: false })
     }
   }
 
@@ -1007,8 +1035,9 @@ function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTe
       <rect
         x="0" y="0" width="600" height="220"
         fill="transparent"
-        style={{ pointerEvents: (isShapeTool || tool === null) ? "all" : "none" }}
+        style={{ pointerEvents: (isShapeTool || tool === null) ? "all" : "none", touchAction: isShapeTool ? "none" : "auto" }}
         onMouseDown={handleSVGMouseDown}
+        onTouchStart={handleSVGMouseDown}
       />
 
       {/* Selection box drag rectangle */}
