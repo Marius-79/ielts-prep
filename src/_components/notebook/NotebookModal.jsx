@@ -6,7 +6,8 @@ import {
   Search, CheckCircle2, Loader2, Palette, Bold, Italic,
   Underline, Highlighter, PenLine, Circle, Square,
   Minus, ChevronDown, GripVertical, Undo2, Redo2, Eraser,
-  Headphones, BookMarked, PenSquare, Mic, StickyNote, List
+  Headphones, BookMarked, PenSquare, Mic, StickyNote, List,
+  Moon, Sun
 } from "lucide-react"
 import { supabase } from "../_lib/supabase"
 
@@ -36,7 +37,7 @@ const VOCAB_SECTIONS = [
 const EMPTY_VOCAB = { general: [], listening: [], reading: [], writing: [], speaking: [] }
 
 const MISTAKE_SECTIONS = [
-  { id: "general",   label: "General",   icon: StickyNote,  color: "#64748b", accent: "#f1f5f9" },
+  { id: "general",   label: "General",   icon: StickyNote,  color: "#64748b", accent: "#e2e8f0" },
   { id: "listening", label: "Listening", icon: Headphones,  color: "#7c3aed", accent: "#ede9fe" },
   { id: "reading",   label: "Reading",   icon: BookMarked,  color: "#0ea5e9", accent: "#e0f2fe" },
   { id: "writing",   label: "Writing",   icon: PenSquare,   color: "#f97316", accent: "#fff7ed" },
@@ -53,6 +54,18 @@ const CARD_COLORS = [
   { label: "Rose",       bg: "#ffe4e6", border: "#fda4af", text: "#881337" },
   { label: "Slate",      bg: "#f1f5f9", border: "#cbd5e1", text: "#1e293b" },
   { label: "Peach",      bg: "#fff7ed", border: "#fdba74", text: "#7c2d12" },
+]
+
+// Dark mode equivalents — cards stay BRIGHT/LIGHT so they pop against the dark notebook background
+const CARD_COLORS_DARK = [
+  { label: "White",   bg: "#ffffff", border: "#e2e8f0", text: "#1e293b" },
+  { label: "Sky",     bg: "#e0f2fe", border: "#7dd3fc", text: "#0c4a6e" },
+  { label: "Violet",  bg: "#ede9fe", border: "#c4b5fd", text: "#3b0764" },
+  { label: "Emerald", bg: "#d1fae5", border: "#6ee7b7", text: "#064e3b" },
+  { label: "Amber",   bg: "#fef3c7", border: "#fcd34d", text: "#78350f" },
+  { label: "Rose",    bg: "#ffe4e6", border: "#fda4af", text: "#881337" },
+  { label: "Slate",   bg: "#f1f5f9", border: "#cbd5e1", text: "#1e293b" },
+  { label: "Peach",   bg: "#fff7ed", border: "#fdba74", text: "#7c2d12" },
 ]
 
 
@@ -295,7 +308,7 @@ function FloatingSelectionBar({ editorRef, onMarkerInserted, activeMarker, onCle
 
       {/* Sub-panel: text color */}
       {panel === "color" && (
-        <div className="absolute top-full mt-2 left-0 bg-white border border-border rounded-xl shadow-2xl p-3" style={{ minWidth: 168 }}>
+        <div className="absolute top-full mt-2 left-0 bg-background border border-border rounded-xl shadow-2xl p-3" style={{ minWidth: 168 }}>
           <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Text Color</p>
           <div className="flex flex-wrap gap-1.5">
             {FG_COLORS.map(c => (
@@ -309,7 +322,7 @@ function FloatingSelectionBar({ editorRef, onMarkerInserted, activeMarker, onCle
 
       {/* Sub-panel: highlight */}
       {panel === "highlight" && (
-        <div className="absolute top-full mt-2 left-0 bg-white border border-border rounded-xl shadow-2xl p-3" style={{ minWidth: 168 }}>
+        <div className="absolute top-full mt-2 left-0 bg-background border border-border rounded-xl shadow-2xl p-3" style={{ minWidth: 168 }}>
           <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Highlight</p>
           <div className="flex flex-wrap gap-1.5">
             {HL_COLORS.map(({ v, label }) => (
@@ -326,7 +339,7 @@ function FloatingSelectionBar({ editorRef, onMarkerInserted, activeMarker, onCle
 
       {/* Sub-panel: markers */}
       {panel === "marker" && (
-        <div className="absolute top-full mt-2 left-0 bg-white border border-border rounded-xl shadow-2xl p-3" style={{ minWidth: 168 }}>
+        <div className="absolute top-full mt-2 left-0 bg-background border border-border rounded-xl shadow-2xl p-3" style={{ minWidth: 168 }}>
           <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Insert Marker</p>
           <div className="flex flex-wrap gap-1.5">
             {MARKERS.map(m => (
@@ -338,7 +351,7 @@ function FloatingSelectionBar({ editorRef, onMarkerInserted, activeMarker, onCle
           </div>
           {activeMarker && (
             <button onMouseDown={e => { e.preventDefault(); onClearMarker?.(); setPanel(null) }}
-              className="mt-2 w-full text-[11px] text-red-400 hover:text-red-500 flex items-center justify-center gap-1 py-1 rounded-lg hover:bg-red-50 transition">
+              className="mt-2 w-full text-[11px] text-red-400 hover:text-red-500 flex items-center justify-center gap-1 py-1 rounded-lg hover:bg-red-500/10 transition">
               <X size={9}/> Stop list
             </button>
           )}
@@ -437,7 +450,7 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
           <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Active:</span>
           <span className="text-[11px] font-semibold text-primary capitalize">{tool}</span>
           <button onMouseDown={e=>{ e.preventDefault(); setTool(null) }}
-            className="ml-auto text-[10px] text-muted-foreground/60 hover:text-red-400 transition px-2 py-0.5 rounded-lg hover:bg-red-50">
+            className="ml-auto text-[10px] text-muted-foreground/60 hover:text-red-400 transition px-2 py-0.5 rounded-lg hover:bg-red-500/10">
             × Clear
           </button>
         </div>
@@ -488,7 +501,7 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
         {showShapes && (() => {
           const btnRect = shapesRef.current?.getBoundingClientRect()
           return (
-          <div className="fixed z-[9999] bg-white border border-border rounded-2xl shadow-2xl shadow-black/12 overflow-hidden"
+          <div className="fixed z-[9999] bg-background border border-border rounded-2xl shadow-2xl shadow-black/12 overflow-hidden"
             style={{ width: "min(280px, calc(100vw - 1rem))", maxHeight: "55vh", overflowY: "auto",
               bottom: btnRect ? window.innerHeight - btnRect.top + 6 : undefined,
               left:   btnRect ? Math.min(btnRect.left, window.innerWidth - 290) : undefined }}>
@@ -533,7 +546,7 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
         {showColors && (() => {
           const btnRect = colorsRef.current?.getBoundingClientRect()
           return (
-          <div className="fixed z-[9999] bg-white border border-border rounded-xl shadow-xl p-2.5"
+          <div className="fixed z-[9999] bg-background border border-border rounded-xl shadow-xl p-2.5"
             style={{ minWidth: 148,
               bottom: btnRect ? window.innerHeight - btnRect.top + 6 : undefined,
               left:   btnRect ? Math.min(btnRect.left, window.innerWidth - 160) : undefined }}>
@@ -564,7 +577,7 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
         {showSizes && (() => {
           const btnRect = sizesRef.current?.getBoundingClientRect()
           return (
-          <div className="fixed z-[9999] bg-white border border-border rounded-xl shadow-xl p-3"
+          <div className="fixed z-[9999] bg-background border border-border rounded-xl shadow-xl p-3"
             style={{ minWidth: 130,
               bottom: btnRect ? window.innerHeight - btnRect.top + 6 : undefined,
               left:   btnRect ? Math.min(btnRect.left, window.innerWidth - 145) : undefined }}>
@@ -1120,7 +1133,7 @@ function ColorPicker({ color, colors, onChange }) {
       {/* Color table popover */}
       {open && (
         <div
-          className="absolute top-full left-0 mt-1.5 z-50 bg-white border border-border/60 rounded-xl shadow-xl p-2"
+          className="absolute top-full left-0 mt-1.5 z-50 bg-background border border-border/60 rounded-xl shadow-xl p-2"
           style={{ width: 120 }}
           onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
         >
@@ -1210,7 +1223,7 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
           transition:  "opacity 0.12s",
           backdropFilter: "blur(8px)",
         }}
-        className="flex items-center gap-1 bg-white/95 border border-border/70 rounded-xl shadow-lg px-2 py-1"
+        className="flex items-center gap-1 bg-background/95 border border-border/70 rounded-xl shadow-lg px-2 py-1"
         onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
         onTouchStart={e => { e.stopPropagation() }}
       >
@@ -1229,7 +1242,7 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
           <select
             value={el.fontSize}
             onChange={e => { e.stopPropagation(); onUpdate({ fontSize: Number(e.target.value) }) }}
-            className="text-[10px] font-mono border border-border/50 rounded px-1 py-0.5 bg-white focus:outline-none cursor-pointer"
+            className="text-[10px] font-mono border border-border/50 rounded px-1 py-0.5 bg-background focus:outline-none cursor-pointer"
             style={{ fontSize: 10 }}
           >
             {SIZES.map(s => <option key={s} value={s}>{s}px</option>)}
@@ -1248,7 +1261,7 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
           onMouseDown={e => e.preventDefault()}
           onClick={e => { e.stopPropagation(); onDelete() }}
           onTouchEnd={e => { e.preventDefault(); e.stopPropagation(); onDelete() }}
-          className="p-1.5 rounded text-red-400 hover:text-red-500 hover:bg-red-50 transition touch-manipulation"
+          className="p-1.5 rounded text-red-400 hover:text-red-500 hover:bg-red-500/10 transition touch-manipulation"
         ><Trash2 size={11}/></button>
       </div>
 
@@ -1329,7 +1342,7 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
             style={{
               position: "absolute", right: -8, bottom: -8,
               width: 22, height: 22, zIndex: 25,
-              background: "white", border: "2.5px solid #7c3aed",
+              background: "var(--background, white)", border: "2.5px solid #7c3aed",
               borderRadius: "50%", cursor: "se-resize",
               boxShadow: "0 1px 6px rgba(124,58,237,0.3)",
               touchAction: "none",
@@ -1868,7 +1881,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
           }}
           onMouseDown={e => e.stopPropagation()}
         >
-          <div className="bg-white border border-border/60 rounded-xl shadow-2xl py-1 overflow-hidden"
+          <div className="bg-background border border-border/60 rounded-xl shadow-2xl py-1 overflow-hidden"
             style={{ backdropFilter: "blur(8px)" }}>
             <button onClick={doCopy} disabled={!hasSelection}
               className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-secondary transition disabled:opacity-30 disabled:cursor-not-allowed">
@@ -1884,7 +1897,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
             </button>
             <div className="h-px bg-border/50 my-1"/>
             <button onClick={doDelete} disabled={!hasSelection}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-red-50 transition disabled:opacity-30 disabled:cursor-not-allowed">
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-red-500/10 transition disabled:opacity-30 disabled:cursor-not-allowed">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
               <span className="font-medium text-red-500">Delete</span>
               <span className="ml-auto text-[10px] text-muted-foreground">Del</span>
@@ -1987,7 +2000,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
 }
 
 // ── Single Note Card ──────────────────────────────────────────────────────────
-function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, toolThickness, gripHandlers, draggingIdx }) {
+function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, toolThickness, gripHandlers, draggingIdx, isDark }) {
   const editorRef        = useRef(null)
   const undoRef          = useRef(null)
   const redoRef          = useRef(null)
@@ -2034,7 +2047,8 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
     document.execCommand(command, false, value)
   }
 
-  const cardColor = CARD_COLORS.find(c => c.bg === note.cardColor) || CARD_COLORS[0]
+  const palette   = isDark ? CARD_COLORS_DARK : CARD_COLORS
+  const cardColor = palette.find(c => c.bg === note.cardColor) || palette[0]
 
   return (
     <div
@@ -2066,7 +2080,7 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
               <Palette size={12} style={{ color: cardColor.text + "80" }} />
             </button>
             {showCardColors && (
-              <div className="absolute right-0 top-full mt-1 z-20 bg-white border border-border rounded-xl shadow-xl p-2 flex flex-wrap gap-1.5" style={{ width: 140 }}>
+              <div className="absolute right-0 top-full mt-1 z-20 bg-background border border-border rounded-xl shadow-xl p-2 flex flex-wrap gap-1.5" style={{ width: 140 }}>
                 {CARD_COLORS.map(c => (
                   <button key={c.bg} onClick={() => { onUpdate(index, "cardColor", c.bg); setShowCardColors(false) }}
                     title={c.label}
@@ -2080,7 +2094,7 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
             onMouseDown={e => e.stopPropagation()}
             onClick={() => onRemove(index)}
             title="Delete note"
-            className="p-2 rounded hover:bg-red-100 text-muted-foreground/30 hover:text-red-400 transition sm:opacity-0 sm:group-hover:opacity-100 touch-manipulation">
+            className="p-2 rounded hover:bg-red-500/10 text-muted-foreground/30 hover:text-red-400 transition sm:opacity-0 sm:group-hover:opacity-100 touch-manipulation">
             <Trash2 size={12} />
           </button>
         </div>
@@ -2214,7 +2228,7 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
 }
 
 // ── Vocabulary Card ───────────────────────────────────────────────────────────
-function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccent, gripHandlers, draggingIdx }) {
+function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccent, gripHandlers, draggingIdx, isDark, nb }) {
   const exampleRef       = useRef(null)
   const [activeMarker,   setActiveMarker]   = useState(null)
   const markerCounterRef = useRef(1)
@@ -2235,36 +2249,40 @@ function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccen
     if (marker === "1.") markerCounterRef.current = 2
   }
 
+  const inputStyle = { backgroundColor: nb.surface, borderColor: nb.borderMid, color: nb.text }
+
   return (
     <div
       className="rounded-xl border group overflow-hidden"
-      style={{ borderColor: sectionColor + "30", backgroundColor: sectionAccent + "40" }}
+      style={{ borderColor: sectionColor + "30", backgroundColor: sectionAccent + "40",
+        borderColor: sectionColor + "25", backgroundColor: nb.surface,
+      }}
     >
       {/* Top row: grip + word + meaning + delete */}
       <div className="flex items-start gap-2 p-3 pb-2">
-        <GripVertical size={14} className="text-muted-foreground/30 mt-2 flex-shrink-0" onPointerDown={e => gripHandlers?.onGripDown(e, ri)} onPointerMove={e => gripHandlers?.onGripMove(e)} onPointerUp={e => gripHandlers?.onGripUp(e)} onPointerCancel={e => gripHandlers?.onGripUp(e)} style={{ cursor: draggingIdx === ri ? "grabbing" : "grab", touchAction: "none", userSelect: "none" }} />
+        <GripVertical size={14} className="text-muted-foreground/30 mt-2 flex-shrink-0" onPointerDown={e => gripHandlers?.onGripDown(e, ri)} onPointerMove={e => gripHandlers?.onGripMove(e)} onPointerUp={e => gripHandlers?.onGripUp(e)} onPointerCancel={e => gripHandlers?.onGripUp(e)} style={{ cursor: draggingIdx === ri ? "grabbing" : "grab", touchAction: "none", userSelect: "none", color: nb.muted }} />
         <div className="flex flex-col gap-2 flex-1 min-w-0">
           <input
             value={v.word || ""}
             onChange={e => updateVocab(ri, "word", e.target.value)}
             onMouseDown={e => e.stopPropagation()}
             placeholder="Word or phrase"
-            className="w-full text-sm font-semibold bg-white border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
-            style={{ "--tw-ring-color": sectionColor + "40" }}
+            className="w-full text-sm font-semibold bg-background border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+            style={{ "--tw-ring-color": sectionColor + "40", ...inputStyle }}
           />
           <input
             value={v.meaning || ""}
             onChange={e => updateVocab(ri, "meaning", e.target.value)}
             onMouseDown={e => e.stopPropagation()}
             placeholder="Meaning / definition"
-            className="w-full text-sm bg-white border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
-            style={{ "--tw-ring-color": sectionColor + "40" }}
+            className="w-full text-sm bg-background border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
+            style={{ "--tw-ring-color": sectionColor + "40", ...inputStyle }}
           />
         </div>
         <button
           onClick={() => removeVocab(ri)}
           onMouseDown={e => e.stopPropagation()}
-          className="p-2 rounded-lg text-muted-foreground/30 hover:text-red-400 hover:bg-red-50 transition sm:opacity-0 sm:group-hover:opacity-100 flex-shrink-0"
+          className="p-2 rounded-lg text-muted-foreground/30 hover:text-red-400 hover:bg-red-500/10 transition sm:opacity-0 sm:group-hover:opacity-100 flex-shrink-0"
         >
           <Trash2 size={14} />
         </button>
@@ -2319,13 +2337,13 @@ function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccen
             }
           }}
           data-placeholder="Example sentence (optional)"
-          className="w-full text-xs focus:outline-none leading-relaxed rounded-lg px-3 py-2 bg-white/60 border border-border/40 italic"
+          className="w-full text-xs focus:outline-none leading-relaxed rounded-lg px-3 py-2 bg-background/60 border border-border/40 italic"
           style={{
             minHeight:    "32px",
             wordBreak:    "break-word",
             overflowWrap: "break-word",
-            color:        "#64748b",
             caretColor:   sectionColor,
+            backgroundColor: nb.inputBg, borderColor: nb.borderFaint, color: nb.muted,
           }}
         />
       </div>
@@ -2337,8 +2355,11 @@ function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccen
             key={marker}
             onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
             onClick={() => insertMarker(marker)}
-            className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border transition ${activeMarker === marker ? "border-current bg-white font-semibold" : "border-border/50 text-muted-foreground hover:bg-white/80 hover:text-foreground"}`}
-            style={{ color: activeMarker === marker ? sectionColor : undefined }}
+            className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border transition ${activeMarker === marker ? "border-current bg-background font-semibold" : "border-border/50 text-muted-foreground hover:bg-background/80 hover:text-foreground"}`}
+            style={{
+              color: activeMarker === marker ? sectionColor : nb.muted,
+              borderColor: nb.borderFaint, backgroundColor: activeMarker === marker ? nb.surface : "transparent",
+            }}
           >
             <span className="text-sm leading-none">{marker}</span>
             <span>{label.split(" ").slice(1).join(" ")}</span>
@@ -2349,6 +2370,7 @@ function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccen
             onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
             onClick={() => { setActiveMarker(null); markerCounterRef.current = 1 }}
             className="text-[10px] px-1.5 py-0.5 rounded-md text-muted-foreground/50 hover:text-muted-foreground transition"
+            style={{ color: nb.muted }}
             title="Stop list"
           >✕</button>
         )}
@@ -2358,7 +2380,7 @@ function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccen
 }
 
 // ── Mistake Card ──────────────────────────────────────────────────────────────
-function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectionAccent, gripHandlers, draggingIdx }) {
+function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectionAccent, gripHandlers, draggingIdx, isDark, nb }) {
   const reasonRef        = useRef(null)
   const [activeMarker,   setActiveMarker]   = useState(null)
   const markerCounterRef = useRef(1)
@@ -2379,36 +2401,41 @@ function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectio
     if (marker === "1.") markerCounterRef.current = 2
   }
 
+  const inputStyle = { backgroundColor: nb.surface, borderColor: nb.borderMid, color: nb.text }
+
   return (
     <div
       className="rounded-xl border group overflow-hidden"
-      style={{ borderColor: sectionColor + "30", backgroundColor: sectionAccent + "60" }}
+      style={{
+        borderColor: sectionColor + "30", backgroundColor: sectionAccent + "60",
+        borderColor: sectionColor + "25", backgroundColor: nb.surface,
+      }}
     >
       {/* Top row: grip + source + mistake + delete */}
       <div className="flex items-start gap-2 p-3 pb-2">
-        <GripVertical size={14} className="text-muted-foreground/30 mt-2 flex-shrink-0" onPointerDown={e => gripHandlers?.onGripDown(e, ri)} onPointerMove={e => gripHandlers?.onGripMove(e)} onPointerUp={e => gripHandlers?.onGripUp(e)} onPointerCancel={e => gripHandlers?.onGripUp(e)} style={{ cursor: draggingIdx === ri ? "grabbing" : "grab", touchAction: "none", userSelect: "none" }} />
+        <GripVertical size={14} className="text-muted-foreground/30 mt-2 flex-shrink-0" onPointerDown={e => gripHandlers?.onGripDown(e, ri)} onPointerMove={e => gripHandlers?.onGripMove(e)} onPointerUp={e => gripHandlers?.onGripUp(e)} onPointerCancel={e => gripHandlers?.onGripUp(e)} style={{ cursor: draggingIdx === ri ? "grabbing" : "grab", touchAction: "none", userSelect: "none", color: nb.muted }} />
         <div className="flex flex-col gap-2 flex-1 min-w-0">
           <input
             value={m.source || ""}
             onChange={e => updateMistake(ri, "source", e.target.value)}
             onMouseDown={e => e.stopPropagation()}
             placeholder="Source (e.g. Mock Test 2)"
-            className="sm:w-36 w-full text-xs bg-white border border-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 flex-shrink-0"
-            style={{ "--tw-ring-color": sectionColor + "40" }}
+            className="sm:w-36 w-full text-xs bg-background border border-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 flex-shrink-0"
+            style={{ "--tw-ring-color": sectionColor + "40", ...inputStyle }}
           />
           <input
             value={m.mistake || ""}
             onChange={e => updateMistake(ri, "mistake", e.target.value)}
             onMouseDown={e => e.stopPropagation()}
             placeholder="What was the mistake?"
-            className="flex-1 min-w-0 text-sm bg-white border border-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2"
-            style={{ "--tw-ring-color": sectionColor + "40" }}
+            className="flex-1 min-w-0 text-sm bg-background border border-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2"
+            style={{ "--tw-ring-color": sectionColor + "40", ...inputStyle }}
           />
         </div>
         <button
           onClick={() => removeMistake(ri)}
           onMouseDown={e => e.stopPropagation()}
-          className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-red-400 hover:bg-red-100 transition opacity-0 group-hover:opacity-100 flex-shrink-0 mt-0.5"
+          className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-red-400 hover:bg-red-500/10 transition opacity-0 group-hover:opacity-100 flex-shrink-0 mt-0.5"
         >
           <Trash2 size={13} />
         </button>
@@ -2467,13 +2494,13 @@ function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectio
             }
           }}
           data-placeholder="Why did this happen? How to avoid it?"
-          className="w-full text-xs focus:outline-none leading-relaxed rounded-lg px-3 py-2 bg-white/70 border border-border/40"
+          className="w-full text-xs focus:outline-none leading-relaxed rounded-lg px-3 py-2 bg-background/60 border border-border/40"
           style={{
             minHeight:    "36px",
             wordBreak:    "break-word",
             overflowWrap: "break-word",
-            color:        "#475569",
             caretColor:   sectionColor,
+            backgroundColor: nb.inputBg, borderColor: nb.borderFaint, color: nb.text,
           }}
         />
       </div>
@@ -2485,8 +2512,11 @@ function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectio
             key={marker}
             onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
             onClick={() => insertMarker(marker)}
-            className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border transition ${activeMarker === marker ? "border-current bg-white font-semibold" : "border-border/50 text-muted-foreground hover:bg-white/80 hover:text-foreground"}`}
-            style={{ color: activeMarker === marker ? sectionColor : undefined }}
+            className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border transition ${activeMarker === marker ? "border-current bg-background font-semibold" : "border-border/50 text-muted-foreground hover:bg-background/80 hover:text-foreground"}`}
+            style={{
+              color: activeMarker === marker ? sectionColor : nb.muted,
+              borderColor: nb.borderFaint, backgroundColor: activeMarker === marker ? nb.surface : "transparent",
+            }}
           >
             <span className="text-sm leading-none">{marker}</span>
             <span>{label.split(" ").slice(1).join(" ")}</span>
@@ -2497,6 +2527,7 @@ function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectio
             onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
             onClick={() => { setActiveMarker(null); markerCounterRef.current = 1 }}
             className="text-[10px] px-1.5 py-0.5 rounded-md text-muted-foreground/50 hover:text-muted-foreground transition"
+            style={{ color: nb.muted }}
             title="Stop list"
           >✕</button>
         )}
@@ -2506,7 +2537,7 @@ function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectio
 }
 
 // ── Reusable section dropdown ─────────────────────────────────────────────────
-function SectionDropdown({ sections, activeSection, setActiveSection, counts, ddRef, show, setShow }) {
+function SectionDropdown({ sections, activeSection, setActiveSection, counts, ddRef, show, setShow, isDark, nb }) {
   const current  = sections.find(s => s.id === activeSection) || sections[0]
   const btnRef   = useRef(null)
   const [dropPos, setDropPos] = useState({ top: 0, left: 0, width: 0 })
@@ -2526,19 +2557,23 @@ function SectionDropdown({ sections, activeSection, setActiveSection, counts, dd
         ref={btnRef}
         onClick={openDropdown}
         className="w-full flex items-center justify-between gap-2 px-3 py-2.5 sm:py-2 rounded-xl border border-border bg-secondary/40 hover:bg-secondary/70 transition text-sm font-medium touch-manipulation"
-        style={{ color: current.color }}
+        style={{
+          color: current.color,
+          borderColor: nb.borderMid, backgroundColor: nb.surface,
+        }}
       >
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: current.accent }}>
             <current.icon size={13} style={{ color: current.color }} />
           </div>
-          <span>{current.label}</span>
+          <span style={{ color: nb.text }}>{current.label}</span>
           {(counts[current.id] || 0) > 0 && (
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
               style={{ backgroundColor: current.color }}>{counts[current.id]}</span>
           )}
         </div>
-        <ChevronDown size={14} className={`text-muted-foreground transition-transform duration-200 ${show ? "rotate-180" : ""}`} />
+        <ChevronDown size={14} className={`transition-transform duration-200 ${show ? "rotate-180" : ""}`}
+          style={{ color: nb.muted }} />
       </button>
 
       <AnimatePresence>
@@ -2556,18 +2591,21 @@ function SectionDropdown({ sections, activeSection, setActiveSection, counts, dd
               zIndex: 9999,
               maxHeight: 260,
               overflowY: "auto",
+              backgroundColor: nb.surface, borderColor: nb.border,
             }}
-            className="bg-white border border-border rounded-xl shadow-xl"
+            className="bg-background border border-border rounded-xl shadow-xl"
           >
             {sections.map(s => (
               <button key={s.id}
                 onClick={() => { setActiveSection(s.id); setShow(false) }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 hover:bg-secondary/50 transition ${activeSection === s.id ? "bg-secondary/30" : ""}`}
+                style={{ backgroundColor: activeSection === s.id ? nb.hoverBg : "transparent" }}
               >
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: s.accent }}>
                   <s.icon size={14} style={{ color: s.color }} />
                 </div>
-                <span className="text-sm font-medium flex-1 text-left" style={{ color: activeSection === s.id ? s.color : undefined }}>
+                <span className="text-sm font-medium flex-1 text-left"
+                  style={{ color: activeSection === s.id ? s.color : nb.text }}>
                   {s.label}
                 </span>
                 {(counts[s.id] || 0) > 0 && (
@@ -2697,6 +2735,13 @@ export default function NotebookModal({ open, onClose, openAuth }) {
   const [showNoteDD,      setShowNoteDD]      = useState(false)
   const [showVocabDD,     setShowVocabDD]     = useState(false)
   const [showMistakeDD,   setShowMistakeDD]   = useState(false)
+  const [isDark,          setIsDark]          = useState(() => {
+    // On open: follow the global site theme (set by FloatingTopBar)
+    try { return localStorage.getItem("ielts-theme") === "dark" } catch { return false }
+  })
+  // Tracks whether the user toggled inside the notebook this session
+  // (so we can reset it back to site theme on close)
+  const notebookToggledRef = useRef(false)
 
   const [data, setData] = useState({
     vocabulary: { ...EMPTY_VOCAB    },
@@ -2886,8 +2931,23 @@ export default function NotebookModal({ open, onClose, openAuth }) {
   }, [data, user])
 
   useEffect(() => {
-    if (open) document.body.style.overflow = "hidden"
-    else document.body.style.overflow = ""
+    if (open) {
+      document.body.style.overflow = "hidden"
+      // When notebook opens: always sync to current global site theme
+      // (captures changes the user made to site dark mode while notebook was closed)
+      const siteDark = localStorage.getItem("ielts-theme") === "dark"
+      setIsDark(siteDark)
+      notebookToggledRef.current = false
+    } else {
+      document.body.style.overflow = ""
+      // When notebook closes: if user toggled inside, reset back to site theme
+      // so next open always follows the site theme again
+      if (notebookToggledRef.current) {
+        const siteDark = localStorage.getItem("ielts-theme") === "dark"
+        setIsDark(siteDark)
+        notebookToggledRef.current = false
+      }
+    }
     return () => { document.body.style.overflow = "" }
   }, [open])
 
@@ -2947,6 +3007,79 @@ export default function NotebookModal({ open, onClose, openAuth }) {
   const currentMistakes = (data.mistakes[mistakeSection] || []).filter(m => !q || m.mistake?.toLowerCase().includes(q) || m.source?.toLowerCase().includes(q))
   const currentNotes   = data.notes[noteSection] || []
 
+  function toggleDark() {
+    // Only flips the notebook view locally — never touches ielts-theme or global dark class
+    notebookToggledRef.current = true
+    setIsDark(d => !d)
+  }
+
+  // ── Notebook theme tokens — applied as inline styles so they ALWAYS win over Tailwind ──
+  // This bypasses the global dark/light CSS variable cascade entirely.
+  // nb always holds explicit colors for BOTH modes — inline styles beat any Tailwind global dark cascade
+  const nb = isDark ? {
+    bg:         "#1A1125",
+    surface:    "#261D32",
+    border:     "#3d2d50",
+    borderMid:  "rgba(61,45,80,0.5)",
+    borderFaint:"rgba(61,45,80,0.35)",
+    text:       "#e8e0f0",
+    muted:      "#9d8cb0",
+    accent:     "#5B04BC",
+    inputBg:    "rgba(38,29,50,0.6)",
+    footerBg:   "rgba(38,29,50,0.25)",
+    hoverBg:    "rgba(61,45,80,0.3)",
+  } : {
+    // Explicit light values — needed so inline styles override .dark .bg-background etc.
+    bg:         "#ffffff",
+    surface:    "#f8fafc",
+    border:     "#e2e8f0",
+    borderMid:  "rgba(226,232,240,0.6)",
+    borderFaint:"rgba(226,232,240,0.4)",
+    text:       "#1e293b",
+    muted:      "#64748b",
+    accent:     "#7c3aed",
+    inputBg:    "rgba(241,245,249,0.6)",
+    footerBg:   "rgba(241,245,249,0.3)",
+    hoverBg:    "rgba(241,245,249,0.8)",
+  }
+
+  // Dark-mode CSS vars scoped to the modal wrapper via data-nb-dark attribute
+  // Colors from the design image: bg #1A1125, surface #261D32, accent #5B04BC
+  const DARK_STYLE = `
+    [data-nb-dark] {
+      --background: #1A1125;
+      --foreground: #e8e0f0;
+      --card: #261D32;
+      --border: #3d2d50;
+      --secondary: #261D32;
+      --muted-foreground: #9d8cb0;
+      --primary: #5B04BC;
+    }
+    [data-nb-dark] .text-foreground { color: #e8e0f0 !important; }
+    [data-nb-dark] .text-muted-foreground { color: #9d8cb0 !important; }
+    [data-nb-dark] .bg-background { background-color: #1A1125 !important; }
+    [data-nb-dark] .bg-secondary { background-color: #261D32 !important; }
+    [data-nb-dark] .bg-secondary\\/20 { background-color: rgba(38,29,50,0.2) !important; }
+    [data-nb-dark] .bg-secondary\\/40 { background-color: rgba(38,29,50,0.4) !important; }
+    [data-nb-dark] .bg-secondary\\/60 { background-color: rgba(38,29,50,0.6) !important; }
+    [data-nb-dark] .bg-background\\/60 { background-color: rgba(26,17,37,0.6) !important; }
+    [data-nb-dark] .bg-background\\/95 { background-color: rgba(26,17,37,0.95) !important; }
+    [data-nb-dark] .border-border { border-color: #3d2d50 !important; }
+    [data-nb-dark] .border-border\\/40 { border-color: rgba(61,45,80,0.4) !important; }
+    [data-nb-dark] .border-border\\/50 { border-color: rgba(61,45,80,0.5) !important; }
+    [data-nb-dark] .border-border\\/60 { border-color: rgba(61,45,80,0.6) !important; }
+    [data-nb-dark] .border-border\\/70 { border-color: rgba(61,45,80,0.7) !important; }
+    [data-nb-dark] .bg-card { background-color: #261D32 !important; }
+    [data-nb-dark] input, [data-nb-dark] [contenteditable] { color: #e8e0f0; }
+    [data-nb-dark] input::placeholder { color: rgba(157,140,176,0.5); }
+    [data-nb-dark] .text-green-600 { color: #4ade80 !important; }
+    [data-nb-dark] .hover\\:bg-secondary:hover { background-color: #261D32 !important; }
+    [data-nb-dark] .hover\\:bg-secondary\\/50:hover { background-color: rgba(38,29,50,0.5) !important; }
+    [data-nb-dark] .bg-secondary\\/30 { background-color: rgba(38,29,50,0.3) !important; }
+    [data-nb-dark] .bg-border\\/60 { background-color: rgba(61,45,80,0.6) !important; }
+    [data-nb-dark] .focus\\:ring-primary\\/30:focus { --tw-ring-color: rgba(91,4,188,0.3) !important; }
+  `
+
   if (!open) return null
 
   if (!user) return (
@@ -2977,28 +3110,36 @@ export default function NotebookModal({ open, onClose, openAuth }) {
             [contenteditable] ul { list-style-type: disc;    padding-left: 1.4em; margin: 0.2em 0; }
             [contenteditable] ol { list-style-type: decimal; padding-left: 1.4em; margin: 0.2em 0; }
             [contenteditable] li { margin: 0.1em 0; }
+            ${isDark ? DARK_STYLE : ""}
           `}</style>
           <motion.div
             initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
+            {...(isDark ? { "data-nb-dark": "" } : {})}
             className="bg-background border border-border w-full max-w-2xl rounded-t-2xl sm:rounded-2xl flex flex-col overflow-hidden"
-            style={{ maxHeight: "100dvh", height: "100dvh", maxHeight: "92dvh" }}
+            style={{
+              maxHeight: "92dvh", height: "100dvh",
+              backgroundColor: nb.bg, borderColor: nb.border, color: nb.text,
+            }}
           >
             {/* Mobile drag handle */}
             <div className="flex justify-center pt-2.5 pb-0 sm:hidden flex-shrink-0">
-              <div className="w-10 h-1 rounded-full bg-border/60" />
+              <div className="w-10 h-1 rounded-full bg-border/60"
+                style={{ backgroundColor: nb.border }} />
             </div>
             {/* Header */}
-            <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border flex-shrink-0"
+              style={{ borderColor: nb.border }}>
               <div className="flex items-center gap-2">
                 <span className="text-lg sm:text-xl">📓</span>
-                <h2 className="text-sm sm:text-base font-bold">Study Notebook</h2>
+                <h2 className="text-sm sm:text-base font-bold" style={{ color: nb.text }}>Study Notebook</h2>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <AnimatePresence mode="wait">
                   {saveState === "saving" && (
                     <motion.div key="saving" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                      className="flex items-center gap-1 text-xs text-muted-foreground">
+                      className="flex items-center gap-1 text-xs"
+                      style={{ color: nb.muted }}>
                       <Loader2 size={11} className="animate-spin" /> Saving...
                     </motion.div>
                   )}
@@ -3009,21 +3150,62 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary transition">
-                  <X size={18} className="text-muted-foreground" />
+
+                {/* Notebook dark mode toggle — local only, resets on close */}
+                <motion.button
+                  onClick={toggleDark}
+                  title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+                  whileTap={{ scale: 0.88 }}
+                  className="relative p-1.5 rounded-lg transition-colors overflow-hidden"
+                  style={{
+                    background: isDark
+                      ? "linear-gradient(135deg,#1A1125,#261D32)"
+                      : "linear-gradient(135deg,#f1f5f9,#e2e8f0)",
+                    border: isDark ? "1px solid #3d2d50" : "1px solid #cbd5e1",
+                  }}
+                >
+                  <AnimatePresence mode="wait" initial={false}>
+                    {isDark ? (
+                      <motion.span key="sun"
+                        initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                        animate={{ rotate: 0,   opacity: 1, scale: 1 }}
+                        exit={{    rotate:  90, opacity: 0, scale: 0.5 }}
+                        transition={{ duration: 0.18 }}
+                        className="block"
+                      >
+                        <Sun size={14} style={{ color: "#a855f7" }} />
+                      </motion.span>
+                    ) : (
+                      <motion.span key="moon"
+                        initial={{ rotate: 90,  opacity: 0, scale: 0.5 }}
+                        animate={{ rotate: 0,   opacity: 1, scale: 1 }}
+                        exit={{    rotate: -90, opacity: 0, scale: 0.5 }}
+                        transition={{ duration: 0.18 }}
+                        className="block"
+                      >
+                        <Moon size={14} style={{ color: "#475569" }} />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+
+                <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-secondary transition"
+                  style={{ color: nb.muted }}>
+                  <X size={18} />
                 </button>
               </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-border flex-shrink-0 px-3 sm:px-5">
+            <div className="flex border-b border-border flex-shrink-0 px-3 sm:px-5"
+              style={{ borderColor: nb.border, backgroundColor: nb.bg }}>
               {TABS.map(tab => {
                 const Icon  = tab.icon
                 const count = tab.id === "vocabulary" ? totalVocab : tab.id === "mistakes" ? totalMistakes : totalNotes
                 return (
                   <button key={tab.id} onClick={() => { setActiveTab(tab.id); setSearch("") }}
                     className="relative flex items-center gap-1.5 px-3 sm:px-3 py-3 sm:py-3 text-xs sm:text-sm font-medium transition flex-1 sm:flex-none justify-center sm:justify-start sm:mr-1"
-                    style={{ color: activeTab === tab.id ? tab.color : undefined }}>
+                    style={{ color: activeTab === tab.id ? tab.color : nb.muted }}>
                     <Icon size={14} />
                     <span className="hidden xs:inline sm:inline">{tab.label}</span>
                     {count > 0 && (
@@ -3041,33 +3223,38 @@ export default function NotebookModal({ open, onClose, openAuth }) {
             </div>
 
             {/* Section dropdown + search bar */}
-            <div className="px-3 sm:px-5 pt-3 pb-2 flex-shrink-0 flex items-center gap-2">
+            <div className="px-3 sm:px-5 pt-3 pb-2 flex-shrink-0 flex items-center gap-2"
+              style={{ backgroundColor: nb.bg }}>
               {activeTab === "vocabulary" && (
                 <SectionDropdown sections={VOCAB_SECTIONS} activeSection={vocabSection} setActiveSection={setVocabSection}
-                  counts={vocabCounts} ddRef={vocabDDRef} show={showVocabDD} setShow={setShowVocabDD} />
+                  counts={vocabCounts} ddRef={vocabDDRef} show={showVocabDD} setShow={setShowVocabDD} isDark={isDark} nb={nb} />
               )}
               {activeTab === "mistakes" && (
                 <SectionDropdown sections={MISTAKE_SECTIONS} activeSection={mistakeSection} setActiveSection={setMistakeSection}
-                  counts={mistakeCounts} ddRef={mistakeDDRef} show={showMistakeDD} setShow={setShowMistakeDD} />
+                  counts={mistakeCounts} ddRef={mistakeDDRef} show={showMistakeDD} setShow={setShowMistakeDD} isDark={isDark} nb={nb} />
               )}
               {activeTab === "notes" && (
                 <SectionDropdown sections={NOTE_SECTIONS} activeSection={noteSection} setActiveSection={setNoteSection}
-                  counts={noteCounts} ddRef={noteDDRef} show={showNoteDD} setShow={setShowNoteDD} />
+                  counts={noteCounts} ddRef={noteDDRef} show={showNoteDD} setShow={setShowNoteDD} isDark={isDark} nb={nb} />
               )}
               {activeTab !== "notes" && (
                 <div className="relative flex-1">
-                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    style={{ color: nb.muted }} />
                   <input value={search} onChange={e => setSearch(e.target.value)}
                     placeholder={activeTab === "vocabulary" ? "Search words..." : "Search mistakes..."}
-                    className="w-full text-sm bg-secondary/60 border border-border rounded-xl pl-8 pr-3 py-2.5 sm:py-2 focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                    className="w-full text-sm bg-secondary/60 border border-border rounded-xl pl-8 pr-3 py-2.5 sm:py-2 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    style={{ backgroundColor: nb.inputBg, borderColor: nb.borderMid, color: nb.text }} />
                 </div>
               )}
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-3">
+            <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-3"
+              style={{ backgroundColor: nb.bg }}>
               {loading ? (
-                <div className="flex items-center justify-center py-16 gap-2 text-muted-foreground text-sm">
+                <div className="flex items-center justify-center py-16 gap-2 text-sm"
+                  style={{ color: nb.muted }}>
                   <Loader2 size={16} className="animate-spin" /> Loading your notebook...
                 </div>
               ) : (
@@ -3078,12 +3265,13 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                       <button onClick={addVocab}
                         className="mb-3 w-full flex items-center justify-center gap-2 py-3 sm:py-2.5 rounded-xl border-2 border-dashed text-sm font-medium transition touch-manipulation"
                         style={{ borderColor: currentVocabSection.color + "80", color: currentVocabSection.color }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = currentVocabSection.accent}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = nb.hoverBg}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
                         <Plus size={15} /> Add {currentVocabSection.label} Word
                       </button>
                       {currentVocab.length === 0 && (
-                        <p className="text-center text-sm text-muted-foreground py-8">
+                        <p className="text-center text-sm py-8"
+                          style={{ color: nb.muted }}>
                           {search ? "No words match." : `No ${currentVocabSection.label.toLowerCase()} vocabulary yet.`}
                         </p>
                       )}
@@ -3103,6 +3291,8 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                               sectionAccent={currentVocabSection.accent}
                               gripHandlers={gripHandlers}
                               draggingIdx={draggingIdx}
+                              isDark={isDark}
+                              nb={nb}
                             />
                           )
                         }}
@@ -3116,12 +3306,13 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                       <button onClick={addMistake}
                         className="mb-3 w-full flex items-center justify-center gap-2 py-3 sm:py-2.5 rounded-xl border-2 border-dashed text-sm font-medium transition touch-manipulation"
                         style={{ borderColor: currentMistakeSection.color + "80", color: currentMistakeSection.color }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = currentMistakeSection.accent}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = nb.hoverBg}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
                         <Plus size={15} /> Log {currentMistakeSection.label} Mistake
                       </button>
                       {currentMistakes.length === 0 && (
-                        <p className="text-center text-sm text-muted-foreground py-8">
+                        <p className="text-center text-sm py-8"
+                          style={{ color: nb.muted }}>
                           {search ? "No mistakes match." : `No ${currentMistakeSection.label.toLowerCase()} mistakes logged yet.`}
                         </p>
                       )}
@@ -3141,6 +3332,8 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                               sectionAccent={currentMistakeSection.accent}
                               gripHandlers={gripHandlers}
                               draggingIdx={draggingIdx}
+                              isDark={isDark}
+                              nb={nb}
                             />
                           )
                         }}
@@ -3154,7 +3347,7 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                       <button onClick={addNote}
                         className="mb-3 w-full flex items-center justify-center gap-2 py-3 sm:py-2.5 rounded-xl border-2 border-dashed text-sm font-medium transition touch-manipulation"
                         style={{ borderColor: currentNoteSection.color + "80", color: currentNoteSection.color }}
-                        onMouseEnter={e => e.currentTarget.style.backgroundColor = currentNoteSection.accent}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = nb.hoverBg}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
                         <Plus size={15} /> New {currentNoteSection.label} Note
                       </button>
@@ -3163,7 +3356,7 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                           <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: currentNoteSection.accent }}>
                             <currentNoteSection.icon size={22} style={{ color: currentNoteSection.color }} />
                           </div>
-                          <p className="text-sm text-muted-foreground text-center">
+                          <p className="text-sm text-center" style={{ color: nb.muted }}>
                             No {currentNoteSection.label.toLowerCase()} notes yet.<br />Add a card to get started!
                           </p>
                         </div>
@@ -3184,6 +3377,7 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                             toolThickness={2}
                             gripHandlers={gripHandlers}
                             draggingIdx={draggingIdx}
+                            isDark={isDark}
                           />
                         )}
                       />
@@ -3194,13 +3388,15 @@ export default function NotebookModal({ open, onClose, openAuth }) {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-3 border-t border-border bg-secondary/20 flex-shrink-0">
-              <div className="flex gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-3 border-t border-border bg-secondary/20 flex-shrink-0"
+              style={{ backgroundColor: nb.footerBg, borderColor: nb.border }}>
+              <div className="flex gap-4 text-xs text-muted-foreground"
+                style={{ color: nb.muted }}>
                 <span className="text-[11px] sm:text-xs">📚 {totalVocab}</span>
                 <span className="text-[11px] sm:text-xs">❌ {totalMistakes}</span>
                 <span className="text-[11px] sm:text-xs">📝 {totalNotes}</span>
               </div>
-              <span className="text-xs text-muted-foreground">Synced to your account</span>
+              <span className="text-xs text-muted-foreground" style={{ color: nb.muted }}>Synced to your account</span>
             </div>
 
           </motion.div>

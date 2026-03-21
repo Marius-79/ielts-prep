@@ -10,30 +10,30 @@ export const PLAN_META = [
     id: "sprint", label: "25 Day Plan", unit: "Week", days: 25, weeks: 5, mocks: 13,
     targetBand: "6.5+", color: "#7c3aed", accent: "#ede9fe",
     badge: "Best for retakes",
-    description: "25-day intensive plan. Perfect if you already know English well and just need IELTS exam strategy and lots of practice.",
+    description: "25-day intensive plan. Perfect if your English is already at B2 level and you need exam technique, structure, and lots of timed practice with feedback.",
     forWho: "I know English well — I just need exam technique and practice",
     dailyHours: "2–3 hrs/day",
-    highlights: ["13 full mock tests", "All 4 skills covered", "Writing & Speaking templates", "Band 6.5+ target"],
+    highlights: ["13 full mock tests", "Simon's method for all 4 skills", "Daily Jumpinto + Engnovate practice", "Band 6.5+ target"],
     retakeWeek: null, retakeLabel: null,
   },
   {
     id: "standard", label: "2-Month Plan", unit: "Month", days: 56, weeks: 8, mocks: 20,
     targetBand: "7.0+", color: "#0ea5e9", accent: "#e0f2fe",
     badge: "Most popular",
-    description: "2-month plan. Build your skills from the start, learn every strategy, and do 20 full mock tests.",
+    description: "2-month plan. Build every skill step by step using Simon's proven methods, practice daily with AI feedback on Jumpinto and Engnovate, and complete 20 full mock tests.",
     forWho: "I want a full preparation with deep skill-building and lots of practice",
     dailyHours: "3–4 hrs/day",
-    highlights: ["20 full mock tests", "Writing templates", "Speaking templates", "Band 7.0+ target"],
+    highlights: ["20 full mock tests", "Simon's method + templates", "Daily AI feedback on Jumpinto & Engnovate", "Band 7.0+ target"],
     retakeWeek: 5, retakeLabel: "Already familiar with IELTS? Jump to Month 2 →",
   },
   {
     id: "comprehensive", label: "3-Month Plan", unit: "Month", days: 84, weeks: 12, mocks: 32,
     targetBand: "7.5+", color: "#f97316", accent: "#fff7ed",
     badge: "Highest band target",
-    description: "3-month complete programme. Deep English work, full exam mastery, and 32 mock tests.",
+    description: "3-month complete programme. Deep language building, full Simon-method exam mastery, daily AI practice on Jumpinto and Engnovate, human speaking on Discord, and 32 full mock tests.",
     forWho: "I want the highest possible score with full preparation",
     dailyHours: "3–4 hrs/day",
-    highlights: ["32 full mock tests", "Full grammar work", "Complete templates", "Band 7.5+ target"],
+    highlights: ["32 full mock tests", "Simon's full method + grammar", "Daily Jumpinto, Engnovate & Discord speaking", "Band 7.5+ target"],
     retakeWeek: 5, retakeLabel: "Already familiar with IELTS? Jump to Month 2 →",
   },
 ]
@@ -57,16 +57,16 @@ export const sprintPlan = [
         morning: {
           title: "Listening — Learn the Test Format",
           subtasks: [
-            T("Watch the IELTS Listening overview (30 min)", "Go to YouTube and search 'IELTS Listening test format'. Watch one video that explains all 4 sections. Section 1 and 2 are about everyday topics (easier). Section 3 and 4 are academic (harder). You need to answer 40 questions in 30 minutes."),
-            T("Do Section 1 practice — focus on spelling (25 min)", "Use a Cambridge IELTS book or British Council website. Listen and write the answers. Be very careful with spelling — 'accommodation', 'necessary', 'environment'. A spelling mistake = wrong answer."),
-            T("Write 10 new words in your notebook", "Write each word, what it means, and one sentence using it. Example: 'accommodate (verb) — to provide a place to stay. The hotel can accommodate 200 guests.'"),
+            T("Watch Simon's Listening overview lesson (30 min)", "Go to ieltssimonfree.com and find the Listening lessons section. Simon explains the 4 sections clearly: Sections 1–2 are everyday conversations (easier), Sections 3–4 are academic (harder). His key rule: use every pause between sections to read the NEXT set of questions, not check your previous answers. Write this rule in your notebook."),
+            T("Do Section 1 practice — focus on spelling (25 min)", "Use Cambridge IELTS Book 13, 14, or 15 (or Jumpinto.com Listening practice). Listen and write answers. One spelling mistake = wrong answer — no exceptions. The most commonly misspelled words: accommodation, necessary, environment. Write them now and memorise them."),
+            T("Write 10 new words in your vocabulary notebook", "For each word: write it, what it means, and one example sentence. Example: 'accommodate (verb) — to provide a place to stay. The hotel can accommodate 200 guests.' This notebook is your most important study tool — use it every day."),
           ]
         },
         afternoon: {
           title: "Reading — Learn the Test Format",
           subtasks: [
-            T("Learn the 3 most common question types (30 min)", "The 3 most important: (1) True / False / Not Given — you decide if the text says this or not. (2) Matching Headings — match a title to a paragraph. (3) Summary Completion — fill in the gaps using words from the text."),
-            T("Read one academic passage slowly — find the main idea (25 min)", "Read the first sentence of each paragraph. These sentences tell you what each paragraph is about. You do not need to understand every word — find the main point."),
+            T("Learn Simon's Reading approach + the 3 main question types (30 min)", "Simon's core rule: Reading is a vocabulary test in disguise. The skill is matching words in the question to paraphrased words in the passage. Go to his reading lessons on ieltssimonfree.com. The 3 most important question types: (1) True/False/Not Given — you only use what the text says, never your own knowledge. (2) Matching Headings — read only the first sentence of each paragraph. (3) Summary Completion — the answer words come directly from the text."),
+            T("Read one academic passage — locate, then understand (25 min)", "Simon's method: locate first, understand second. Step 1: read only the first sentence of each paragraph to find the general topic. Step 2: go back to the relevant paragraph only when you have a specific question. You do NOT need to read the whole passage before answering questions. Practise this approach now with one passage from Cambridge IELTS or engnovate.com."),
             T("Write 5 new words from the passage in your notebook", "Write the word, the sentence where you found it, and what you think it means. Then check the dictionary."),
           ]
         }
@@ -76,16 +76,16 @@ export const sprintPlan = [
         morning: {
           title: "Listening — Numbers and Spelling Practice",
           subtasks: [
-            T("Practice Section 1 — phone numbers, dates, addresses (35 min)", "These are the most common Section 1 topics. Common mistakes: confusing 13 and 30 (say them out loud to hear the difference). Dates: write '15 March' or 'March 15th' — both are correct."),
-            T("Check your answers and count your mistakes (15 min)", "Go through each wrong answer. Ask yourself: Did I not hear it? Did I spell it wrong? Did I miss it because I was still writing the previous answer? Write the reason next to each mistake."),
-            T("Spelling drill — write these 10 words correctly 3 times each", "Words to practise: accommodation, necessary, environment, government, international, development, communication, opportunity, temperature, information. These come up very often."),
+            T("Section 1 practice — phone numbers, dates, addresses (35 min)", "The most common Section 1 topics. Simon's tip: read ALL the questions before the audio starts — use every second of silence to prepare. Common mistakes: confusing 13 and 30 (say them aloud — 'thirTEEN' vs 'THIRty', the stress is different). Dates: both '15 March' and 'March 15th' are correct. Use Jumpinto.com Listening practice or Cambridge IELTS books."),
+            T("Check answers and find the reason for each mistake (15 min)", "For every wrong answer, ask: (1) Did I not hear it? (2) Did I spell it wrong? (3) Was I still writing the previous answer when this one was said? Write the reason next to each mistake. Tracking the TYPE of mistake is more useful than just checking the score. You can also review your answers using the Engnovate Listening checker."),
+            T("Spelling drill — write these 10 words 3 times each", "The most common misspelled IELTS words: accommodation, necessary, environment, government, international, development, communication, opportunity, temperature, information. One wrong letter = zero marks. Write each one three times now."),
           ]
         },
         afternoon: {
           title: "Reading — True / False / Not Given Strategy",
           subtasks: [
-            T("Learn the True / False / Not Given rule (20 min)", "TRUE = the text clearly says this. FALSE = the text says the opposite. NOT GIVEN = the topic is not mentioned anywhere in the text. The most common mistake: students choose FALSE when the answer is NOT GIVEN. If the text does not mention it at all — it's NOT GIVEN."),
-            T("Do one set of True / False / Not Given questions (30 min)", "Step 1: read the statement. Step 2: find the part of the text it is about. Step 3: compare carefully. Do not use your own knowledge — only use what the text says."),
+            T("Learn Simon's True / False / Not Given rule (20 min)", "This is one of the most misunderstood question types. Simon's rule: TRUE = the text clearly says this. FALSE = the text says the OPPOSITE. NOT GIVEN = the text simply does not mention this topic at all. The most common mistake: choosing FALSE when the answer is NOT GIVEN. Ask yourself: 'Does the text say the opposite?' If no — it is NOT GIVEN. Find this lesson on ieltssimonfree.com Reading section and study it carefully."),
+            T("Do one set of True / False / Not Given questions (30 min)", "Simon's 3 steps: Step 1 — read the statement. Step 2 — find the relevant part of the text (underline keywords to help you locate it). Step 3 — compare carefully. Only use what the text says — NEVER your own knowledge or opinion. Practise on Engnovate's Reading tests or Cambridge IELTS books."),
             T("Add 8 new words to your notebook", "Focus on the words you did not know during the reading exercise."),
           ]
         }
@@ -95,17 +95,17 @@ export const sprintPlan = [
         morning: {
           title: "Listening — Section 2 (Maps and Diagrams)",
           subtasks: [
-            T("Learn Section 2 — what to expect (20 min)", "Section 2 is one person talking about something practical — a tour, a community event, a radio programme. The questions are often about a MAP or a DIAGRAM. Before the audio starts, read all the answer options and look at the map carefully."),
+            T("Learn Section 2 — maps and practical topics (20 min)", "Section 2 is one person speaking about something practical — a tour, a community event, a local radio programme. The questions are often about a MAP or DIAGRAM. Simon's rule: before the audio starts, read ALL labels on the map and ALL answer options. The speaker moves around the map in a logical direction — follow along. Look for these lessons on ieltssimonfree.com."),
             T("Do one Section 2 practice test (35 min)", "For map questions: read all labels before pressing play. The speaker moves around the map in a logical order. Follow along and write the answer as you hear it."),
-            T("Find 3 distractors in the audio", "A DISTRACTOR is when the speaker says one thing, then changes it. Example: 'The café is on the left... actually, it's on the right.' Train yourself to wait for the final answer."),
+            T("Find 3 distractors in today's audio", "A distractor is when the speaker mentions the wrong answer first, then corrects it. Example: 'The café opens at 9... actually, it opens at 10.' Simon warns about this in every listening lesson. RULE: always wait until the speaker finishes the complete sentence before writing. Write 'WAIT FOR THE FINAL ANSWER' in your notebook and underline it."),
           ]
         },
         afternoon: {
           title: "Reading — Matching Headings Strategy",
           subtasks: [
-            T("Learn the Matching Headings strategy (20 min)", "Step 1: Read all the headings first. Step 2: Read only the FIRST and LAST sentence of each paragraph. Step 3: Match the heading to the paragraph's main idea. Do NOT read the whole paragraph for every heading — it wastes time."),
-            T("Do one Matching Headings passage (35 min)", "If you are stuck between two headings: cross out the ones you have already used. Look at the remaining options. Which one fits better?"),
-            T("Paraphrase practice — rewrite 3 headings in your own words", "Example: 'The benefits of exercise' → 'Why exercise is good for you'. This skill helps you match headings AND write better in Task 2."),
+            T("Learn Simon's Matching Headings strategy (20 min)", "Simon's method (from ieltssimonfree.com): Step 1 — read ALL headings before looking at the passage. Step 2 — for each paragraph, read ONLY the first sentence. The first sentence almost always tells you the main idea. Step 3 — match. Step 4 — cross out headings you have already used. Do NOT read the whole paragraph for every heading — it wastes 5-7 minutes. Write this 4-step process in your notebook."),
+            T("Do one Matching Headings passage on Engnovate (35 min)", "Go to engnovate.com — Reading Tests section. Use Simon's 4-step method. If you are stuck between two headings: cross out the ones already used. Look at what remains. Which fits the first sentence better? After finishing, check answers and find the exact sentence that justifies each one."),
+            T("Paraphrase practice — rewrite 3 headings in your own words", "Example: 'The economic consequences of urbanisation' → 'How cities affect the economy'. Simon teaches that reading is about matching paraphrased meaning, not identical words. This paraphrase skill also improves your Task 2 writing — you will use it every day."),
           ]
         }
       },
@@ -114,17 +114,17 @@ export const sprintPlan = [
         morning: {
           title: "Listening — Section 3 and Section 4",
           subtasks: [
-            T("Learn Section 3 and Section 4 (25 min)", "Section 3: two or more students (or a student + tutor) talking about academic work. The conversation changes direction often. Section 4: one person giving an academic talk (like a university lecture). There is NO pause — you must write quickly."),
+            T("Learn Sections 3 and 4 with Simon's tips (25 min)", "Section 3: an academic conversation between students or a student and tutor. The topic changes direction several times — this is where distractors are most dangerous. Section 4: one person giving an academic lecture. There is NO pause between questions — you must write fast and keep reading ahead. Simon's key tip for Section 4: read all 10 questions before it starts, then only listen for answers — do not try to understand every word. Find his Section 4 lessons on ieltssimonfree.com."),
             T("Do one Section 3 practice (35 min)", "The most common trap: all options are mentioned in the audio but only one is the correct answer to the question. Read each question VERY carefully before choosing."),
-            T("Write 10 academic word pairs in your notebook (collocations)", "Examples: carry out research, draw a conclusion, reach an agreement, raise awareness, take into account. These phrases also help your Writing Task 2 score."),
+            T("Write 10 academic collocations in your notebook (15 min)", "These phrases appear in both Listening and Reading — and they boost your Writing score too. Write in your notebook: carry out research, draw a conclusion, reach an agreement, raise awareness, take into account, make an assumption, put forward an argument, come to a decision, lead to consequences, have a significant impact. Write one example sentence for each."),
           ]
         },
         afternoon: {
           title: "Reading — Summary Completion",
           subtasks: [
-            T("Learn Summary Completion (20 min)", "A summary uses different words than the text, but the meaning is the same. Step 1: read the summary. Step 2: find the matching section in the text. Step 3: find the answer — it must be from the text, not your own words. Check the word limit — if it says 'NO MORE THAN TWO WORDS', you cannot write three words."),
+            T("Learn Summary Completion — Simon's approach (20 min)", "The summary uses different (paraphrased) words from the text, but the ANSWERS come word-for-word from the text. Simon's steps: Step 1 — read the summary to understand what section of the text it covers. Step 2 — find that section in the passage. Step 3 — find the exact word(s) that fit the gap. CRITICAL: always check the word limit. If it says 'NO MORE THAN TWO WORDS', three words = zero marks. This is a very common mistake. Practise on Engnovate Reading tests."),
             T("Do one Summary Completion passage (30 min)", "Always check: does the word fit grammatically in the sentence? Does it make sense? Is it from the text, not your own words?"),
-            T("Grammar check — find the word type for each gap", "Before answering, ask: is this gap a NOUN? VERB? ADJECTIVE? ADVERB? This helps you find the right word faster."),
+            T("Grammar check — what type of word fits each gap? (10 min)", "Before scanning the text, ask: is this gap a NOUN, VERB, ADJECTIVE, or ADVERB? This tells you what to look for and helps you find the right word faster. Write this rule in your notebook: 'Decide the word TYPE before you search the text.'"),
           ]
         }
       },
@@ -133,17 +133,17 @@ export const sprintPlan = [
         morning: {
           title: "MOCK TEST 1 — Full Listening + Full Reading",
           subtasks: [
-            T("Do a FULL Listening test — 4 sections, 45 minutes (45 min)", "Use a Cambridge IELTS book or an online test. No pausing. No replaying. Write your answers on paper, then transfer to the answer sheet at the end. This is exactly how the real test works."),
-            T("Do a FULL Reading test — 3 passages, 60 minutes (60 min)", "60 minutes total. Aim for 20 minutes per passage. If you run out of time on Passage 1, move on. Never spend more than 22 minutes on one passage."),
-            T("Score your test and write down your result", "Write: Listening score __ / 40. Reading score __ / 40. Which section was hardest? Write that down too. This is your starting point."),
+            T("MOCK TEST 1 — Full Listening, 4 sections, 45 minutes (45 min)", "Use Cambridge IELTS Book 13, 14, or 15 — OR use Jumpinto.com for a full AI-scored test. No pausing. No replaying. Write answers on paper, transfer to the answer sheet at the end. This is exactly how the real exam works. Apply Simon's rule: use every silence to read ahead to the NEXT questions."),
+            T("MOCK TEST 1 — Full Reading, 3 passages, 60 minutes (60 min)", "20 minutes per passage. If you go over 22 minutes on Passage 1, move on immediately — never sacrifice Passage 3 for Passage 1. Apply Simon's locate-then-understand approach. You can also do this test on Jumpinto.com for instant AI scoring and feedback."),
+            T("Score and record your Mock 1 result", "Write in your notebook: Listening __ / 40. Reading __ / 40. Which section was hardest? Which question type caused the most mistakes? This is your starting point. Every future mock will be compared to this number."),
           ]
         },
         afternoon: {
           title: "Mock 1 Review + Plan Your Next Week",
           subtasks: [
-            T("Go through EVERY wrong answer and find why (30 min)", "For each wrong answer: (a) Did I not hear/see it? (b) Did I misunderstand the question? (c) Did I run out of time? Write the reason next to each mistake. This is more valuable than just checking the score."),
-            T("Write a vocabulary list of 20 words from this week", "Look through your notebook from this week. Write the 20 most important words on a separate page. Read this list every morning for 5 minutes."),
-            T("Decide your focus for next week", "Which section had the most mistakes? Write: 'Next week I will focus on ___.' Be specific. Not 'improve Listening' — but 'practise Section 4 every day'."),
+            T("Go through every wrong answer and find the reason (30 min)", "For each wrong answer: (a) Did I not hear/see it? (b) Did I misunderstand the question? (c) Did I run out of time? (d) Did a distractor trick me? Write the reason next to each mistake. Finding the REASON is more valuable than just checking the score. If you used Jumpinto, use the AI feedback to help identify patterns."),
+            T("Write your Week 1 vocabulary list — 20 most important words", "Look through your notebook from this week. Write the 20 most important words on one page. Read this list every morning for 5 minutes — this takes only 5 minutes but is one of the most effective habits you can build. You can also use Engnovate's flashcard tool to review them digitally."),
+            T("Decide your focus for next week (10 min)", "Which section had the most mistakes? Write a specific plan: not 'improve Listening' but 'practise Section 4 every day and review Simon's Section 4 lesson'. Also decide: will you use Jumpinto or Cambridge IELTS books for practice this week? Plan this now."),
           ]
         }
       }
@@ -158,15 +158,15 @@ export const sprintPlan = [
         morning: {
           title: "Listening Practice + Writing Task 1 Introduction",
           subtasks: [
-            T("Do Section 1 and Section 2 practice (35 min)", "Focus on the skill you got wrong most in Mock 1. After each section: check your answers and note the mistake type — spelling, mishearing, or missed it."),
-            T("Learn what Writing Task 1 is (25 min)", "Task 1 = describe a graph, chart, map, or process in at least 150 words in 20 minutes. You are NOT giving your opinion — only describing what you see. Watch one YouTube example of a Band 7 Task 1 answer."),
-            T("Write 10 trend words in your notebook", "These describe changes in graphs: ROSE, INCREASED, GREW (going up). FELL, DROPPED, DECREASED (going down). PEAKED (reached the highest point). REMAINED STABLE (stayed the same). You NEED these words for Task 1."),
+            T("Section 1 and Section 2 practice (35 min)", "Focus on the area you got wrong most in Mock 1. Use Jumpinto.com for AI-scored practice, or Cambridge IELTS books. After each section: check your answers and note the mistake type — spelling, mishearing, or a distractor that tricked you. Apply Simon's rule: read ahead during every pause."),
+            T("Learn Simon's Writing Task 1 approach (25 min)", "Task 1 = describe a graph, chart, map, or process in at least 150 words in 20 minutes. Simon's most important rule: you are NOT giving your opinion — only describing what you see. His 4-part structure: (1) Introduction — paraphrase the title. (2) Overview — the 2-3 most important things you notice, NO numbers. (3) Body 1 — main details with numbers. (4) Body 2 — more details or a comparison. Find his Task 1 lessons on ieltssimonfree.com."),
+            T("Write 10 trend words in your notebook (15 min)", "These are essential for Task 1. Going UP: rose, increased, grew, climbed, soared. Going DOWN: fell, dropped, decreased, declined, plummeted. Stable: remained stable, stayed at the same level, showed little change. Peak: reached a peak of, peaked at. Write an example sentence for each. These also appear in Reading — knowing them helps both skills."),
           ]
         },
         afternoon: {
           title: "Reading — Matching Information + New Question Types",
           subtasks: [
-            T("Learn Matching Information (20 min)", "You are given a list of statements and you must find which PARAGRAPH contains that information. There is no set order — you must check all paragraphs. Tip: underline the key words in the question, then scan each paragraph for the same idea."),
+            T("Learn Matching Information — Simon's method (20 min)", "You are given statements and must find which PARAGRAPH contains each one. The order does NOT follow the passage — you must check all paragraphs. Simon's method: underline the KEY IDEA in the statement, then scan every paragraph for the same idea using different words (paraphrasing). Study this type on ieltssimonfree.com or Engnovate."),
             T("Do one Matching Information passage (30 min)", "After finishing, check your answers. Did you find the right paragraph? Did you look at ALL paragraphs, not just the first few?"),
             T("Add 8 new topic words to your notebook", "Choose words from today's reading passage that you want to remember."),
           ]
@@ -185,9 +185,9 @@ export const sprintPlan = [
         afternoon: {
           title: "Writing Task 1 — Line Graphs",
           subtasks: [
-            T("Learn how to write a line graph Task 1 (20 min)", "A good Task 1 answer has 4 parts: (1) Introduction — paraphrase the question (do NOT copy it). (2) Overview — the main trend in 1-2 sentences, NO specific numbers. (3) Body paragraph 1 — describe the main details with numbers. (4) Body paragraph 2 — compare or contrast other details."),
-            T("Write the OVERVIEW sentence for 3 different line graphs (20 min)", "The overview is the most important sentence. It says: what is the general trend? Example: 'Overall, sales increased steadily over the 10-year period, while costs remained relatively stable.' Write this BEFORE the details."),
-            T("Write your first full Task 1 answer — no time limit (25 min)", "Use a line graph from a Cambridge IELTS book. Write all 4 parts. Check: Did you write at least 150 words? Did you write an overview? Did you use trend words?"),
+            T("Learn Simon's 4-part Task 1 structure for line graphs (20 min)", "Simon's structure — write it in your notebook: (1) Introduction — paraphrase the title in your own words, do NOT copy the question. (2) Overview — the 2-3 most important things you can see, NO specific numbers here. Simon says the overview is the most important sentence in the whole answer. (3) Body 1 — main details with specific numbers. (4) Body 2 — more details or a comparison. Find his line graph examples on ieltssimonfree.com."),
+            T("Write the overview sentence for 3 different line graphs (20 min)", "Simon says the overview is the single most important part of Task 1 — and most students skip it or write it wrong. The overview says WHAT IS THE GENERAL TREND — not specific numbers. Example: 'Overall, sales increased steadily over the 10-year period, while costs remained relatively stable.' Always start with 'Overall,' or 'In general,'. Write the overview SECOND, after the introduction. Practise writing 3 overviews now."),
+            T("Write your first full Task 1 answer — no time limit (25 min)", "Use a line graph from Cambridge IELTS (or generate one on Engnovate). Write all 4 parts using Simon's structure. After writing: (1) Count your words — did you reach 150? (2) Does your overview have NO specific numbers? (3) Did you use at least 3 different trend words? Then check your answer using the Engnovate Task 1 Writing Checker for AI feedback."),
           ]
         }
       },
@@ -196,17 +196,17 @@ export const sprintPlan = [
         morning: {
           title: "Writing Task 1 Templates — Write These in Your Notebook",
           subtasks: [
-            T("Write the Task 1 Introduction Template in your notebook", "Template: 'The [graph/chart/diagram] shows [what it shows] [time period if given].' Example: 'The bar chart shows the number of students who studied abroad between 2010 and 2020.' Write this template in your notebook. Memorise it."),
-            T("Write the Overview Template in your notebook", "Template: 'Overall, it is clear that [main trend]. [Second main point if there is one].' Example: 'Overall, it is clear that the number of students increased significantly over the period. Science was the most popular subject throughout.' Write this in your notebook. Practise using it."),
-            T("Write a list of LINKING WORDS for Task 1 in your notebook", "Comparison: 'In contrast, Similarly, While, Whereas.' Adding information: 'In addition, Furthermore, Also.' Sequence: 'First, Then, After that, Finally.' Write them down and use at least 3 in every Task 1."),
+            T("Write Simon's Task 1 Introduction Template in your notebook", "Simon's introduction template (from ieltssimonfree.com): 'The [graph/chart/diagram] shows [what it shows] [time period if given].' Example: 'The bar chart shows the number of students who studied abroad between 2010 and 2020.' This is a paraphrase of the question — never copy the question word for word. Write this template in your notebook. Memorise it."),
+            T("Write Simon's Overview Template in your notebook", "Simon's overview template: 'Overall, it is clear that [main trend]. [Second main observation].' Example: 'Overall, it is clear that the number of students increased significantly over the period. Science was the most popular subject throughout.' Simon's rule: write this BEFORE your body paragraphs. Never include specific numbers in the overview. Write this template in your notebook and memorise it."),
+            T("Write linking words for Task 1 in your notebook (20 min)", "Comparison: In contrast, Similarly, While, Whereas. Adding information: In addition, Furthermore, Also. Sequence (for processes/maps): First, Then, After that, Finally. Proportion: accounted for, made up, represented. Write these in your notebook and use at least 3 in every Task 1. They improve your coherence score without needing complex vocabulary."),
           ]
         },
         afternoon: {
           title: "Writing Task 2 — Introduction",
           subtasks: [
-            T("Learn what Writing Task 2 is (20 min)", "Task 2 = write an essay of at least 250 words in 40 minutes. You are given a question about a topic (e.g. education, technology, environment) and you must give your opinion or discuss different views. Task 2 is worth MORE marks than Task 1 — so spend more time on it."),
-            T("Learn the 4-paragraph essay structure (25 min)", "Paragraph 1: INTRODUCTION — say what the topic is and your main point. Paragraph 2: BODY 1 — your first reason with an example. Paragraph 3: BODY 2 — your second reason with an example. Paragraph 4: CONCLUSION — summarise your view in 2 sentences. Write this structure in your notebook."),
-            T("Write the Introduction Template in your notebook", "Template: 'In today's world, [topic] is a widely discussed issue. While some people believe [one view], others argue that [opposite view]. This essay will argue that [your position].' Example: 'In today's world, the use of technology in education is a widely discussed issue. While some people believe it distracts students, others argue that it makes learning more effective. This essay will argue that technology has more benefits than drawbacks.' Write this template in your notebook and memorise it."),
+            T("Learn Simon's Writing Task 2 approach (20 min)", "Task 2 = write an essay of at least 250 words in 40 minutes. Simon's most important rules: (1) Task 2 is worth MORE marks than Task 1 — always write Task 2 first if you run out of time. (2) Plan for 5 minutes before you write — Simon says planning is not optional. (3) Never use complicated vocabulary to impress — use clear, accurate language. The examiner wants to understand your ideas, not decode them. Find his Task 2 lessons on ieltssimonfree.com."),
+            T("Write Simon's 4-paragraph essay structure in your notebook (25 min)", "Simon uses exactly 4 paragraphs for every Task 2. Write this in your notebook: Paragraph 1 — Introduction (2 sentences: introduce the topic + give your opinion). Paragraph 2 — Body 1 (topic sentence + explain + example). Paragraph 3 — Body 2 (topic sentence + explain + example). Paragraph 4 — Conclusion (restate your view in 2 sentences). Simon's body paragraph formula: topic sentence → explain why → give an example. Write this structure and memorise it."),
+            T("Write Simon's Introduction Template in your notebook", "Simon's introduction is simple and clear — 2 sentences only. Template: Sentence 1 — introduce the topic (paraphrase the question). Sentence 2 — give your position clearly. Example: 'People have different views about the role of technology in education. I believe that technology brings more benefits than drawbacks, and this essay will explain why.' Simon warns: do NOT write a long introduction. 2 sentences is enough. Write this in your notebook. Compare it with the Engnovate Speaking Part 1 structure — both use the same idea-first principle."),
           ]
         }
       },
@@ -215,7 +215,7 @@ export const sprintPlan = [
         morning: {
           title: "Writing Task 1 Timed Practice + Section 4 Drill",
           subtasks: [
-            T("Write a Task 1 answer in exactly 20 minutes (20 min)", "Set a timer. Use your Introduction Template and Overview Template. Stop when the timer rings — even if you have not finished. This trains you to write quickly under pressure."),
+            T("Write a Task 1 answer in exactly 20 minutes (20 min)", "Set a timer. Use Simon's 4-part structure. Stop when the timer rings — even if you haven't finished. The goal is to practise writing quickly. After finishing: check the word count and submit your answer to the Engnovate Task 1 Checker for AI feedback on your structure, vocabulary, and grammar."),
             T("Do two Section 4 Listening practices back to back (35 min)", "Section 4 is the hardest. The only way to improve is to practise it often. After each practice: check your answers. Find where each correct answer was said in the audio."),
             T("Grammar practice: write 5 sentences using 'increased by' and 'rose to'", "Difference: 'increased BY' = how much it grew (increased by 20%). 'rose TO' = the final number (rose to 500). Write 5 sentences using each phrase. Check your grammar."),
           ]
@@ -223,9 +223,9 @@ export const sprintPlan = [
         afternoon: {
           title: "Writing Task 2 Body Paragraphs",
           subtasks: [
-            T("Write the Body Paragraph Template in your notebook", "Template: 'One reason for this is that [reason]. For example, [specific example]. This shows that [connection to the main point].' Example: 'One reason for this is that technology makes learning more engaging. For example, interactive apps allow students to practise at their own pace. This shows that technology can improve learning outcomes.' Write this in your notebook. Use it in every essay."),
-            T("Write the Conclusion Template in your notebook", "Template: 'In conclusion, [restate your main argument]. Therefore, [recommendation or final thought].' Example: 'In conclusion, the benefits of technology in education outweigh the drawbacks. Therefore, schools should invest in digital tools while also teaching students how to use them responsibly.' Write this in your notebook."),
-            T("Write one full Task 2 essay — no time limit (40 min)", "Topic: 'Many people believe that technology has made our lives more complicated. Do you agree or disagree?' Use your 4-paragraph structure. Use your templates. Write at least 250 words. Check: Did you give your opinion clearly? Did you use examples?"),
+            T("Write Simon's Body Paragraph Template in your notebook", "Simon's formula — the same every time: 'One reason for this is that [reason]. For example, [specific example]. This shows that [connection to main point].' Simon's tip: the example must be SPECIFIC. Not 'many students use apps' but 'apps like Duolingo allow students to practise vocabulary at their own pace'. Specific examples push your score from Band 6 to Band 7. Write this template in your notebook."),
+            T("Write Simon's Conclusion Template in your notebook", "Simon's conclusion is always short — 2 sentences maximum. Template: 'In conclusion, [restate your main argument in different words]. I therefore believe that [final thought or recommendation].' Simon's rule: the conclusion must NOT introduce any new ideas — it only summarises what you already said. Write this template in your notebook."),
+            T("Write one full Task 2 essay — no time limit (40 min)", "Topic: 'Many people believe that technology has made our lives more complicated. Do you agree or disagree?' Step 1: plan for 5 minutes (write your 2 reasons and 1 example for each). Step 2: write using Simon's 4-paragraph structure. Step 3: check — is your opinion clear? Did you use specific examples? After writing, submit to the Engnovate Task 2 Checker for AI feedback."),
           ]
         }
       },
@@ -234,8 +234,8 @@ export const sprintPlan = [
         morning: {
           title: "MOCK TEST 2 — Full Listening + Full Reading",
           subtasks: [
-            T("Do a FULL Listening test — 4 sections, 45 minutes (45 min)", "Use a different test from Mock 1. Same rules: no pausing, no replaying. After finishing: do NOT check answers yet. Transfer to the answer sheet first."),
-            T("Do a FULL Reading test — 3 passages, 60 minutes (60 min)", "Track your time. After 20 minutes, move to Passage 2 — even if you have not finished all the questions. Come back to missed ones at the end."),
+            T("MOCK TEST 2 — Full Listening, 4 sections, 45 minutes (45 min)", "Use a different test from Mock 1 — Cambridge IELTS or Jumpinto.com. Same rules: no pausing, no replaying. Apply Simon's method: use every pause to read the NEXT section's questions. After finishing, transfer to the answer sheet before checking anything."),
+            T("MOCK TEST 2 — Full Reading, 3 passages, 60 minutes (60 min)", "Track your time strictly: move to Passage 2 after 20 minutes, even if you haven't finished. Apply Simon's locate-then-understand method. After completing: you can submit your answers to Engnovate's Reading test checker for instant feedback on which question types you struggle with most."),
             T("Score your test — compare to Mock 1 (15 min)", "Did your score improve? Write: Listening __ / 40, Reading __ / 40. Even 2-3 correct answers more than last week is progress."),
           ]
         },
@@ -243,8 +243,8 @@ export const sprintPlan = [
           title: "Mock 2 Review + Speaking Introduction",
           subtasks: [
             T("Go through all wrong answers and find the reason (25 min)", "Same as Mock 1. Find the reason for each mistake. Is the same type of mistake appearing again? That is what you focus on next week."),
-            T("Learn what Speaking Part 1 is (20 min)", "Part 1: the examiner asks you 10-12 questions about familiar topics — your home, your job, your hobbies. Each answer should be 2-4 sentences long. NOT just 'Yes' or 'No'."),
-            T("Write a template for Speaking Part 1 answers in your notebook", "Template: 'I [answer]. The reason for this is [reason]. For example, [example].' Example (Q: Do you like cooking?): 'Yes, I really enjoy cooking. The reason for this is that I find it relaxing after a long day. For example, I often cook traditional dishes from my country at the weekend.' Write this template in your notebook."),
+            T("Learn Simon's Speaking Part 1 approach (20 min)", "Part 1: the examiner asks 10-12 questions about familiar topics. Simon's key rule: give short, clear, direct answers. 2-4 sentences is perfect. Stop when you've answered — don't ramble. His formula: answer + one reason + stop. Do NOT try to impress the examiner with long, complicated answers. Find his Part 1 lessons on ieltssimonfree.com."),
+            T("Write Simon's Speaking Part 1 template in your notebook (15 min)", "Simon's Part 1 formula: Answer + Reason + (optional) Example. Template: 'I [answer]. The reason for this is [reason]. For example, [example].' Example: 'Yes, I really enjoy cooking. The reason is that I find it very relaxing after a long day. For example, I often cook traditional dishes from my country at weekends.' Write this in your notebook. Then go to Jumpinto.com Speaking practice and try 5 Part 1 questions using this template."),
           ]
         }
       }
@@ -261,15 +261,15 @@ export const sprintPlan = [
           subtasks: [
             T("Do Section 2 (map) and Section 4 practice (40 min)", "Focus on the two sections you find hardest. For Section 2 maps: read all labels BEFORE the audio. For Section 4: only focus on finding the answers — do not try to understand everything."),
             T("Write a Task 1 answer in exactly 20 minutes (20 min)", "Use a bar chart or pie chart. Use your templates. After writing: count your words. Did you write at least 150? Did you use an overview sentence?"),
-            T("Read 3 Band 7+ Task 1 sample answers (15 min)", "Find these on the IELTS Simon website or British Council website. Notice: they all have an overview. They group similar data together. They use a variety of trend words."),
+            T("Read 3 Band 7 Task 1 sample answers on Engnovate (15 min)", "Go to engnovate.com → Band-9 IELTS Writing Samples. Notice what all good answers have in common: (1) a clear overview in the second paragraph, (2) data grouped by trend (not described one by one), (3) a variety of trend words. You can also find Simon's sample answers on ieltssimonfree.com. Copy one sentence structure you want to use in your own writing."),
           ]
         },
         afternoon: {
           title: "Speaking Part 2 — Cue Card Templates",
           subtasks: [
-            T("Learn what Speaking Part 2 is (15 min)", "Part 2: the examiner gives you a card with a topic and 3-4 bullet points. You have 1 MINUTE to prepare, then you talk for 1-2 MINUTES without stopping. The examiner will stop you at 2 minutes."),
-            T("Write a favourite possession template in your notebook", "Topic: 'Describe something you own that is important to you.' Starter phrase: 'One possession that is very important to me is my ___.' Description words: it is [size], [colour], [material]. It was [given to me / I bought it] [when]. I use it for [purpose]. It is important to me because [reason]. Write this in your notebook and fill in YOUR details for 3 different possessions you could describe."),
-            T("Write 3 different cue card answers using the template — practise on JumpInto", "Go to JumpInto.com and find the IELTS Speaking practice section. Use your written template to guide your speaking. Do NOT memorise it word for word — use the structure and your own words. Practise until you can speak for 1.5-2 minutes without stopping."),
+            T("Learn Simon's Speaking Part 2 approach (15 min)", "Part 2 is the most important part of the Speaking test. Simon says: treat it as your main performance. The examiner gives you a card with a topic and 3-4 bullet points. You have 1 minute to prepare — use every second. During your 1 minute: write keywords (NOT full sentences) for each bullet point. Then talk for 1-2 minutes without stopping. Simon's tip: it is OK to go slightly off-topic or even change details — the examiner is listening to HOW you speak, not whether every fact is true. Find his Part 2 lessons on ieltssimonfree.com."),
+            T("Write a Simon-style Part 2 cue card template in your notebook (20 min)", "Topic: 'Describe something you own that is important to you.' Write keywords for each bullet point — not full sentences. Simon's preparation tip: during your 1 minute, just write 4-5 keywords per bullet point. Example bullet 'Why it is important': write 'memories, childhood, unique'. Then expand naturally when you speak. Write this template for 3 different objects you could describe."),
+            T("Practise 3 cue card topics on Jumpinto — use the template (25 min)", "Go to Jumpinto.com → IELTS Speaking practice. Use your keyword notes from the template to guide your speaking — do NOT memorise it word for word. Speak naturally using the structure. Record your answer and check the AI feedback. Aim for 1.5-2 minutes without stopping. If you stop before 1.5 minutes: add more detail to the 'why' part of the answer."),
           ]
         }
       },
@@ -278,8 +278,8 @@ export const sprintPlan = [
         morning: {
           title: "Writing Task 2 — Discussion Essays",
           subtasks: [
-            T("Learn the Discussion Essay structure (25 min)", "Discussion essays ask: 'Discuss both views and give your opinion.' Structure: Para 1: Introduction (both views + your opinion). Para 2: First view + reason + example. Para 3: Second view + why you disagree or agree more. Para 4: Conclusion. Write this in your notebook."),
-            T("Write a Discussion Essay Introduction Template in your notebook", "Template: 'In today's world, there is much debate about [topic]. While some people believe [View 1], others argue that [View 2]. This essay will discuss both perspectives before concluding that [your view].' Write this and memorise it."),
+            T("Learn Simon's Discussion Essay structure (25 min)", "Discussion essays ask: 'Discuss both views and give your opinion.' Simon warns: you MUST give your OWN opinion too, not just describe both sides. His structure: Para 1: Introduction (name both views + your position). Para 2: First view + why people believe it + example. Para 3: Second view + your personal view on it + example. Para 4: Conclusion (state your final position clearly). Write this in your notebook. Find his discussion essay lessons on ieltssimonfree.com."),
+            T("Write Simon's Discussion Essay Introduction Template in your notebook", "Simon's template: 'In today's world, there is much debate about [topic]. While some people believe [View 1], others argue that [View 2]. This essay will discuss both views and then explain why I believe [your position].' Simon says: state your position in the introduction — don't make the examiner wait until the conclusion to find out what you think. Write this in your notebook."),
             T("Write one full discussion essay — 40 minutes (40 min)", "Topic: 'Some people think children should start school as early as possible. Others think they should start at age 7. Discuss both views and give your opinion.' Use your templates. Write at least 250 words."),
           ]
         },
@@ -305,7 +305,7 @@ export const sprintPlan = [
         afternoon: {
           title: "Listening Intensive + Reading Timed Practice",
           subtasks: [
-            T("Do Section 3 and Section 4 back to back (40 min)", "These are the hardest two sections. Doing them together builds your concentration and stamina for the real test."),
+            T("Sections 3 and 4 back to back — stamina training (40 min)", "These are the hardest two sections. Simon says Section 4 is where most marks are lost. Doing them together builds the concentration you need for the real exam. After each section: note how many you got right and what type of mistake you made. Use Jumpinto.com or Cambridge IELTS books."),
             T("Do one full Reading passage timed — 20 minutes (20 min)", "Focus on the passage type that causes you the most mistakes. Check your answers and find why you got each one wrong."),
             T("Vocabulary: write 10 words from today's reading in your notebook", "Focus on academic words — the ones that appear in formal or scientific texts."),
           ]
@@ -316,17 +316,17 @@ export const sprintPlan = [
         morning: {
           title: "Speaking Part 3 + Writing Task 2 Problem-Solution",
           subtasks: [
-            T("Learn what Speaking Part 3 is (15 min)", "Part 3: the examiner asks you more complex questions connected to the Part 2 topic. These questions are about society, problems, solutions, opinions. Your answers should be longer and more detailed — about 30-60 seconds each."),
-            T("Write a Problem-Solution speaking template in your notebook", "Starter phrase: 'This is a complex issue that affects many people. I think one of the main reasons for this is [reason]. A possible solution would be to [solution]. For example, [example].' Write this in your notebook and practise using it on JumpInto with 3 different topics."),
-            T("Write a Task 2 Problem-Solution Essay template in your notebook", "Structure: Para 1: Introduction ('One of the biggest challenges in today's society is [problem]...'). Para 2: Main causes + example. Para 3: Best solutions + example. Para 4: Conclusion. Write this in your notebook."),
+            T("Learn Simon's Speaking Part 3 approach (15 min)", "Part 3 is a deeper discussion connected to Part 2. The examiner asks about society, problems, and opinions. Simon's IEE method: Idea (your position) → Explain why → Example. For questions with two possible answers, Simon recommends starting with 'It depends...' — this gives you space to argue both sides naturally. Your answers should be 40-60 seconds. Find his Part 3 lessons on ieltssimonfree.com."),
+            T("Write Simon's Part 3 template in your notebook and practise on Jumpinto (20 min)", "Simon's IEE template for Part 3: '[Your idea / position]. The reason I think this is [explanation]. For example, [specific example].' For problem-solution questions: 'I think one main reason for this is [reason]. A solution would be to [solution]. For example, [example].' Write both in your notebook. Then go to Jumpinto.com → Speaking Part 3 and practise with 3 different topics. Check the AI feedback after each answer."),
+            T("Write Simon's Task 2 Problem-Solution Essay template in your notebook", "Simon's structure for problem-solution essays: Para 1 — Introduction (introduce the problem + say the essay will cover causes and solutions). Para 2 — Main cause(s) + a specific real-world example. Para 3 — Best solution(s) + a specific example. Para 4 — Conclusion (2 sentences). Simon's key reminder: every body paragraph needs a SPECIFIC example. 'Many people face housing problems' is not an example — 'In countries like Germany, the government subsidised social housing in the 1990s' is. Write this template in your notebook."),
           ]
         },
         afternoon: {
           title: "Writing Task 1 Maps and Processes",
           subtasks: [
-            T("Learn how to describe a MAP in Task 1 (20 min)", "Maps show two versions of a place — before and after. Write what CHANGED and what STAYED THE SAME. Location words: 'to the north of', 'next to', 'opposite', 'in the centre'. Change words: 'was replaced by', 'was demolished', 'was built', 'has been extended'. Write these in your notebook."),
+            T("Learn how to describe a MAP in Task 1 (20 min)", "Maps show two versions of a place — before and after. Simon's approach: write what CHANGED and what STAYED THE SAME. Location words to write in your notebook: to the north of, next to, opposite, adjacent to, in the centre. Change words: was replaced by, was demolished, was constructed, has been extended, has remained unchanged. Study Simon's map examples on ieltssimonfree.com."),
             T("Write a Map Task 1 answer — 20 minutes (20 min)", "Overview: what is the main overall change? (e.g. 'Overall, the area became more developed with the addition of several new buildings.'). Body: changes in different areas of the map."),
-            T("Learn how to describe a PROCESS in Task 1 (15 min)", "Processes show steps in order. Use PASSIVE voice: 'The material IS heated', 'The water IS then filtered', 'The product IS finally packaged'. Use sequence words: 'First, Then, After that, Finally'. Write these in your notebook."),
+            T("Learn how to describe a PROCESS in Task 1 (15 min)", "Processes show steps in a sequence. Simon's rule: always use PASSIVE voice for processes — 'The material is heated', 'The water is then filtered', 'The product is finally packaged.' Sequence words to write in your notebook: First, Then, After that, Next, Subsequently, Finally. Write an overview sentence for a process: 'Overall, the process involves [X] stages, beginning with [first step] and ending with [last step].'"),
           ]
         }
       },
@@ -344,8 +344,8 @@ export const sprintPlan = [
           title: "Mock 4 Review + Speaking Templates",
           subtasks: [
             T("Review all mistakes — find the root cause (25 min)", "For each wrong answer: is this the same type of mistake as before? If yes — you need to change your approach, not just practise more."),
-            T("Write 5 cue card topic templates for Speaking Part 2 in your notebook", "Topics: a person you admire, a place you visited, a skill you have learned, a book you read, a challenge you faced. For each one: write a starter phrase, 3 describing points, and why it is important to you. Practise each one on JumpInto — aim for 1.5-2 minutes."),
-            T("Practise 5 Part 1 topics on JumpInto", "Topics: your hometown, your job or studies, your hobbies, technology, transport. For each: answer using your template (I [answer]. The reason is [reason]. For example, [example].) Speak clearly and naturally — no need to use difficult words."),
+            T("Write 5 cue card templates in your notebook and practise on Jumpinto (25 min)", "Topics: a person you admire, a place you visited, a skill you have learned, a book you read, a challenge you faced. For each: write Simon-style keywords for each bullet point (not full sentences). Then practise on Jumpinto.com → Speaking Part 2. Aim for 1.5-2 minutes per topic. Use the AI feedback to check your fluency and vocabulary range."),
+            T("Practise 5 Part 1 topics on Jumpinto (15 min)", "Topics: your hometown, your studies or work, your hobbies, technology, transport. For each: use Simon's formula — Answer + Reason + Example. Speak clearly and naturally. Simon's reminder: you do NOT need difficult vocabulary in Part 1. The examiner is listening for fluency, not complexity. Check Jumpinto's AI feedback after each answer."),
           ]
         }
       }
@@ -360,9 +360,9 @@ export const sprintPlan = [
         morning: {
           title: "Advanced Listening — Distractors + Section 4",
           subtasks: [
-            T("Learn about DISTRACTORS (20 min)", "A distractor is information the speaker mentions that seems like the answer — but is NOT. Example: 'The meeting is at 3pm... oh wait, it was changed to 4pm.' The answer is 4pm, not 3pm. Distractors are in every IELTS Listening test. Always wait until the speaker has finished the sentence before writing your answer."),
-            T("Do 2 Section 3 tests — mark every distractor you find (40 min)", "After each test: go back and find all the places where the speaker mentioned the wrong option before giving the right answer. How many did you catch?"),
-            T("Do 2 Section 4 tests back to back (35 min)", "Section 4 stamina training. If you can stay focused for two lectures in a row, one lecture in the exam will feel much easier."),
+            T("Deep study: DISTRACTORS in Listening (20 min)", "Simon covers distractors in every listening lesson. A distractor is information that sounds like the answer but is not. Example: 'The tour starts at 10am... actually, it was moved to 11am.' The answer is 11am. RULE: always wait until the speaker finishes the complete idea before writing. Review Simon's distractor examples on ieltssimonfree.com — this is one of the highest-value lessons for Section 3."),
+            T("2 Section 3 tests on Jumpinto — mark every distractor you find (40 min)", "Use Jumpinto.com for Section 3 practice with AI scoring. After each test: go back and find every place where the speaker said the wrong answer first before correcting it. How many distractors did you catch? The more you train yourself to notice them, the less they will trick you in the exam."),
+            T("2 Section 4 tests back to back — stamina training (35 min)", "Section 4 is often where Band 6 candidates lose points. Two lectures in a row is harder than the real exam — which means one lecture will feel easier by comparison. Use Cambridge IELTS or Jumpinto.com. After both: record your scores (out of 10 each). Is the second score lower than the first? If yes: your concentration is fading — practise holding focus longer."),
           ]
         },
         afternoon: {
@@ -370,7 +370,7 @@ export const sprintPlan = [
           subtasks: [
             T("Learn Two-Part Question essays (20 min)", "These questions ask two things: e.g. 'Why does this happen? What can be done about it?' You MUST answer BOTH parts. Structure: Para 2 = answer Part 1. Para 3 = answer Part 2. Write a Two-Part Essay Template in your notebook: 'There are several reasons why [Part 1 answer]. However, there are also practical steps that can be taken to address this issue [Part 2 answer].'"),
             T("Write one full Two-Part Essay — 40 minutes (40 min)", "Topic: 'More and more people are choosing to live alone. Why is this happening? What are the effects on society?' Write at least 250 words. Use your template."),
-            T("Vocabulary upgrade — replace simple words in your essay (15 min)", "Replace: good → beneficial, bad → harmful / negative, big → significant / substantial, many → numerous / a large number of, show → demonstrate / suggest / indicate. Rewrite 5 sentences from your essay using better vocabulary."),
+            T("Vocabulary upgrade — replace simple words in your essay (15 min)", "Simon's advice: never try to impress with rare words. Instead, use accurate, clear academic words consistently. Replace: good → beneficial, bad → harmful, big → significant, many → numerous, show → demonstrate, think → believe, help → support. Rewrite 5 sentences from your essay. Then check the improved version with the Engnovate Task 2 Checker to see if the vocabulary score changes."),
           ]
         }
       },
@@ -387,9 +387,9 @@ export const sprintPlan = [
         afternoon: {
           title: "Speaking — All Three Parts Practice",
           subtasks: [
-            T("Write Speaking Part 3 opinion templates in your notebook", "Starter phrases for Part 3 opinions: 'I think the main reason for this is...' / 'From my point of view...' / 'I believe this is an important issue because...' / 'There are both advantages and disadvantages, but overall I think...' Write these in your notebook and use them when you practise on JumpInto."),
-            T("Write 3 discussion templates for common Part 3 topics in your notebook", "Topics: education, technology, environment. For each: write a 3-sentence response using your starter phrase + reason + example. Practice speaking these on JumpInto — aim for 40-60 seconds per answer."),
-            T("Pronunciation practice — say these words clearly (20 min)", "Practise saying: comfortable, temperature, environment, particularly, especially, government, international, communication. Slow down and say each syllable clearly. Do NOT try to sound British — just be easy to understand."),
+            T("Write Simon's Part 3 opinion starters in your notebook (15 min)", "Simon's starter phrases for Part 3: 'I think the main reason for this is...' / 'From my point of view...' / 'It depends on the situation, but generally I believe...' / 'There are advantages and disadvantages, but overall...' The 'it depends' opener is one of Simon's favourite techniques — it gives you time to think and structure a two-sided answer. Write all of these in your notebook. Practise on Jumpinto.com Speaking Part 3."),
+            T("Write Part 3 templates for 3 common topics and practise on Jumpinto (20 min)", "Topics: education, technology, environment. For each: write a 3-sentence response using Simon's IEE formula (Idea + Explain + Example). Then go to Jumpinto.com Speaking Part 3 and practise each template out loud — aim for 40-60 seconds per answer. Use the AI feedback to check if your answers are developed enough. Also join the Discord today and find a speaking partner to practise these topics live for 20-30 minutes."),
+            T("Pronunciation practice on Engnovate (20 min)", "Go to engnovate.com → Pronunciation exercises. Work on the words you find hardest. Simon's rule: you do NOT need a British or American accent — you need to be EASY TO UNDERSTAND. Focus on clear syllables, not accent. Common difficult words: comfortable (3 syllables: COMF-ta-ble), environment, particularly, especially, government. Say each one slowly, then at normal speed."),
           ]
         }
       },
@@ -469,7 +469,7 @@ export const sprintPlan = [
         afternoon: {
           title: "Speaking Full Practice + Writing Review",
           subtasks: [
-            T("Write 5 more cue card templates in your notebook (30 min)", "New topics: a skill you want to learn, a trip you would like to take, a famous person you would like to meet, a meal you enjoy, a time you helped someone. Write a starter + 3-4 describing points + why it matters. Practise each one on JumpInto."),
+            T("Write 5 more cue card templates and practise on Jumpinto (30 min)", "New topics: a skill you want to learn, a trip you would like to take, a famous person you admire, a meal you enjoy, a time you helped someone. For each: write Simon-style keywords for each bullet point. Practise on Jumpinto.com — aim for 1.5 minutes per topic. After each practice, check the AI feedback. Make a note of any vocabulary the AI suggests."),
             T("Review your best Task 2 essay — make it better (25 min)", "Find the best essay you wrote this month. Read it again. Improve: the introduction (is your opinion clear?), one body paragraph (add a better example), and the conclusion (does it summarise your point?)."),
             T("Write your personal vocabulary list — the 50 words you will use in the exam (20 min)", "Look through your notebook. Choose the 50 most useful academic words you have learned. Write them on one page. Read this page every morning this week."),
           ]
@@ -480,9 +480,9 @@ export const sprintPlan = [
         morning: {
           title: "MOCK TEST 8 — Full 4-Skill Simulation",
           subtasks: [
-            T("Do a FULL Listening test — 45 minutes (45 min)", "Eighth mock. Sit in a quiet room. No breaks. Exam conditions."),
-            T("Do a FULL Reading test immediately after — 60 minutes (60 min)", "No long break between Listening and Reading. In the real exam, they come one after the other."),
-            T("Write Task 1 and Task 2 immediately after Reading — 60 minutes (60 min)", "Full exam simulation. Tired brain + time pressure = best preparation. Use your templates."),
+            T("MOCK TEST 8 — Full Listening, 45 minutes, exam conditions (45 min)", "Eighth mock. Sit in a quiet room. No distractions. Apply all of Simon's techniques: read ahead during pauses, wait for final answers before writing, underline keywords before the audio starts. Use Jumpinto.com for AI-scored feedback or Cambridge IELTS books."),
+            T("MOCK TEST 8 — Full Reading, 60 minutes, immediately after Listening (60 min)", "In the real exam, Reading comes directly after Listening. Practise this now. Apply Simon's locate-then-understand method. Track your time per passage."),
+            T("MOCK TEST 8 — Writing Task 1 + Task 2, immediately after Reading (60 min)", "Full simulation: tired brain + time pressure = the best preparation. Use Simon's 4-part structure for Task 1 and 4-paragraph structure for Task 2. Plan Task 2 for 5 minutes before writing. After finishing, submit your Task 2 to Engnovate's Writing Checker."),
           ]
         },
         afternoon: {
@@ -507,9 +507,9 @@ export const sprintPlan = [
         afternoon: {
           title: "Speaking Confidence + Final Writing",
           subtasks: [
-            T("Practise 10 cue card topics on JumpInto — no notes (30 min)", "By now you should be able to speak for 1.5-2 minutes on any topic without reading from your notes. Use the STRUCTURE in your head, not the exact words."),
+            T("Practise 10 cue card topics on Jumpinto — no notes (30 min)", "By now you should be able to speak for 1.5-2 minutes on any topic without looking at notes. Use Simon's keyword structure in your head — not the exact words. Then join the Discord and spend 30 minutes speaking with a partner about 3-4 of these same topics. Real human conversation is irreplaceable for building fluency."),
             T("Write one final Task 2 essay on a topic you have NOT practised before (35 min)", "This tests whether you can adapt your skills to a new question. Choose a random topic from a Cambridge IELTS book. Write it in 40 minutes using your template."),
-            T("Speak English for 20 minutes about anything (20 min)", "Go to JumpInto and just talk. About your day, your plans, a topic you know well. Keep your English brain active and confident."),
+            T("Speak English for 20 minutes on Jumpinto or Discord (20 min)", "Option 1: go to Jumpinto.com and use the AI conversation feature — talk about your day, your plans, or a topic you know well. Option 2: join the Discord and have a free conversation with a partner. Either way: keep talking. Don't stop to translate in your head. The goal is fluency and confidence, not perfection."),
           ]
         }
       },
@@ -539,13 +539,13 @@ export const sprintPlan = [
           subtasks: [
             T("Read one short article to activate your English (15 min)", "Read something simple and clear in English. This warms up your brain like a warm-up run before a race."),
             T("Read your Task 1 and Task 2 starter phrases one final time (10 min)", "'The [chart] shows...' and 'In today's world...' — your first words are ready."),
-            T("If you have not had your exam yet — do MOCK TEST 9 today (105 min)", "Full Listening (45 min) + Full Reading (60 min). Treat it as the real exam."),
+            T("MOCK TEST 9 — Full Listening + Full Reading (105 min)", "Full Listening (45 min) + Full Reading (60 min). Exam conditions. Apply every technique: read ahead in Listening, locate-then-understand in Reading. Use Jumpinto.com for AI feedback or Cambridge IELTS books."),
           ]
         },
         afternoon: {
           title: "MOCK TEST 10 + Post-Exam Reflection",
           subtasks: [
-            T("MOCK TEST 10 — Full Writing + Speaking practice (90 min)", "Task 1 (20 min) + Task 2 (40 min) + Speaking on JumpInto (30 min). Your final complete 4-skill mock. Use everything you have learned."),
+            T("MOCK TEST 10 — Full Writing + Speaking (90 min)", "Task 1 (20 min, Simon's 4-part structure) + Task 2 (40 min, plan 5 min then write) + Speaking on Jumpinto (30 min: Part 1 + Part 2 + Part 3, full simulation). Your final complete 4-skill mock. Use every technique you have learned. Submit your Task 2 to Engnovate for a final AI check."),
             T("Write down everything you remember — questions, topics, timing (30 min)", "Do this while memory is fresh. If you retake the exam, this record is very valuable."),
             T("Celebrate completing 25 days of serious preparation", "You have completed a full structured programme. Regardless of the result — the discipline and effort you showed is something to be genuinely proud of."),
           ]
@@ -567,23 +567,23 @@ export const standardPlan = [
       { day: 1,
         morning: { title: "Listening — Full Format + Section 1 & 2 Basics",
           subtasks: [
-            T("Watch a complete IELTS Listening test example (45 min)", "Search YouTube for 'IELTS Listening full test with answers'. Watch the ENTIRE test — do not skip. Notice how Sections 1-2 are easier (everyday English) and Sections 3-4 are harder (academic English). Write the structure in your notebook: Section 1: conversation, everyday topic. Section 2: one person, practical topic. Section 3: academic discussion. Section 4: academic lecture."),
+            T("Watch Simon's complete Listening overview + do Section 1 practice (45 min)", "Go to ieltssimonfree.com → Listening lessons. Watch Simon's overview of all 4 sections. His most important rule for the whole test: use every pause between sections to read the NEXT section's questions — never look back. Write in your notebook: Section 1 = everyday conversation. Section 2 = one person, practical topic (often maps). Section 3 = academic discussion (most distractors here). Section 4 = academic lecture, no pause, read all questions first. Then do one Section 1 practice on Jumpinto.com."),
             T("Do Section 1 practice — spelling and numbers focus (30 min)", "Use Cambridge IELTS Book 13, 14, or 15. After the test: check your answers. Write down every spelling mistake you made. These same mistakes will come up again — fix them now."),
             T("Write 12 new vocabulary words in your notebook (20 min)", "From today's listening: write each new word, what it means, and one sentence using it."),
           ]
         },
         afternoon: { title: "Reading — All Question Types (Overview)",
           subtasks: [
-            T("Study all 8 most common Reading question types (40 min)", "Write these in your notebook: (1) True/False/Not Given. (2) Yes/No/Not Given. (3) Matching Headings. (4) Matching Information. (5) Summary Completion. (6) Sentence Completion. (7) Multiple Choice. (8) Short Answer. For each one: write a one-sentence description of what to do."),
-            T("Practise skimming — main idea only (20 min)", "Take 3 different passages. Read ONLY the first sentence of each paragraph. Write the main idea of each passage in 1 sentence. You should finish all 3 passages in under 8 minutes. This is the foundation of Reading speed."),
-            T("Academic Word List (AWL) — learn 20 key words (20 min)", "These words appear in almost every IELTS Reading passage: analyse, assess, concept, context, data, define, factor, indicate, method, occur, process, require, response, role, section, significant, source, structure, theory, vary. Write them in your notebook with a sentence for each."),
+            T("Study the 8 most common Reading question types with Simon's strategies (40 min)", "Study these on ieltssimonfree.com (Reading section): (1) True/False/Not Given — only use what the text says. (2) Yes/No/Not Given — about the author's opinion. (3) Matching Headings — read first sentence of each paragraph only. (4) Matching Information — check all paragraphs, no set order. (5) Summary Completion — answers come word-for-word from text. (6) Sentence Completion — check word type and meaning. (7) Multiple Choice — eliminate wrong options. (8) Short Answer — stay within the word limit. Write Simon's strategy for each type in your notebook."),
+            T("Simon's skimming method — main idea only (20 min)", "Simon's rule: the first sentence of each paragraph contains the main idea. Practise now with 3 different passages on Engnovate. Read ONLY the first sentence of each paragraph. Write the main idea of the whole passage in 1 sentence. You should finish all 3 passages in under 8 minutes. This is the foundation of Simon's locate-then-understand approach — you locate before you read carefully."),
+            T("Academic Word List — 20 essential words for Reading and Writing (20 min)", "These appear in almost every IELTS passage and essay: analyse, assess, concept, context, data, define, factor, indicate, method, occur, process, require, response, role, section, significant, source, structure, theory, vary. Write them in your vocabulary notebook with one example sentence each. Then add them to your Engnovate flashcard deck to review them daily."),
           ]
         }
       },
       { day: 2,
         morning: { title: "Listening — Spelling + Numbers Drills",
           subtasks: [
-            T("Section 1 drill — only numbers and dates (35 min)", "The most common Section 1 mistakes: writing 13 when you hear 30 (or the other way around). Saying 13 out loud: 'thirTEEN'. Saying 30: 'THIRty'. The stress is different. Also practise dates: '15th of March' = 15/3. Drill until you get 100% on these."),
+            T("Section 1 drill — numbers, dates, and spelling (35 min)", "The most common Section 1 mistakes: writing 13 when you hear 30. Say them aloud: 'thirTEEN' (stress at the end) vs 'THIRty' (stress at the start). Also practise dates: 'the 15th of March' = 15 March. And spelling: accommodation, necessary, environment must be perfect. Drill on Jumpinto.com Section 1 practice until you get 100% on these."),
             T("Spelling correction — write these 10 words 5 times each (20 min)", "Most commonly misspelled in IELTS: accommodation, necessary, environment, government, temperature, development, communication, independent, international, opportunity. Spell them correctly. If you get one wrong: write it 5 more times."),
             T("Section 2 map practice — read ALL labels before pressing play (30 min)", "Before the audio: look at the map and read every label. Predict what the speaker might describe. Then press play. Did your predictions help?"),
           ]
@@ -599,7 +599,7 @@ export const standardPlan = [
       { day: 3,
         morning: { title: "Listening — Sections 3 & 4 Introduction",
           subtasks: [
-            T("Learn about distractors in Listening (20 min)", "IELTS uses distractors deliberately. The speaker says the wrong answer first, then corrects it. Example: 'The meeting is Monday... actually, it was moved to Wednesday.' The answer is Wednesday. RULE: always wait until the speaker finishes the sentence. Write 'WAIT FOR THE FINAL ANSWER' in your notebook and underline it."),
+            T("Deep study: distractors in Listening — Simon's warning (20 min)", "Simon says distractors are deliberate — the test is designed to trick you. The speaker says the wrong answer first, then corrects it. Example: 'The meeting is Monday... actually, it was moved to Wednesday.' The answer is Wednesday. RULE: always wait until the speaker finishes the complete thought. Write 'WAIT FOR THE FINAL ANSWER' in your notebook and underline it three times. Review Simon's distractor lessons on ieltssimonfree.com."),
             T("Do Section 3 practice — focus on distractors (30 min)", "After the test: go through the audio again. Find every distractor. Write them down. How many did you catch?"),
             T("Do Section 4 practice — one academic lecture (25 min)", "Before pressing play: read all 10 questions. During the lecture: do NOT try to understand everything — only listen for the specific answers. Write quickly and move on."),
           ]
@@ -615,8 +615,8 @@ export const standardPlan = [
       { day: 4,
         morning: { title: "Writing Task 1 — Introduction + Templates",
           subtasks: [
-            T("Learn the 4 types of Task 1 and write their templates in your notebook (35 min)", "Type 1 — LINE GRAPH: describes trends over time. Type 2 — BAR/PIE CHART: compares categories or proportions. Type 3 — MAP: describes changes to a place. Type 4 — PROCESS: describes how something is made or happens. For EACH type: write an introduction template in your notebook. Use this template EVERY time."),
-            T("Write the Introduction + Overview templates for graphs in your notebook (25 min)", "Introduction: 'The [graph/chart] shows [what it shows] [time period].' Overview: 'Overall, it is clear that [main trend]. [Second main finding].' These TWO sentences are the most important part of Task 1. Memorise them."),
+            T("Learn Simon's approach for all 4 Task 1 types — write templates in your notebook (35 min)", "Study all 4 types on ieltssimonfree.com (Writing Task 1 section). Type 1 — LINE GRAPH: trends over time, use overview with no numbers. Type 2 — BAR/PIE CHART: compare highest and lowest, group similar data. Type 3 — MAP: say what changed and what stayed the same, use location words. Type 4 — PROCESS: use passive voice and sequence words throughout. For EACH type: write Simon's introduction template in your notebook. Use the same template every time — consistency saves time in the exam."),
+            T("Memorise Simon's Introduction and Overview templates (25 min)", "Simon says these are the two most important sentences in Task 1. Introduction: 'The [graph/chart] shows [what it shows] [time period].' Overview: 'Overall, it is clear that [main trend]. [Second main finding].' Simon's rule: write the overview BEFORE the body paragraphs. The overview has NO specific numbers — only the general pattern. Memorise both templates. Then practise writing them for 3 different graph types. Use Engnovate's Task 1 Generator to create practice graphs."),
             T("Write Trend Words in your notebook (20 min)", "UP: rose, increased, grew, climbed, soared. DOWN: fell, dropped, decreased, declined, plummeted. STABLE: remained stable, stayed at the same level, showed little change. PEAK: reached a peak of, peaked at. Write an example sentence for each."),
           ]
         },
@@ -675,8 +675,8 @@ export const standardPlan = [
         afternoon: { title: "Speaking Part 1 + Templates",
           subtasks: [
             T("Learn the Speaking test format (20 min)", "Part 1 (4-5 min): personal questions about familiar topics. Part 2 (3-4 min): speak alone about a given topic for 1-2 minutes. Part 3 (4-5 min): deeper discussion on the Part 2 topic. Write this structure in your notebook."),
-            T("Write the Part 1 Template in your notebook and memorise it (20 min)", "Template: 'Yes/No, I [answer]. The main reason is [reason]. For example, [example]. I think [conclusion].' Practice using it on 5 questions on JumpInto."),
-            T("Write templates for 5 common Part 1 topics in your notebook (30 min)", "Topics: your hometown, your studies/work, hobbies, food, travel. For each topic: write a 3-sentence answer using your template. Then practise speaking them on JumpInto without reading — use the structure, not the exact words."),
+            T("Write Simon's Part 1 template and practise on Jumpinto (20 min)", "Simon's Part 1 formula: Answer + Reason + (optional) Example. Stop after that — do not ramble. Template: 'Yes, I [answer]. The main reason is [reason]. For example, [example].' Practise on Jumpinto.com Speaking Part 1 with 5 different questions. Check the AI feedback after each answer."),
+            T("Write Part 1 templates for 5 topics and practise on Jumpinto (30 min)", "Topics: your hometown, your studies or work, hobbies, food, travel. For each: write a 3-sentence answer using Simon's formula (Answer + Reason + Example). Then go to Jumpinto.com Speaking Part 1 and speak the answers — do not read them. Use the structure in your head. After practising all 5: join the Discord and talk about 2-3 of these same topics with a real person for 20 minutes."),
           ]
         }
       },
@@ -905,7 +905,7 @@ export const standardPlan = [
         morning: { title: "Month 2 Start — Advanced Listening + Writing Quality",
           subtasks: [
             T("Section 4 intensive — 3 lectures in a row (45 min)", "Month 2 goal for Listening: get Section 4 to 7+ out of 10 consistently. Do 3 Section 4 practices back to back. For each: read all questions before pressing play. After each: identify which question you missed and why."),
-            T("Write a Band 7 Task 2 essay with advanced techniques (40 min)", "Topic: 'In many countries, the gap between rich and poor is increasing. Why is this happening? What can be done to reduce it?' Use your template. After writing: check for Band 7 markers — specific examples, clear structure, varied vocabulary."),
+            T("Write a Band 7 Task 2 using Simon's advanced technique (40 min)", "Topic: 'In many countries, the gap between rich and poor is increasing. Why is this happening? What can be done to reduce it?' Plan for 5 minutes first. Use Simon's structure. After writing: check for Band 7 markers — (1) specific examples (not vague statements), (2) clear topic sentence in each paragraph, (3) no word repeated more than twice, (4) accurate vocabulary (not rare, just precise). Submit to Engnovate Task 2 Checker for AI feedback."),
             T("Write 15 vocabulary upgrade words in your notebook (15 min)", "These are for Month 2: indispensable, consequently, thereby, predominantly, substantially, ultimately, inevitably, comprehensively, fundamentally, progressively, considerably, remarkably, notably, extensively, significantly."),
           ]
         },
@@ -936,9 +936,9 @@ export const standardPlan = [
       { day: 3,
         morning: { title: "Speaking — Advanced Templates + JumpInto Practice",
           subtasks: [
-            T("Write Part 3 advanced opinion templates in your notebook (25 min)", "For complex Part 3 questions: Template 1: 'This is a complex issue. On one hand, [view A]. On the other hand, [view B]. Personally, I believe [your view] because [reason].' Template 2: 'I think the most important factor here is [factor]. Without [factor], [consequence]. For example, [example].' Write both in your notebook."),
-            T("Write templates for 3 complex topics in your notebook (30 min)", "Topics: (1) The role of government in education. (2) How technology has changed communication. (3) Whether globalisation benefits everyone. For each: write a 4-sentence structured answer. Then practise on JumpInto — use the structure, not the exact words."),
-            T("Practise 15 Part 2 cue cards on JumpInto — no notes (30 min)", "From memory. Use the structure you memorised. Aim for 1.5 minutes minimum per card. The goal: any topic feels comfortable."),
+            T("Write Simon's advanced Part 3 opinion templates in your notebook (25 min)", "Template 1 — for complex questions: 'This is a complex issue. On one hand, [view A]. On the other hand, [view B]. Personally, I believe [your view] because [reason].' Template 2 — Simon's IEE for abstract questions: 'I think the most important factor is [factor]. The reason I say this is [explanation]. For example, [specific example].' Template 3 — the 'it depends' opener Simon recommends: 'It depends on the context. In some cases, [view A] applies. However, in other situations, [view B] is more relevant. Personally...' Write all 3 in your notebook."),
+            T("Write templates for 3 complex Part 3 topics and practise on Jumpinto (30 min)", "Topics: (1) The role of government in education. (2) How technology has changed communication. (3) Whether globalisation benefits everyone equally. For each: write a 4-sentence answer using one of Simon's templates. Practise on Jumpinto.com Speaking Part 3. Check AI feedback. Then: join the Discord and discuss one of these topics with a partner for at least 30 minutes — this is where real speaking improvement happens."),
+            T("Practise 15 Part 2 cue cards on Jumpinto — no notes (30 min)", "From memory. Use Simon's keyword structure in your head. Aim for 1.5 minutes minimum per card. The goal: no topic feels scary or unfamiliar. After 15 cue cards on Jumpinto, pick your 3 weakest topics and discuss them live on the Discord. Human feedback is different from AI feedback — both are valuable."),
           ]
         },
         afternoon: { title: "MOCK TEST 12 — Full Listening + Reading",
@@ -1019,8 +1019,8 @@ export const standardPlan = [
       { day: 3,
         morning: { title: "Speaking — Extended Fluency Training",
           subtasks: [
-            T("25 cue card topics on JumpInto — rapid practice (40 min)", "Do 25 different Part 2 topics on JumpInto. Each one: 1 minute or more. The goal is that NO TOPIC feels difficult — you can speak on anything for 1-2 minutes using your structure."),
-            T("10 Part 3 abstract questions on JumpInto (30 min)", "Abstract topics: how society is changing, the role of education, technology and its impact. For each: use your Part 3 template. Aim for 45-60 seconds per answer."),
+            T("25 cue card topics on Jumpinto — rapid practice (40 min)", "Go to Jumpinto.com Speaking Part 2. Do 25 different topics. Each one: 1 minute minimum. The goal: no topic feels difficult. You can speak on anything for 1-2 minutes using Simon's structure. After Jumpinto practice: spend the last 20 minutes on Discord speaking with a partner — practice fluency with a real human is irreplaceable for Part 2."),
+            T("10 Part 3 abstract questions on Jumpinto and Discord (30 min)", "Do 5 Part 3 questions on Jumpinto.com for AI feedback (check that your answers are developed enough). Then join the Discord and discuss 2-3 more abstract topics with a speaking partner for at least 20 minutes. Aim for 45-60 seconds per answer. Real discussion is where Part 3 fluency is built — Simon emphasises this."),
             T("Write 5 vocabulary phrases for each common Part 3 topic in your notebook (20 min)", "Environment: 'climate change is a pressing issue, sustainable development, carbon emissions'. Education: 'access to quality education, academic achievement, lifelong learning'. Technology: 'digital transformation, artificial intelligence, online connectivity'. Write these in your notebook."),
           ]
         },
@@ -1087,7 +1087,7 @@ export const standardPlan = [
         morning: { title: "Writing — Final Quality Push",
           subtasks: [
             T("Write your BEST Task 2 essay ever — 40 minutes (40 min)", "Choose a topic you feel confident about. Use all your best techniques: strong introduction, specific examples, varied vocabulary, complex sentences, clear conclusion. Aim to make this your personal best."),
-            T("Compare it to your first Task 2 from Week 1 or 2 (20 min)", "Put them side by side. Can you see the difference? Write 3 specific improvements you can observe."),
+            T("Compare your best essay to your Week 1 essay (20 min)", "Put them side by side. Simon says this comparison is one of the most motivating things you can do. Write 3 specific improvements: for example, 'My examples are now specific and realistic', 'My introduction gives my opinion clearly', 'I use varied vocabulary instead of repeating the same words.' Submit both to Engnovate Task 2 Checker and compare the AI scores."),
             T("Write a 'signature vocabulary' list in your notebook (20 min)", "These are YOUR 30 favourite academic words and phrases — the ones you feel most confident using in essays. This is your exam-day word bank."),
           ]
         },
@@ -1169,8 +1169,8 @@ export const standardPlan = [
       { day: 2,
         morning: { title: "Speaking Maintenance",
           subtasks: [
-            T("20 cue card topics on JumpInto — relaxed, natural (30 min)", "No pressure. Just talk. Enjoy it. By now, Speaking should feel natural and comfortable."),
-            T("8 Part 3 questions on JumpInto (25 min)", "Academic discussions. Use your templates naturally, not mechanically."),
+            T("20 cue card topics on Jumpinto then Discord — relaxed and natural (30 min)", "Do 15 topics on Jumpinto.com (relaxed, no pressure). Then spend the last 15 minutes on Discord having a natural conversation — not exam practice, just talking in English. By now, speaking should feel comfortable and enjoyable."),
+            T("8 Part 3 questions — split between Jumpinto and Discord (25 min)", "Do 5 on Jumpinto.com for structured AI feedback. Then take 2-3 of the best questions and discuss them with a Discord partner for 15 minutes. Your goal: by exam week, Part 3 should feel like a natural conversation, not an exam performance."),
             T("Final vocabulary review — all words from 2 months (20 min)", "After today: stop trying to learn new words. Trust what you know."),
           ]
         },
@@ -1265,14 +1265,14 @@ export const comprehensivePlan = (() => {
             subtasks: [
               T(`Mock Test ${m1} — Full Listening + Reading (105 min)`, `Month 3 mock ${m1}. By now your scores should be approaching Band 7.5. Write: L __ /40, R __ /40.`),
               T("Write down your error types and count how many times each appears (20 min)", "After this many mocks, your mistakes are very specific and predictable. Write them clearly. Focus only on the top 2 remaining errors."),
-              T("Advanced vocabulary: 15 sophisticated phrases for Task 2 (20 min)", "Phrases for Band 7.5: 'a growing body of evidence suggests', 'contrary to popular belief', 'it stands to reason that', 'the implications of this are significant', 'this is a contentious issue'. Write them in your notebook with a sentence for each."),
+              T("Advanced collocations and phrases for Band 7.5 Task 2 (20 min)", "Month 3 vocabulary focus. Phrases for Band 7.5: 'a growing body of evidence suggests', 'contrary to popular belief', 'it stands to reason that', 'the implications of this are far-reaching', 'this remains a contentious issue', 'arguably the most significant factor', 'this has sparked considerable debate'. Write each one in your notebook with an example sentence. Add them to your Engnovate flashcard deck."),
             ]
           },
           afternoon: { title: `Week ${wk} — Writing Excellence`,
             subtasks: [
               T(`Mock Test ${m2} — Full Writing (Task 1 + Task 2) (60 min)`, `Month 3 Writing mock ${m2}. Use every technique you have learned. This should be noticeably better than your first writing mock.`),
               T("After writing: check for Band 7.5 markers (15 min)", "Band 7.5 checklist: (1) Specific real-world example in every body paragraph? (2) At least 3 different complex sentence structures? (3) No word repeated more than twice in the essay? (4) Clear position maintained throughout? If yes to all: strong Band 7 essay."),
-              T("Speaking: 20 cue cards on JumpInto + 10 Part 3 questions (30 min)", "No notes. Full fluency. Natural, confident, clear. This is your final speaking polish before the exam."),
+              T("Speaking: 20 cue cards on Jumpinto + 10 Part 3 + 60 min Discord (30 min)", "Do 20 cue cards on Jumpinto.com (no notes, full fluency). Then 10 Part 3 questions — timed, developed answers. Then: join the Discord and spend at least 60 minutes speaking with a partner. At this stage in Month 3, one hour of real human conversation is as valuable as 2 hours of solo practice. Focus on sounding natural and confident, not just correct."),
             ]
           }
         },
@@ -1310,9 +1310,9 @@ export const comprehensivePlan = (() => {
         { day: 4,
           morning: { title: `Week ${wk} — Speaking Excellence`,
             subtasks: [
-              T("30 cue card topics on JumpInto — timed, no notes (45 min)", "Rapid cue card practice. 30 topics in 45 minutes. By now every topic should feel comfortable — you have the structure, the vocabulary, and the confidence."),
-              T("10 Part 3 discussion questions — extended answers (30 min)", "Aim for 50-60 seconds per answer. Structure every answer: position + reason + example + implication. On JumpInto."),
-              T("Pronunciation: record yourself, listen back, identify any clarity issues (20 min)", "You do not need an accent. You need CLARITY. Are you easy to understand? Fix any remaining pronunciation habits."),
+              T("30 cue card topics on Jumpinto + Discord conversation (45 min)", "Rapid practice: 20 topics on Jumpinto.com, timed, no notes. By now every topic should feel natural and comfortable. Then: at least 25 minutes of free conversation on Discord. At Month 3 level, the most important speaking work happens in real conversation, not practice tests. Aim for 1 full hour of Discord speaking today."),
+              T("10 Part 3 discussion questions on Jumpinto + Discord (30 min)", "Do 5 on Jumpinto.com — aim for 50-60 seconds per answer, structured with Simon's IEE + implication. Then take 3 of the most interesting questions to Discord and discuss them with a partner for 15-20 minutes. Real discussion builds the depth and naturalness that Part 3 requires."),
+              T("Pronunciation — record yourself and compare to Engnovate samples (20 min)", "Record yourself speaking on a Part 2 topic. Listen back: are you easy to understand? Then go to engnovate.com → Pronunciation exercises and identify any remaining sounds that are unclear. Simon's reminder: you need CLARITY, not an accent. Focus on stress (the right syllable) and connected speech (words running together naturally)."),
             ]
           },
           afternoon: { title: `Week ${wk} — Reading + Listening Final Drills`,

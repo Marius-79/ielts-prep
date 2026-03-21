@@ -4,7 +4,7 @@ import { supabase } from "../_lib/supabase"
 import ProfileModal from "./ProfileModal"
 import {
   LayoutDashboard, Brain, CalendarDays, Mail,
-  Eye, EyeOff, User, Library, LogOut, Settings
+  Eye, EyeOff, User, Library, LogOut, Settings, Moon, Sun
 } from "lucide-react"
 
 const sections = [
@@ -16,6 +16,17 @@ const sections = [
 ]
 
 export default function FloatingTopBar({ openAuth }) {
+  // ── Dark mode ────────────────────────────────────────────────────────────
+  const [dark, setDark] = useState(() => {
+    const saved = localStorage.getItem("ielts-theme")
+    if (saved) return saved === "dark"
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+  })
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark)
+    localStorage.setItem("ielts-theme", dark ? "dark" : "light")
+  }, [dark])
+
   const [active,       setActive]       = useState("overview")
   const [collapsed,    setCollapsed]    = useState(false)
   const [wave,         setWave]         = useState(false)
@@ -154,7 +165,7 @@ export default function FloatingTopBar({ openAuth }) {
         <motion.div
           animate={{ scale: collapsed ? 0.9 : 1 }}
           transition={{ type: "spring", stiffness: 260, damping: 22 }}
-          className={`relative flex items-center border border-border bg-white/90 backdrop-blur-md shadow-md
+          className={`relative flex items-center border border-border bg-white/90 dark:bg-gray-900/90 backdrop-blur-md shadow-md
             ${collapsed ? "w-12 h-12 rounded-full justify-center" : "px-2 sm:px-3 py-2 rounded-full gap-1"}`}
         >
           <AnimatePresence>
@@ -220,7 +231,7 @@ export default function FloatingTopBar({ openAuth }) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -6, scale: 0.96 }}
                         transition={{ type: "spring", stiffness: 320, damping: 24 }}
-                        className="absolute right-0 mt-2 w-48 bg-white border border-border rounded-xl shadow-lg overflow-hidden"
+                        className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-900 border border-border rounded-xl shadow-lg overflow-hidden"
                       >
                         <div className="flex items-center gap-3 px-4 py-3 border-b border-border/60">
                           <div className="w-9 h-9 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -234,12 +245,12 @@ export default function FloatingTopBar({ openAuth }) {
                           </div>
                         </div>
                         <button onClick={() => { setDropdownOpen(false); setProfileOpen(true) }}
-                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground hover:bg-secondary/70 transition">
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition">
                           <Settings size={14} className="text-muted-foreground" />
                           Edit profile
                         </button>
                         <button onClick={logout}
-                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 transition border-t border-border/60">
+                          className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-500 hover:bg-red-500/10 transition border-t border-border/60">
                           <LogOut size={14} />
                           Log out
                         </button>
@@ -248,6 +259,23 @@ export default function FloatingTopBar({ openAuth }) {
                   </AnimatePresence>
                 </div>
               )}
+
+              {/* Dark mode toggle */}
+              <motion.button
+                onClick={() => setDark(d => !d)}
+                whileHover={{ y: -2, scale: 1.1, rotate: dark ? -20 : 20 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                title={dark ? "Light mode" : "Dark mode"}
+                className="ml-1 p-2 text-muted-foreground hover:text-primary transition rounded-full"
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  {dark
+                    ? <motion.div key="sun"  initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.18 }}><Sun  size={16}/></motion.div>
+                    : <motion.div key="moon" initial={{ rotate:  90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate:-90, opacity: 0 }} transition={{ duration: 0.18 }}><Moon size={16}/></motion.div>
+                  }
+                </AnimatePresence>
+              </motion.button>
 
               <motion.button onClick={() => setCollapsed(true)}
                 whileHover={{ y: -2, scale: 1.05 }}

@@ -36,7 +36,7 @@ export default function ContactSection() {
           initial={{ opacity: 0, y: 32 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.15 }}
-          className="relative rounded-3xl border border-border bg-white overflow-hidden"
+          className="relative rounded-3xl border border-border bg-card overflow-hidden"
           style={{ boxShadow: "0 4px 40px rgba(124,58,237,0.08), 0 1px 3px rgba(0,0,0,0.06)" }}
         >
           <div className="h-1 w-full" style={{ background: "linear-gradient(90deg, #7c3aed, #a78bfa, #7c3aed)" }} />

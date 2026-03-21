@@ -100,7 +100,7 @@ return (
     animate={{ scale: 1, opacity: 1, y: 0 }}
     exit={{ scale: 0.94, opacity: 0, y: 16 }}
     transition={{ type: "spring", stiffness: 300, damping: 28 }}
-    className="relative w-full max-w-[380px] bg-white rounded-2xl shadow-2xl overflow-hidden"
+    className="relative w-full max-w-[380px] bg-background rounded-2xl shadow-2xl overflow-hidden border border-border"
     onClick={(e) => e.stopPropagation()}
   >
     <div className="h-1 w-full bg-primary" />
@@ -159,7 +159,7 @@ return (
             type="text"
             value={username}
             onChange={(e) => checkUsername(e.target.value)}
-            className="w-full pl-10 pr-10 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            className="w-full pl-10 pr-10 py-2.5 border border-border rounded-xl text-sm bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
           />
           <span className="absolute right-3.5 top-1/2 -translate-y-1/2">
             {usernameStatus === "checking" && <Loader2 size={14} className="animate-spin text-muted-foreground/50" />}
@@ -180,7 +180,7 @@ return (
           type="email"
           value={user?.email || ""}
           disabled
-          className="w-full px-4 py-2.5 border border-border rounded-xl text-sm bg-secondary/50 text-muted-foreground cursor-not-allowed"
+          className="w-full px-4 py-2.5 border border-border rounded-xl text-sm bg-muted text-muted-foreground cursor-not-allowed"
         />
       </div>
 

@@ -56,31 +56,31 @@ function HintModal({ label, detail, period, taskTitle, onClose }) {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.94, opacity: 0, y: 8 }}
         transition={{ type: "spring", stiffness: 340, damping: 28 }}
-        className="relative w-full max-w-[calc(100vw-2rem)] sm:max-w-[430px] bg-white rounded-2xl overflow-hidden shadow-2xl"
+        className="relative w-full max-w-[calc(100vw-2rem)] sm:max-w-[430px] bg-background rounded-2xl overflow-hidden shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="h-1.5 w-full bg-gradient-to-r from-violet-400 to-purple-600" />
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isMorning ? "bg-amber-50" : "bg-violet-50"}`}>
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50">
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isMorning ? "bg-amber-50" : "bg-primary/8"}`}>
             {isMorning ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-violet-400" />}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[9px] font-mono text-violet-400 uppercase tracking-[0.15em] mb-0.5">{period} · How to do this</p>
-            <h3 className="text-sm font-bold text-gray-900 leading-tight">{taskTitle}</h3>
+            <h3 className="text-sm font-bold text-foreground leading-tight">{taskTitle}</h3>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition">
+          <button onClick={onClose} className="w-8 h-8 rounded-xl bg-secondary hover:bg-secondary/70 flex items-center justify-center text-muted-foreground transition">
             <X size={14} />
           </button>
         </div>
 
         <div className="px-5 pt-4 pb-2">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Task</p>
-          <p className="text-sm font-medium text-gray-900 mb-4">{label}</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Task</p>
+          <p className="text-sm font-medium text-foreground mb-4">{label}</p>
           {detail && (
-            <div className="rounded-xl p-4 bg-violet-50 border border-violet-100 mb-1">
+            <div className="rounded-xl p-4 bg-primary/8 border border-primary/20 mb-1">
               <div className="flex gap-2.5">
                 <Lightbulb size={14} className="flex-shrink-0 mt-0.5 text-violet-500" />
-                <p className="text-[13px] leading-[1.75] text-gray-700">{detail}</p>
+                <p className="text-[13px] leading-[1.75] text-foreground/80">{detail}</p>
               </div>
             </div>
           )}
@@ -162,7 +162,7 @@ function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, p
         )}
       </AnimatePresence>
 
-      <div className={`relative p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${allDone ? "border-violet-200 bg-violet-50/40" : "border-gray-100 bg-white"}`}>
+      <div className={`relative p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${allDone ? "border-primary/25 bg-primary/8" : "border-border/50 bg-background"}`}>
         {allDone && (
           <div className="absolute inset-0 pointer-events-none rounded-xl overflow-hidden">
             <div className="absolute inset-0 rounded-xl" style={{ background: "rgba(139,92,246,0.04)" }} />
@@ -178,12 +178,12 @@ function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, p
                 stroke="rgb(196,181,253)" style={{ transition: "stroke-dashoffset 0.4s ease, stroke 0.4s ease" }} />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <Icon className="w-3.5 h-3.5 text-gray-400" />
+              <Icon className="w-3.5 h-3.5 text-muted-foreground/70" />
             </div>
           </div>
           <div className="flex-1 min-w-0">
-            <span className="text-[9px] font-mono text-gray-400 uppercase tracking-wider">{period}</span>
-            <h4 className="text-sm font-semibold text-gray-900 leading-tight">{task.title}</h4>
+            <span className="text-[9px] font-mono text-muted-foreground/70 uppercase tracking-wider">{period}</span>
+            <h4 className="text-sm font-semibold text-foreground leading-tight">{task.title}</h4>
           </div>
           {allDone && (
             <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
@@ -204,17 +204,17 @@ function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, p
                 <button onClick={() => toggleItem(i)} className="flex-shrink-0 mt-0.5 p-0.5 -m-0.5 touch-manipulation">
                   {checked
                     ? <CheckCircle2 className="w-5 h-5 text-violet-500" />
-                    : <Circle className="w-5 h-5 text-gray-300" />}
+                    : <Circle className="w-5 h-5 text-muted-foreground/50" />}
                 </button>
                 <span onClick={() => toggleItem(i)}
-                  className={`flex-1 cursor-pointer text-sm leading-snug ${checked ? "text-gray-400 line-through" : "text-gray-700"}`}>
+                  className={`flex-1 cursor-pointer text-sm leading-snug ${checked ? "text-muted-foreground/70 line-through" : "text-foreground/80"}`}>
                   {label}
                 </span>
                 {detail && (
                   <button
                     onClick={() => { if (!userId) { openAuth(); return } setActiveHint({ label, detail }) }}
                     className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition touch-manipulation ${
-                      checked ? "border-gray-200 text-gray-400" : "border-violet-200 text-violet-600 bg-violet-50 active:bg-violet-100"
+                      checked ? "border-border text-muted-foreground/70" : "border-primary/25 text-violet-600 bg-primary/8 active:bg-violet-100"
                     }`}>
                     <BookOpen size={9} />HOW
                   </button>
@@ -248,44 +248,44 @@ function DayCard({ dayPlan, weekNum, planId, refreshProgress, userId, openAuth, 
 
   return (
     <motion.div
-      className={`border rounded-2xl overflow-hidden transition-all ${dayDone ? "border-green-200 bg-green-50/30" : "border-gray-200 bg-white"}`}
+      className={`border rounded-2xl overflow-hidden transition-all ${dayDone ? "border-green-500/30 bg-green-500/10" : "border-border bg-background"}`}
       animate={dayDone ? { scale: [1, 1.005, 1] } : {}} transition={{ duration: 0.5 }}
     >
-      <div className="h-1 w-full bg-gray-100">
+      <div className="h-1 w-full bg-secondary">
         <motion.div className="h-full bg-violet-400 rounded-full"
           animate={{ width: `${dayProgress}%` }} transition={{ duration: 0.4 }} />
       </div>
 
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50/60 active:bg-gray-100 transition touch-manipulation">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-4 py-4 hover:bg-secondary/40/60 active:bg-secondary transition touch-manipulation">
         <div className="flex items-center gap-3 min-w-0">
           <div className="relative w-10 h-10 flex items-center justify-center flex-shrink-0">
             <AnimatePresence>
               {dayDone && (
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
                   transition={{ type: "spring", stiffness: 300 }}
-                  className="absolute inset-0 rounded-full bg-green-500 flex items-center justify-center">
+                  className="absolute inset-0 rounded-full bg-green-500/100 flex items-center justify-center">
                   <Check className="w-4 h-4 text-white" />
                 </motion.div>
               )}
             </AnimatePresence>
             {!dayDone && (
-              <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center">
                 <span className="text-sm font-bold text-violet-600">{globalDay}</span>
               </div>
             )}
           </div>
           <div className="text-left min-w-0">
-            <p className="text-sm font-semibold text-gray-900">Day {dayPlan.day}</p>
-            <p className="text-xs text-gray-400 truncate">
+            <p className="text-sm font-semibold text-foreground">Day {dayPlan.day}</p>
+            <p className="text-xs text-muted-foreground/70 truncate">
               {dayPlan.morning.title} · {dayPlan.afternoon.title}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
           {dayProgress > 0 && dayProgress < 100 && (
-            <span className="text-[11px] font-bold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">{dayProgress}%</span>
+            <span className="text-[11px] font-bold text-violet-600 bg-primary/8 px-2 py-0.5 rounded-full">{dayProgress}%</span>
           )}
-          <ChevronDown className={`w-5 h-5 text-gray-300 transition-transform ${open ? "rotate-180" : ""}`} />
+          <ChevronDown className={`w-5 h-5 text-muted-foreground/50 transition-transform ${open ? "rotate-180" : ""}`} />
         </div>
       </button>
 
@@ -369,11 +369,11 @@ function WeekDropdown({ weeklyPlans, activeWeek, setActiveWeek, userId, user, op
     <div ref={dropRef} className="relative w-full sm:w-56">
       <button
         onClick={() => setOpen(p => !p)}
-        className="w-full flex items-center gap-2.5 px-4 py-3 sm:py-2.5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition text-sm font-medium text-gray-800 shadow-sm touch-manipulation"
+        className="w-full flex items-center gap-2.5 px-4 py-3 sm:py-2.5 rounded-xl border border-border bg-background hover:border-border transition text-sm font-medium text-foreground/90 shadow-sm touch-manipulation"
       >
         <WeekProgressCircle pct={currentPct} size={22} color={planColor} />
         <span className="flex-1 text-left">{current?.label || `${planUnit} ${activeWeek + 1}`}</span>
-        <ChevronDown size={14} className={`text-gray-400 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`} />
+        <ChevronDown size={14} className={`text-muted-foreground/70 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`} />
       </button>
 
       <AnimatePresence>
@@ -383,7 +383,7 @@ function WeekDropdown({ weeklyPlans, activeWeek, setActiveWeek, userId, user, op
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden"
+            className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-background border border-border rounded-2xl shadow-xl overflow-hidden"
           >
             <div className="p-1.5 max-h-80 overflow-y-auto">
               {weeklyPlans.map((week, i) => {
@@ -399,17 +399,17 @@ function WeekDropdown({ weeklyPlans, activeWeek, setActiveWeek, userId, user, op
                       setActiveWeek(i); setOpen(false)
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition ${
-                      isActive ? "bg-violet-50" : "hover:bg-gray-50"
+                      isActive ? "bg-primary/8" : "hover:bg-secondary/40"
                     } ${locked ? "opacity-50" : ""}`}
                   >
                     <WeekProgressCircle pct={pct} size={24} color={planColor} />
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium truncate ${isActive ? "text-violet-700" : done ? "text-green-700" : "text-gray-800"}`}>
+                      <p className={`text-sm font-medium truncate ${isActive ? "text-violet-700" : done ? "text-green-700" : "text-foreground/90"}`}>
                         {week.label || `${planUnit} ${i + 1}`}
                       </p>
                       {done && <p className="text-[10px] text-green-600 font-semibold">Completed ✓</p>}
-                      {!done && pct > 0 && <p className="text-[10px] text-gray-400">{pct}% done</p>}
-                      {!done && pct === 0 && <p className="text-[10px] text-gray-400">{locked ? "🔒 Sign in to unlock" : "Not started"}</p>}
+                      {!done && pct > 0 && <p className="text-[10px] text-muted-foreground/70">{pct}% done</p>}
+                      {!done && pct === 0 && <p className="text-[10px] text-muted-foreground/70">{locked ? "🔒 Sign in to unlock" : "Not started"}</p>}
                     </div>
                     {isActive && <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: planColor }} />}
                   </button>
@@ -552,7 +552,7 @@ function PlanPicker({ selectedPlan, onSelect }) {
             >
               {selected && <Check size={13} style={{ color: plan.color }} className="flex-shrink-0" />}
               <div className="text-left">
-                <p className="text-sm font-bold text-gray-900">{plan.label}</p>
+                <p className="text-sm font-bold text-foreground">{plan.label}</p>
                 <p className="text-xs font-semibold mt-0.5" style={{ color: plan.color }}>{plan.targetBand}</p>
               </div>
             </button>
@@ -573,7 +573,7 @@ function PlanPicker({ selectedPlan, onSelect }) {
               whileTap={{ scale: 0.985 }}
               transition={{ type: "spring", stiffness: 380, damping: 26 }}
               className={`relative text-left rounded-2xl border-2 overflow-hidden transition-all duration-200 ${
-                selected ? "shadow-xl shadow-black/8" : "border-gray-200 hover:border-gray-300 hover:shadow-md bg-white"
+                selected ? "shadow-xl shadow-black/8" : "border-border hover:border-border hover:shadow-md bg-background"
               }`}
               style={{
                 borderColor: selected ? plan.color : undefined,
@@ -604,8 +604,8 @@ function PlanPicker({ selectedPlan, onSelect }) {
               <div className="p-4 pt-3">
                 <div className="flex items-start justify-between mb-2 gap-2">
                   <div>
-                    <p className="text-base font-bold text-gray-900">{plan.label}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{plan.days} days</p>
+                    <p className="text-base font-bold text-foreground">{plan.label}</p>
+                    <p className="text-xs text-muted-foreground/70 mt-0.5">{plan.days} days</p>
                   </div>
                   <span className="text-xs font-bold px-2 py-0.5 rounded-lg text-white flex-shrink-0 mt-0.5"
                     style={{ backgroundColor: plan.color }}>
@@ -624,18 +624,18 @@ function PlanPicker({ selectedPlan, onSelect }) {
                       <div className="text-center flex-1">
                         <p className={`font-bold leading-none ${s.small ? "text-[11px]" : "text-base"}`}
                           style={{ color: plan.color }}>{s.value}</p>
-                        <p className="text-[9px] text-gray-400 uppercase tracking-wider mt-0.5">{s.label}</p>
+                        <p className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mt-0.5">{s.label}</p>
                       </div>
                       {i < arr.length - 1 && <div className="w-px h-8 bg-black/8 flex-shrink-0" />}
                     </React.Fragment>
                   ))}
                 </div>
 
-                <p className="text-xs text-gray-500 leading-relaxed mb-3">{plan.description}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-3">{plan.description}</p>
 
                 <ul className="space-y-1 mb-3">
                   {plan.highlights.map((h, i) => (
-                    <li key={i} className="flex items-center gap-1.5 text-xs text-gray-600">
+                    <li key={i} className="flex items-center gap-1.5 text-xs text-foreground/70">
                       <Check size={10} style={{ color: plan.color }} className="flex-shrink-0" />
                       {h}
                     </li>
@@ -643,7 +643,7 @@ function PlanPicker({ selectedPlan, onSelect }) {
                 </ul>
 
                 <div className={`w-full py-2 rounded-xl text-xs font-semibold text-center transition-all ${
-                  selected ? "text-white" : "text-gray-500 border border-gray-200"
+                  selected ? "text-white" : "text-muted-foreground border border-border"
                 }`} style={selected ? { backgroundColor: plan.color } : {}}>
                   {selected
                     ? <span className="flex items-center justify-center gap-1.5"><Check size={11}/> Selected</span>
@@ -678,7 +678,7 @@ function PlanPicker({ selectedPlan, onSelect }) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold leading-tight" style={{ color: meta.color }}>{meta.label}</p>
-                    <p className="text-xs text-gray-500 leading-snug mt-0.5 line-clamp-2">{meta.forWho}</p>
+                    <p className="text-xs text-muted-foreground leading-snug mt-0.5 line-clamp-2">{meta.forWho}</p>
                   </div>
                   <div className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white"
                     style={{ backgroundColor: meta.color }}>
@@ -693,10 +693,10 @@ function PlanPicker({ selectedPlan, onSelect }) {
                     { icon: Zap,   label: "Mock tests", v: `${meta.mocks}` },
                     { icon: Award, label: "Target", v: `Band ${meta.targetBand}` },
                   ].map(({ icon: Icon, label, v }) => (
-                    <div key={label} className="flex flex-col items-center py-2.5 px-1 rounded-xl bg-white/60 border border-white/80">
+                    <div key={label} className="flex flex-col items-center py-2.5 px-1 rounded-xl bg-background/60 border border-white/80">
                       <Icon size={13} style={{ color: meta.color }} className="mb-1" />
-                      <p className="text-xs font-bold text-gray-900 leading-none">{v}</p>
-                      <p className="text-[10px] text-gray-400 mt-0.5">{label}</p>
+                      <p className="text-xs font-bold text-foreground leading-none">{v}</p>
+                      <p className="text-[10px] text-muted-foreground/70 mt-0.5">{label}</p>
                     </div>
                   ))}
                 </div>
@@ -721,17 +721,19 @@ function bandColor(b) {
 
 // ── ScoreTracker ───────────────────────────────────────────────────────────────
 function ScoreTracker({ openAuth, supabase, onScoresChange }) {
-  const [open, setOpen] = useState(false)
-  const [showForm, setShowForm] = useState(false)
-  const [scores, setScores] = useState(() => {
+  const [open,        setOpen]        = useState(false)
+  const [view,        setView]        = useState("history")
+  const [saving,      setSaving]      = useState(false)
+  const [user,        setUser]        = useState(null)
+  const [scores,      setScores]      = useState(() => {
     try { return JSON.parse(localStorage.getItem("ielts-scores") || "null") ?? [] } catch { return [] }
   })
-  const [saving, setSaving] = useState(false)
-  const [user, setUser] = useState(null)
-  const [listening, setListening] = useState("")
-  const [reading,   setReading]   = useState("")
-  const [writing,   setWriting]   = useState("")
-  const [speaking,  setSpeaking]  = useState("")
+  const [listening,   setListening]   = useState("")
+  const [reading,     setReading]     = useState("")
+  const [writing,     setWriting]     = useState("")
+  const [speaking,    setSpeaking]    = useState("")
+  const [scoreLabel,  setScoreLabel]  = useState("")
+  const [scoreType,   setScoreType]   = useState("mock")
 
   useEffect(() => { onScoresChange?.(scores) }, [scores])
 
@@ -741,36 +743,47 @@ function ScoreTracker({ openAuth, supabase, onScoresChange }) {
       if (!session?.user) return
       setUser(session.user)
       const { data } = await supabase.from("score_history").select("*")
-        .eq("user_id", session.user.id).order("created_at", { ascending: false }).limit(20)
+        .eq("user_id", session.user.id).order("created_at", { ascending: false }).limit(50)
       if (data) { setScores(data); localStorage.setItem("ielts-scores", JSON.stringify(data)) }
     }
     fetchFresh().catch(() => {})
     const { data: l } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_OUT") { setUser(null); setScores([]); localStorage.removeItem("ielts-scores"); return }
+      if (event === "SIGNED_OUT") {
+        setUser(null); setScores([]); localStorage.removeItem("ielts-scores"); return
+      }
       if (event === "SIGNED_IN") {
         setUser(session.user)
         const { data } = await supabase.from("score_history").select("*")
-          .eq("user_id", session.user.id).order("created_at", { ascending: false }).limit(20)
+          .eq("user_id", session.user.id).order("created_at", { ascending: false }).limit(50)
         if (data) { setScores(data); localStorage.setItem("ielts-scores", JSON.stringify(data)) }
       }
     })
     return () => l.subscription.unsubscribe()
   }, [])
 
+  function resetForm() {
+    setListening(""); setReading(""); setWriting(""); setSpeaking("")
+    setScoreLabel(""); setScoreType("mock")
+  }
+
   async function saveScore() {
-    if (!user) { openAuth(); return }
-    if (listening === "" && reading === "" && writing === "" && speaking === "") return
+    if (!user)  { openAuth(); return }
+    if (saving) return
+    const anyFilled = listening !== "" || reading !== "" || writing !== "" || speaking !== ""
+    if (!anyFilled) return
     setSaving(true)
-    const payload = { user_id: user.id }
+    const payload = { user_id: user.id, label: scoreLabel.trim() || null, type: scoreType }
     if (listening !== "") payload.listening = Number(listening)
-    if (reading !== "")   payload.reading   = Number(reading)
-    if (writing !== "")   payload.writing   = Number(writing)
-    if (speaking !== "")  payload.speaking  = Number(speaking)
-    const { data } = await supabase.from("score_history").insert(payload).select()
-    if (data) {
+    if (reading   !== "") payload.reading   = Number(reading)
+    if (writing   !== "") payload.writing   = Number(writing)
+    if (speaking  !== "") payload.speaking  = Number(speaking)
+    const { data, error } = await supabase.from("score_history").insert(payload).select()
+    if (data && data[0]) {
       setScores(prev => { const u = [data[0], ...prev]; localStorage.setItem("ielts-scores", JSON.stringify(u)); return u })
-      setListening(""); setReading(""); setWriting(""); setSpeaking(""); setShowForm(false)
+      resetForm()
+      setView("history")
     }
+    if (error) console.error("Score save error:", error)
     setSaving(false)
   }
 
@@ -779,133 +792,392 @@ function ScoreTracker({ openAuth, supabase, onScoresChange }) {
     setScores(prev => { const u = prev.filter(s => s.id !== id); localStorage.setItem("ielts-scores", JSON.stringify(u)); return u })
   }
 
-  const bandOpts = [4,4.5,5,5.5,6,6.5,7,7.5,8,8.5,9]
-  const latestFull = scores.find(s => s.listening != null && s.reading != null && s.writing != null && s.speaking != null)
-  const overall = latestFull ? calcOverall(latestFull.listening, latestFull.reading, latestFull.writing, latestFull.speaking) : null
+  const bandOpts  = [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
   const anyFilled = listening !== "" || reading !== "" || writing !== "" || speaking !== ""
-  const previewBand = (listening !== "" && reading !== "" && writing !== "" && speaking !== "")
-    ? calcOverall(Number(listening), Number(reading), Number(writing), Number(speaking)) : null
-  const fields = [
-    { label: "Listening", val: listening, set: setListening },
-    { label: "Reading",   val: reading,   set: setReading   },
-    { label: "Writing",   val: writing,   set: setWriting   },
-    { label: "Speaking",  val: speaking,  set: setSpeaking  },
+  const allFilled = listening !== "" && reading !== "" && writing !== "" && speaking !== ""
+  const previewBand = allFilled ? calcOverall(Number(listening), Number(reading), Number(writing), Number(speaking)) : null
+  const latestFull  = scores.find(s => s.listening != null && s.reading != null && s.writing != null && s.speaking != null)
+  const headerBand  = latestFull ? calcOverall(latestFull.listening, latestFull.reading, latestFull.writing, latestFull.speaking) : null
+
+  const skillBest = { L: null, R: null, W: null, S: null }
+  scores.forEach(s => {
+    if (s.listening != null && (skillBest.L == null || s.listening > skillBest.L)) skillBest.L = s.listening
+    if (s.reading   != null && (skillBest.R == null || s.reading   > skillBest.R)) skillBest.R = s.reading
+    if (s.writing   != null && (skillBest.W == null || s.writing   > skillBest.W)) skillBest.W = s.writing
+    if (s.speaking  != null && (skillBest.S == null || s.speaking  > skillBest.S)) skillBest.S = s.speaking
+  })
+
+  const skillDefs = [
+    { key: "L", label: "Listening", field: "listening", val: listening, set: setListening, color: "#0ea5e9" },
+    { key: "R", label: "Reading",   field: "reading",   val: reading,   set: setReading,   color: "#7c3aed" },
+    { key: "W", label: "Writing",   field: "writing",   val: writing,   set: setWriting,   color: "#f97316" },
+    { key: "S", label: "Speaking",  field: "speaking",  val: speaking,  set: setSpeaking,  color: "#10b981" },
   ]
 
+  const filledCount = [listening, reading, writing, speaking].filter(v => v !== "").length
+
+  function renderSkillCard(sk) {
+    const entries = [...scores].filter(s => s[sk.field] != null).reverse()
+    if (entries.length === 0) {
+      return (
+        <div key={sk.key} className="p-4 rounded-2xl border border-border/50 bg-background">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: sk.color }} />
+            <span className="text-sm font-semibold text-foreground">{sk.label}</span>
+            <span className="text-xs text-muted-foreground/50 ml-auto">No scores yet</span>
+          </div>
+        </div>
+      )
+    }
+    const vals    = entries.map(e => e[sk.field])
+    const best    = Math.max(...vals)
+    const latest  = vals[vals.length - 1]
+    const trend   = vals.length >= 2 ? latest - vals[0] : 0
+    const minV    = 4, maxV = 9, rng = maxV - minV
+    const W = 200, H = 44, pad = 6
+    const pts = vals.map((v, i) => {
+      const x = vals.length === 1 ? W/2 : pad + (i / (vals.length - 1)) * (W - pad*2)
+      const y = H - pad - ((v - minV) / rng) * (H - pad*2)
+      return [x, y]
+    })
+    const polyPts = pts.map(p => p.join(",")).join(" ")
+    const areaD   = pts.length > 1
+      ? "M" + pts[0].join(",") + " L" + pts.slice(1).map(p => p.join(",")).join(" L") + " L" + pts[pts.length-1][0] + "," + H + " L" + pts[0][0] + "," + H + " Z"
+      : ""
+
+    return (
+      <motion.div key={sk.key} initial={{ opacity:0, y:4 }} animate={{ opacity:1, y:0 }}
+        className="p-4 rounded-2xl border border-border/50 bg-background">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+              style={{ backgroundColor: sk.color }}>{sk.key}</div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">{sk.label}</p>
+              <p className="text-[11px] text-muted-foreground/60">{entries.length} entr{entries.length===1?"y":"ies"}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-xl font-bold leading-none" style={{ color: bandColor(latest) }}>{latest}</p>
+            <p className="text-[10px] text-muted-foreground/60 mt-0.5">latest</p>
+          </div>
+        </div>
+
+        {vals.length >= 2 && (
+          <div className="mb-3 rounded-xl overflow-hidden bg-secondary/20" style={{ height: 48 }}>
+            <svg width="100%" height="48" viewBox={"0 0 " + W + " " + H} preserveAspectRatio="none">
+              {areaD !== "" && <path d={areaD} fill={sk.color} opacity="0.1" />}
+              <polyline points={polyPts} fill="none" stroke={sk.color} strokeWidth="2"
+                strokeLinecap="round" strokeLinejoin="round" />
+              {pts.map(([cx, cy], i) => {
+                const isLast = i === pts.length - 1
+                return <circle key={i} cx={cx} cy={cy} r={isLast ? 3.5 : 2.5}
+                  fill={isLast ? sk.color : "white"} stroke={sk.color} strokeWidth={isLast ? 0 : 1.5} />
+              })}
+            </svg>
+          </div>
+        )}
+
+        <div className="grid grid-cols-3 gap-2 mb-3">
+          <div className="p-2 rounded-xl text-center border"
+            style={{ borderColor: sk.color + "40", backgroundColor: sk.color + "10" }}>
+            <p className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-1">Latest</p>
+            <p className="text-sm font-bold" style={{ color: bandColor(latest) }}>{latest}</p>
+          </div>
+          <div className="p-2 rounded-xl text-center bg-secondary/40">
+            <p className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-1">Best</p>
+            <p className="text-sm font-bold text-foreground/90">{best}</p>
+          </div>
+          <div className="p-2 rounded-xl text-center bg-secondary/40">
+            <p className="text-[9px] font-mono text-muted-foreground/60 uppercase tracking-wider mb-1">Trend</p>
+            <p className={"text-sm font-bold " + (trend > 0 ? "text-emerald-500" : trend < 0 ? "text-red-400" : "text-muted-foreground/60")}>
+              {trend > 0 ? "↑" : trend < 0 ? "↓" : "→"} {Math.abs(trend).toFixed(1)}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-[9px] font-mono text-muted-foreground/50 uppercase tracking-widest mb-1.5">Recent entries</p>
+          {[...entries].reverse().slice(0, 5).map((e, ei) => (
+            <div key={e.id || ei} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-[10px] text-muted-foreground/60 flex-shrink-0">
+                  {new Date(e.created_at).toLocaleDateString("en-GB", { day:"numeric", month:"short" })}
+                </span>
+                {e.label && <span className="text-[10px] text-muted-foreground/50 truncate">{e.label}</span>}
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="h-1.5 w-14 bg-secondary rounded-full overflow-hidden">
+                  <div className="h-full rounded-full"
+                    style={{ width: ((e[sk.field] - minV) / rng * 100) + "%", backgroundColor: sk.color }} />
+                </div>
+                <span className="text-xs font-bold w-5 text-right" style={{ color: bandColor(e[sk.field]) }}>
+                  {e[sk.field]}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    )
+  }
+
+  function renderBestBar(sk) {
+    const best = skillBest[sk.key]
+    const pct  = best != null ? ((best - 4) / 5) * 100 : 0
+    return (
+      <div key={sk.key}>
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[11px] font-semibold text-foreground/80">{sk.label}</span>
+          <span className="text-[11px] font-bold" style={{ color: sk.color }}>
+            {best != null ? "Band " + best : "—"}
+          </span>
+        </div>
+        <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+          <motion.div className="h-full rounded-full"
+            animate={{ width: pct + "%" }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            style={{ backgroundColor: sk.color }} />
+        </div>
+      </div>
+    )
+  }
+
+  function renderSkillPills(s) {
+    return skillDefs.map(sk => {
+      const val = s[sk.field]
+      if (val == null) return (
+        <div key={sk.key} className="flex items-center gap-1 px-2 py-1 rounded-lg bg-secondary/60 border border-border/40">
+          <span className="text-[10px] font-mono text-muted-foreground/40">{sk.key}</span>
+          <span className="text-[10px] text-muted-foreground/30">—</span>
+        </div>
+      )
+      return (
+        <div key={sk.key} className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border"
+          style={{ borderColor: sk.color + "40", backgroundColor: sk.color + "12" }}>
+          <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: sk.color }} />
+          <span className="text-[10px] font-mono" style={{ color: sk.color }}>{sk.key}</span>
+          <span className="text-xs font-bold text-foreground/90">{val}</span>
+        </div>
+      )
+    })
+  }
+
+  function renderHistoryEntry(s, i) {
+    const hasAll = s.listening != null && s.reading != null && s.writing != null && s.speaking != null
+    const ov     = hasAll ? calcOverall(s.listening, s.reading, s.writing, s.speaking) : null
+    return (
+      <motion.div key={s.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: i * 0.03 }}
+        className="p-3.5 rounded-2xl border border-border/60 bg-background hover:border-border transition">
+        <div className="flex items-start justify-between gap-2 mb-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-11 h-11 rounded-xl flex flex-col items-center justify-center font-bold flex-shrink-0 text-white"
+              style={{ backgroundColor: ov ? bandColor(ov) : "#94a3b8" }}>
+              {ov != null ? (
+                <><span className="text-[10px] leading-none opacity-80">Band</span><span className="text-base leading-none">{ov}</span></>
+              ) : (
+                <span className="text-[10px] font-bold text-center leading-tight px-1">
+                  {[s.listening != null && "L", s.reading != null && "R", s.writing != null && "W", s.speaking != null && "S"].filter(Boolean).join("+")}
+                </span>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {s.label || (hasAll ? "Full Mock" : "Skill Practice")}
+              </p>
+              <p className="text-[11px] text-muted-foreground/60">
+                {new Date(s.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+              </p>
+            </div>
+          </div>
+          <button onClick={() => deleteScore(s.id)}
+            className="p-1.5 rounded-lg text-muted-foreground/40 hover:text-red-400 hover:bg-red-500/10 transition flex-shrink-0">
+            <Trash2 size={13} />
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {renderSkillPills(s)}
+        </div>
+      </motion.div>
+    )
+  }
+
   return (
-    <div className="mt-8 border border-gray-200 rounded-2xl overflow-hidden bg-white shadow-sm">
+    <div className="mt-8 border border-border rounded-2xl overflow-hidden bg-background shadow-sm">
+
       <button
         onClick={() => { if (!user) { openAuth(); return } setOpen(o => !o) }}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50/60 transition"
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-secondary/40 transition"
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <TrendingUp size={15} className="text-primary" />
           </div>
           <div className="text-left">
-            <p className="text-sm font-semibold text-gray-900">Score Tracker</p>
-            <p className="text-xs text-gray-400">
-              {!user ? "Sign in to track your scores" : overall ? `Latest band: ${overall}` : "Log your mock test scores"}
+            <p className="text-sm font-semibold text-foreground">Score Tracker</p>
+            <p className="text-xs text-muted-foreground/70">
+              {!user ? "Sign in to track your scores" : scores.length === 0 ? "Log your mock test and skill scores" : `${scores.length} entr${scores.length === 1 ? "y" : "ies"} saved`}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {overall && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: bandColor(overall) }}>
-              Band {overall}
+          {headerBand && (
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full text-white" style={{ backgroundColor: bandColor(headerBand) }}>
+              Band {headerBand}
             </span>
           )}
-          {open ? <ChevronUp size={15} className="text-gray-400" /> : <ChevronDown size={15} className="text-gray-400" />}
+          {open ? <ChevronUp size={15} className="text-muted-foreground/70" /> : <ChevronDown size={15} className="text-muted-foreground/70" />}
         </div>
       </button>
 
       <AnimatePresence>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-            className="border-t border-gray-100">
-            <div className="p-5">
-              {!showForm && (
-                <button onClick={() => setShowForm(true)}
-                  className="mb-4 flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 transition">
-                  <Plus size={14} /> Log New Score
-                </button>
+            className="border-t border-border/50">
+            <div className="p-5 space-y-5">
+
+              {scores.length > 0 && (
+                <div className="p-4 rounded-2xl border border-border/50 bg-secondary/20">
+                  <p className="text-[10px] font-mono text-muted-foreground/70 uppercase tracking-widest mb-3">Personal Best</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {skillDefs.map(sk => renderBestBar(sk))}
+                  </div>
+                  {Object.values(skillBest).every(v => v != null) && (
+                    <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground/70 font-medium">Best Overall</span>
+                      <span className="text-base font-bold" style={{ color: bandColor(calcOverall(skillBest.L, skillBest.R, skillBest.W, skillBest.S)) }}>
+                        Band {calcOverall(skillBest.L, skillBest.R, skillBest.W, skillBest.S)}
+                      </span>
+                    </div>
+                  )}
+                </div>
               )}
 
-              <AnimatePresence>
-                {showForm && (
-                  <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
-                    className="mb-5 p-4 rounded-xl border border-primary/20 bg-primary/5">
-                    <p className="text-xs font-mono text-primary uppercase tracking-widest mb-1">Log a Score</p>
-                    <p className="text-xs text-gray-500 mb-3">Leave any blank if you did not test that skill.</p>
-                    <div className="grid grid-cols-2 gap-2.5 mb-4">
-                      {fields.map(f => (
-                        <div key={f.label}>
-                          <label className="text-xs text-gray-500 mb-1 block">{f.label}</label>
-                          <select value={f.val} onChange={e => f.set(e.target.value)}
-                            className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30">
+              <div className="flex gap-1 p-1 bg-secondary/40 rounded-xl">
+                {[{ id: "history", label: "History" }, { id: "skills", label: "By Skill" }, { id: "add", label: "+ Log" }].map(tab => (
+                  <button key={tab.id} onClick={() => setView(tab.id)}
+                    className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition ${view === tab.id ? "bg-background shadow-sm text-foreground" : "text-muted-foreground/70 hover:text-foreground"}`}>
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {view === "add" && (
+                <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+                  <div>
+                    <p className="text-[10px] font-mono text-muted-foreground/70 uppercase tracking-widest mb-2">Entry type</p>
+                    <div className="flex gap-2">
+                      {[{ id: "mock", label: "Full Mock Test" }, { id: "skill", label: "Single Skill" }].map(t => (
+                        <button key={t.id} onClick={() => { setScoreType(t.id); resetForm() }}
+                          className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition ${scoreType === t.id ? "border-primary bg-primary/8 text-primary" : "border-border text-muted-foreground/70 hover:bg-secondary/40"}`}>
+                          {t.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-mono text-muted-foreground/70 uppercase tracking-widest mb-1.5 block">
+                      Label <span className="normal-case font-normal">(optional)</span>
+                    </label>
+                    <input type="text" value={scoreLabel} onChange={e => setScoreLabel(e.target.value)}
+                      placeholder={scoreType === "mock" ? "e.g. Mock 3, Jumpinto Test…" : "e.g. Listening practice…"}
+                      className="w-full text-sm border border-border rounded-xl px-3 py-2.5 bg-background focus:outline-none focus:ring-2 focus:ring-primary/30 text-foreground placeholder:text-muted-foreground/50" />
+                  </div>
+
+                  <div>
+                    <p className="text-[10px] font-mono text-muted-foreground/70 uppercase tracking-widest mb-2">
+                      {scoreType === "mock" ? "Scores — leave blank if not tested" : "Select the skill you practised"}
+                    </p>
+                    <div className={`grid gap-2.5 ${scoreType === "mock" ? "grid-cols-2" : "grid-cols-1"}`}>
+                      {skillDefs.map(sk => (
+                        <div key={sk.key}
+                          className={`p-3 rounded-xl border transition ${sk.val !== "" ? "border-primary/30 bg-primary/5" : "border-border bg-background"}`}>
+                          <div className="flex items-center gap-1.5 mb-2">
+                            <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: sk.color }} />
+                            <label className="text-xs font-semibold text-foreground/80">{sk.label}</label>
+                          </div>
+                          <select value={sk.val} onChange={e => sk.set(e.target.value)}
+                            className="w-full text-sm border border-border rounded-lg px-2.5 py-1.5 bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground">
                             <option value="">— skip —</option>
                             {bandOpts.map(v => <option key={v} value={v}>Band {v}</option>)}
                           </select>
                         </div>
                       ))}
                     </div>
-                    {previewBand && (
-                      <div className="mb-3 px-3 py-2 rounded-xl bg-white border border-gray-200 flex items-center justify-between">
-                        <span className="text-xs text-gray-500">Estimated Overall Band</span>
-                        <span className="text-lg font-bold" style={{ color: bandColor(previewBand) }}>{previewBand}</span>
+                  </div>
+
+                  {previewBand && (
+                    <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-border bg-background">
+                      <div>
+                        <p className="text-[10px] font-mono text-muted-foreground/70 uppercase tracking-widest">Estimated Overall</p>
+                        <p className="text-xs text-muted-foreground/60 mt-0.5">Average of all 4 skills, rounded to nearest 0.5</p>
                       </div>
-                    )}
-                    <div className="flex gap-2">
-                      <button onClick={saveScore} disabled={!anyFilled || saving}
-                        className="flex-1 py-2 rounded-xl text-sm font-semibold bg-primary text-white hover:opacity-90 disabled:opacity-40 transition">
-                        {saving ? "Saving..." : "Save Score"}
-                      </button>
-                      <button onClick={() => { setShowForm(false); setListening(""); setReading(""); setWriting(""); setSpeaking("") }}
-                        className="px-4 py-2 rounded-xl text-sm border border-gray-200 text-gray-500 hover:bg-gray-50 transition">
-                        Cancel
+                      <span className="text-2xl font-bold" style={{ color: bandColor(previewBand) }}>{previewBand}</span>
+                    </div>
+                  )}
+
+                  {anyFilled && !allFilled && (
+                    <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-200">
+                      <AlertTriangle size={13} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-700">
+                        Saving {filledCount} skill{filledCount > 1 ? "s" : ""} only. Overall band needs all 4 skills.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <button onClick={saveScore} disabled={!anyFilled || saving}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-primary text-white hover:opacity-90 disabled:opacity-40 transition">
+                      {saving ? "Saving…" : "Save Score"}
+                    </button>
+                    <button onClick={() => { resetForm(); setView("history") }}
+                      className="px-4 py-2.5 rounded-xl text-sm border border-border text-muted-foreground hover:bg-secondary/40 transition">
+                      Cancel
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {view === "history" && (
+                <div>
+                  {scores.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 rounded-2xl bg-secondary/60 flex items-center justify-center mx-auto mb-3">
+                        <TrendingUp size={20} className="text-muted-foreground/40" />
+                      </div>
+                      <p className="text-sm font-medium text-muted-foreground/70">No scores yet</p>
+                      <p className="text-xs text-muted-foreground/50 mt-1">Log your first mock test or skill practice</p>
+                      <button onClick={() => setView("add")}
+                        className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-sm font-semibold hover:opacity-90 transition">
+                        <Plus size={14} /> Log First Score
                       </button>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {scores.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-4">No scores yet. Log your first mock test result.</p>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-[10px] font-mono text-gray-400 uppercase tracking-widest mb-2">Score History</p>
-                  {scores.map((s, i) => {
-                    const hasAll = s.listening != null && s.reading != null && s.writing != null && s.speaking != null
-                    const ov = hasAll ? calcOverall(s.listening, s.reading, s.writing, s.speaking) : null
-                    return (
-                      <motion.div key={s.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.04 }}
-                        className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm text-white flex-shrink-0"
-                          style={{ backgroundColor: ov ? bandColor(ov) : "#94a3b8" }}>
-                          {ov ?? "—"}
-                        </div>
-                        <div className="flex-1 grid grid-cols-4 gap-1">
-                          {[{label:"L",val:s.listening},{label:"R",val:s.reading},{label:"W",val:s.writing},{label:"S",val:s.speaking}].map(item => (
-                            <div key={item.label} className="text-center">
-                              <div className="text-[9px] text-gray-400 font-mono">{item.label}</div>
-                              <div className={`text-xs font-bold ${item.val != null ? "text-gray-800" : "text-gray-300"}`}>
-                                {item.val ?? "—"}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="text-[10px] text-gray-400">
-                          {new Date(s.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                        </div>
-                        <button onClick={() => deleteScore(s.id)} className="p-1 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition">
-                          <Trash2 size={13} />
-                        </button>
-                      </motion.div>
-                    )
-                  })}
+                  ) : (
+                    <div className="space-y-2">
+                      {scores.map((s, i) => renderHistoryEntry(s, i))}
+                    </div>
+                  )}
                 </div>
               )}
+
+              {view === "skills" && (
+                <div className="space-y-3">
+                  {scores.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-sm font-medium text-muted-foreground/70">No scores yet</p>
+                      <button onClick={() => setView("add")}
+                        className="mt-3 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-white text-xs font-semibold hover:opacity-90 transition">
+                        <Plus size={13} /> Log First Score
+                      </button>
+                    </div>
+                  ) : (
+                    skillDefs.map(sk => renderSkillCard(sk))
+                  )}
+                </div>
+              )}
+
             </div>
           </motion.div>
         )}
@@ -1025,9 +1297,9 @@ export default function StudyPlanSection({ openAuth }) {
         <div className="mb-5">
           {/* Top: title + badges */}
           <div className="flex items-start justify-between gap-3 mb-3">
-            <h3 className="text-base font-bold text-gray-900 leading-tight">
+            <h3 className="text-base font-bold text-foreground leading-tight">
               {planMeta.label}
-              <span className="ml-2 text-sm font-normal text-gray-400">— {planMeta.weeks} weeks</span>
+              <span className="ml-2 text-sm font-normal text-muted-foreground/70">— {planMeta.weeks} weeks</span>
             </h3>
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <span className="text-xs px-2.5 py-1 rounded-full text-white font-semibold whitespace-nowrap" style={{ backgroundColor: planMeta.color }}>
@@ -1074,7 +1346,7 @@ export default function StudyPlanSection({ openAuth }) {
             <motion.div
               key="completed"
               initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-              className="p-8 sm:p-10 rounded-2xl border border-green-200 bg-green-50 text-center"
+              className="p-8 sm:p-10 rounded-2xl border border-green-500/30 bg-green-500/10 text-center"
             >
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 260, delay: 0.1 }} className="flex justify-center mb-4">
@@ -1115,14 +1387,14 @@ export default function StudyPlanSection({ openAuth }) {
         </AnimatePresence>
 
         {/* Week progress bar */}
-        <div className="mt-6 p-4 rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div className="mt-6 p-4 rounded-2xl border border-border/50 bg-background shadow-sm">
           <div className="flex justify-between items-center mb-2.5">
-            <span className="text-xs font-medium text-gray-400">
+            <span className="text-xs font-medium text-muted-foreground/70">
               {currentPlan?.label || `${planMeta?.unit || "Week"} ${activeWeek + 1}`} progress
             </span>
             <span className="text-sm font-bold" style={{ color: planMeta.color }}>{weekProgress}%</span>
           </div>
-          <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-secondary rounded-full overflow-hidden">
             <motion.div className="h-full rounded-full" animate={{ width: `${weekProgress}%` }}
               transition={{ duration: 0.5 }} style={{ backgroundColor: planMeta.color }} />
           </div>

@@ -45,3 +45,8 @@ section {
   scroll-margin-top: 120px;
 }
 
+/* App.css — let index.css handle all theming */
+section {
+  scroll-margin-top: 120px;
+}
+
