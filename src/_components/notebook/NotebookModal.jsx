@@ -427,36 +427,51 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
 
   return (
     <div
-      className="flex items-center gap-0.5 px-2.5 py-1.5 border-t border-border/40 bg-secondary/10 flex-wrap"
+      className="border-t border-border/40 bg-secondary/10 flex-shrink-0"
       onMouseDown={e => e.preventDefault()}
+      onTouchStart={e => e.stopPropagation()}
     >
+      {/* Active tool label on mobile */}
+      {tool && (
+        <div className="sm:hidden px-3 py-1 flex items-center gap-2 border-b border-border/20">
+          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">Active:</span>
+          <span className="text-[11px] font-semibold text-primary capitalize">{tool}</span>
+          <button onMouseDown={e=>{ e.preventDefault(); setTool(null) }}
+            className="ml-auto text-[10px] text-muted-foreground/60 hover:text-red-400 transition px-2 py-0.5 rounded-lg hover:bg-red-50">
+            × Clear
+          </button>
+        </div>
+      )}
+
+      {/* Scrollable toolbar */}
+      <div className="flex items-center gap-0.5 px-2 sm:px-2.5 py-1.5 overflow-x-auto scrollbar-none">
       {/* Undo / Redo */}
       <button onMouseDown={e=>{ e.preventDefault(); onUndo?.() }} disabled={!canUndo} title="Undo"
-        className={`${B} ${canUndo ? off : "text-muted-foreground/20 cursor-not-allowed"}`}><Undo2 size={12}/></button>
+        className={`${B} ${canUndo ? off : "text-muted-foreground/20 cursor-not-allowed"} flex-shrink-0`}><Undo2 size={13}/></button>
       <button onMouseDown={e=>{ e.preventDefault(); onRedo?.() }} disabled={!canRedo} title="Redo"
-        className={`${B} ${canRedo ? off : "text-muted-foreground/20 cursor-not-allowed"}`}><Redo2 size={12}/></button>
+        className={`${B} ${canRedo ? off : "text-muted-foreground/20 cursor-not-allowed"} flex-shrink-0`}><Redo2 size={13}/></button>
 
-      <div className="w-px h-3.5 bg-border/50 mx-0.5"/>
+      <div className="w-px h-4 bg-border/50 mx-0.5 flex-shrink-0"/>
 
       {/* Pen */}
       <button onMouseDown={e=>{ e.preventDefault(); setTool(tool==="pen"?null:"pen") }}
-        title="Pen" className={`${B} ${tool==="pen" ? on : off}`}><PenLine size={13}/></button>
+        title="Pen" className={`${B} flex-shrink-0 ${tool==="pen" ? on : off}`}><PenLine size={14}/></button>
 
       {/* Eraser */}
       <button onMouseDown={e=>{ e.preventDefault(); setTool(tool==="eraser"?null:"eraser") }}
-        title="Eraser" className={`${B} ${tool==="eraser" ? on : off}`}><Eraser size={13}/></button>
+        title="Eraser" className={`${B} flex-shrink-0 ${tool==="eraser" ? on : off}`}><Eraser size={14}/></button>
 
       {/* Text tool */}
       <button onMouseDown={e=>{ e.preventDefault(); setTool(tool==="text"?null:"text") }}
         title="Add text"
-        className={`${B} ${tool==="text" ? on : off} flex items-center gap-0.5 text-[11px] font-bold px-2`}>
+        className={`${B} flex-shrink-0 ${tool==="text" ? on : off} flex items-center gap-0.5 text-[12px] font-bold px-2`}>
         T
       </button>
 
-      <div className="w-px h-3.5 bg-border/50 mx-0.5"/>
+      <div className="w-px h-4 bg-border/50 mx-0.5 flex-shrink-0"/>
 
-      {/* Shapes dropdown — Word/Canva style */}
-      <div ref={shapesRef} className="relative">
+      {/* Shapes dropdown */}
+      <div ref={shapesRef} className="relative flex-shrink-0">
         <button
           onMouseDown={e=>{ e.preventDefault(); setShowShapes(p=>!p) }}
           title="Shapes"
@@ -466,13 +481,13 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
             ? <svg width="14" height="14" viewBox="0 0 22 22" fill="none">{activeShape.svg}</svg>
             : <svg width="14" height="14" viewBox="0 0 22 22" fill="none"><rect x="2" y="5" width="8" height="7" rx="1" stroke="currentColor" strokeWidth="2"/><circle cx="16" cy="14" r="4" stroke="currentColor" strokeWidth="2"/><line x1="2" y1="18" x2="9" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
           }
-          <span className="text-[10px]">Shapes</span>
+          <span className="text-[10px] hidden sm:inline">Shapes</span>
           <ChevronDown size={8}/>
         </button>
 
         {showShapes && (
           <div className="absolute bottom-full mb-2 left-0 z-50 bg-white border border-border rounded-2xl shadow-2xl shadow-black/12 overflow-hidden"
-            style={{ width: 260 }}>
+            style={{ width: "min(280px, calc(100vw - 1rem))", maxHeight: "60vh", overflowY: "auto" }}>
             <div className="px-3 py-2.5 border-b border-border/40">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Shapes</p>
             </div>
@@ -501,17 +516,17 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
         )}
       </div>
 
-      <div className="w-px h-3.5 bg-border/50 mx-0.5"/>
+      <div className="w-px h-4 bg-border/50 mx-0.5 flex-shrink-0"/>
 
       {/* Color */}
-      <div ref={colorsRef} className="relative">
+      <div ref={colorsRef} className="relative flex-shrink-0">
         <button onMouseDown={e=>{ e.preventDefault(); setShowColors(p=>!p); setShowSizes(false) }}
           title="Color" className={`${B} ${off} flex items-center gap-1`}>
-          <span className="w-3.5 h-3.5 rounded-full border-2 border-border/60 flex-shrink-0" style={{ backgroundColor: color }}/>
+          <span className="w-4 h-4 rounded-full border-2 border-border/60 flex-shrink-0" style={{ backgroundColor: color }}/>
           <ChevronDown size={8}/>
         </button>
         {showColors && (
-          <div className="absolute bottom-full mb-2 left-0 bg-white border border-border rounded-xl shadow-xl p-2.5" style={{ minWidth: 148 }}>
+          <div className="absolute bottom-full mb-2 left-0 bg-white border border-border rounded-xl shadow-xl p-2.5 z-50" style={{ minWidth: 148 }}>
             <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Color</p>
             <div className="flex flex-wrap gap-1.5">
               {DRAW_COLORS.map(c => (
@@ -525,7 +540,7 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
       </div>
 
       {/* Size (thickness or font size) */}
-      <div ref={sizesRef} className="relative">
+      <div ref={sizesRef} className="relative flex-shrink-0">
         <button onMouseDown={e=>{ e.preventDefault(); setShowSizes(p=>!p); setShowColors(false) }}
           title={tool==="text" ? "Font size" : "Stroke width"}
           className={`${B} ${off} flex items-center gap-1`}>
@@ -536,7 +551,7 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
           <ChevronDown size={8}/>
         </button>
         {showSizes && (
-          <div className="absolute bottom-full mb-2 left-0 bg-white border border-border rounded-xl shadow-xl p-3" style={{ minWidth: 130 }}>
+          <div className="absolute bottom-full mb-2 left-0 bg-white border border-border rounded-xl shadow-xl p-3 z-50" style={{ minWidth: 130 }}>
             {tool === "text" ? (
               <>
                 <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Font Size</p>
@@ -567,6 +582,7 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
       </div>
 
 
+      </div>{/* end scrollable toolbar */}
     </div>
   )
 }
@@ -1750,7 +1766,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
       )}
       <canvas
         ref={canvasRef}
-        width={600} height={220}
+        width={600} height={260}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         className="w-full block"
         style={{
@@ -1902,7 +1918,7 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
         style={{ borderBottom: `1px solid ${cardColor.border}` }}>
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
           {/* Grip — dragging initiates from here visually, but the whole wrapper is draggable */}
-          <GripVertical size={13} className="text-muted-foreground/40 flex-shrink-0" onPointerDown={e => gripHandlers?.onGripDown(e, index)} onPointerMove={e => gripHandlers?.onGripMove(e)} onPointerUp={e => gripHandlers?.onGripUp(e)} onPointerCancel={e => gripHandlers?.onGripUp(e)} style={{ cursor: draggingIdx === index ? "grabbing" : "grab", touchAction: "none", userSelect: "none", flexShrink: 0 }} />
+          <GripVertical size={16} className="text-muted-foreground/40 flex-shrink-0" onPointerDown={e => gripHandlers?.onGripDown(e, index)} onPointerMove={e => gripHandlers?.onGripMove(e)} onPointerUp={e => gripHandlers?.onGripUp(e)} onPointerCancel={e => gripHandlers?.onGripUp(e)} style={{ cursor: draggingIdx === index ? "grabbing" : "grab", touchAction: "none", userSelect: "none", flexShrink: 0, padding: "2px" }} />
           <input
             value={note.title || ""}
             onChange={e => onUpdate(index, "title", e.target.value)}
@@ -1936,7 +1952,7 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
             onMouseDown={e => e.stopPropagation()}
             onClick={() => onRemove(index)}
             title="Delete note"
-            className="p-1 rounded hover:bg-red-100 text-muted-foreground/30 hover:text-red-400 transition opacity-0 group-hover:opacity-100">
+            className="p-2 rounded hover:bg-red-100 text-muted-foreground/30 hover:text-red-400 transition sm:opacity-0 sm:group-hover:opacity-100 touch-manipulation">
             <Trash2 size={12} />
           </button>
         </div>
@@ -2100,13 +2116,13 @@ function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccen
       {/* Top row: grip + word + meaning + delete */}
       <div className="flex items-start gap-2 p-3 pb-2">
         <GripVertical size={14} className="text-muted-foreground/30 mt-2 flex-shrink-0" onPointerDown={e => gripHandlers?.onGripDown(e, ri)} onPointerMove={e => gripHandlers?.onGripMove(e)} onPointerUp={e => gripHandlers?.onGripUp(e)} onPointerCancel={e => gripHandlers?.onGripUp(e)} style={{ cursor: draggingIdx === ri ? "grabbing" : "grab", touchAction: "none", userSelect: "none" }} />
-        <div className="flex flex-col sm:flex-row gap-2 flex-1 min-w-0">
+        <div className="flex flex-col gap-2 flex-1 min-w-0">
           <input
             value={v.word || ""}
             onChange={e => updateVocab(ri, "word", e.target.value)}
             onMouseDown={e => e.stopPropagation()}
             placeholder="Word or phrase"
-            className="flex-1 min-w-0 text-sm font-semibold bg-white border border-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2"
+            className="w-full text-sm font-semibold bg-white border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
             style={{ "--tw-ring-color": sectionColor + "40" }}
           />
           <input
@@ -2114,16 +2130,16 @@ function VocabCard({ v, ri, updateVocab, removeVocab, sectionColor, sectionAccen
             onChange={e => updateVocab(ri, "meaning", e.target.value)}
             onMouseDown={e => e.stopPropagation()}
             placeholder="Meaning / definition"
-            className="flex-1 min-w-0 text-sm bg-white border border-border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2"
+            className="w-full text-sm bg-white border border-border rounded-lg px-3 py-2 focus:outline-none focus:ring-2"
             style={{ "--tw-ring-color": sectionColor + "40" }}
           />
         </div>
         <button
           onClick={() => removeVocab(ri)}
           onMouseDown={e => e.stopPropagation()}
-          className="p-1.5 rounded-lg text-muted-foreground/30 hover:text-red-400 hover:bg-red-50 transition opacity-0 group-hover:opacity-100 flex-shrink-0 mt-0.5"
+          className="p-2 rounded-lg text-muted-foreground/30 hover:text-red-400 hover:bg-red-50 transition sm:opacity-0 sm:group-hover:opacity-100 flex-shrink-0"
         >
-          <Trash2 size={13} />
+          <Trash2 size={14} />
         </button>
       </div>
 
@@ -2244,7 +2260,7 @@ function MistakeCard({ m, ri, updateMistake, removeMistake, sectionColor, sectio
       {/* Top row: grip + source + mistake + delete */}
       <div className="flex items-start gap-2 p-3 pb-2">
         <GripVertical size={14} className="text-muted-foreground/30 mt-2 flex-shrink-0" onPointerDown={e => gripHandlers?.onGripDown(e, ri)} onPointerMove={e => gripHandlers?.onGripMove(e)} onPointerUp={e => gripHandlers?.onGripUp(e)} onPointerCancel={e => gripHandlers?.onGripUp(e)} style={{ cursor: draggingIdx === ri ? "grabbing" : "grab", touchAction: "none", userSelect: "none" }} />
-        <div className="flex flex-col sm:flex-row gap-2 flex-1 min-w-0">
+        <div className="flex flex-col gap-2 flex-1 min-w-0">
           <input
             value={m.source || ""}
             onChange={e => updateMistake(ri, "source", e.target.value)}
@@ -2382,7 +2398,7 @@ function SectionDropdown({ sections, activeSection, setActiveSection, counts, dd
       <button
         ref={btnRef}
         onClick={openDropdown}
-        className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl border border-border bg-secondary/40 hover:bg-secondary/70 transition text-sm font-medium"
+        className="w-full flex items-center justify-between gap-2 px-3 py-2.5 sm:py-2 rounded-xl border border-border bg-secondary/40 hover:bg-secondary/70 transition text-sm font-medium touch-manipulation"
         style={{ color: current.color }}
       >
         <div className="flex items-center gap-2">
@@ -2839,13 +2855,17 @@ export default function NotebookModal({ open, onClose, openAuth }) {
             initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 60, opacity: 0 }}
             transition={{ type: "spring", damping: 28, stiffness: 300 }}
             className="bg-background border border-border w-full max-w-2xl rounded-t-2xl sm:rounded-2xl flex flex-col overflow-hidden"
-            style={{ maxHeight: "90vh" }}
+            style={{ maxHeight: "100dvh", height: "100dvh", maxHeight: "92dvh" }}
           >
+            {/* Mobile drag handle */}
+            <div className="flex justify-center pt-2.5 pb-0 sm:hidden flex-shrink-0">
+              <div className="w-10 h-1 rounded-full bg-border/60" />
+            </div>
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border flex-shrink-0">
+            <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 border-b border-border flex-shrink-0">
               <div className="flex items-center gap-2">
-                <span className="text-xl">📓</span>
-                <h2 className="text-base font-bold">Study Notebook</h2>
+                <span className="text-lg sm:text-xl">📓</span>
+                <h2 className="text-sm sm:text-base font-bold">Study Notebook</h2>
               </div>
               <div className="flex items-center gap-3">
                 <AnimatePresence mode="wait">
@@ -2869,18 +2889,18 @@ export default function NotebookModal({ open, onClose, openAuth }) {
             </div>
 
             {/* Tabs */}
-            <div className="flex border-b border-border flex-shrink-0 px-5">
+            <div className="flex border-b border-border flex-shrink-0 px-3 sm:px-5">
               {TABS.map(tab => {
                 const Icon  = tab.icon
                 const count = tab.id === "vocabulary" ? totalVocab : tab.id === "mistakes" ? totalMistakes : totalNotes
                 return (
                   <button key={tab.id} onClick={() => { setActiveTab(tab.id); setSearch("") }}
-                    className="relative flex items-center gap-1.5 px-3 py-3 text-sm font-medium transition mr-1"
+                    className="relative flex items-center gap-1.5 px-3 sm:px-3 py-3 sm:py-3 text-xs sm:text-sm font-medium transition flex-1 sm:flex-none justify-center sm:justify-start sm:mr-1"
                     style={{ color: activeTab === tab.id ? tab.color : undefined }}>
                     <Icon size={14} />
-                    {tab.label}
+                    <span className="hidden xs:inline sm:inline">{tab.label}</span>
                     {count > 0 && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white ml-0.5"
+                      <span className="text-[9px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full text-white"
                         style={{ backgroundColor: tab.color }}>{count}</span>
                     )}
                     {activeTab === tab.id && (
@@ -2894,7 +2914,7 @@ export default function NotebookModal({ open, onClose, openAuth }) {
             </div>
 
             {/* Section dropdown + search bar */}
-            <div className="px-5 pt-3 pb-2 flex-shrink-0 flex items-center gap-2">
+            <div className="px-3 sm:px-5 pt-3 pb-2 flex-shrink-0 flex items-center gap-2">
               {activeTab === "vocabulary" && (
                 <SectionDropdown sections={VOCAB_SECTIONS} activeSection={vocabSection} setActiveSection={setVocabSection}
                   counts={vocabCounts} ddRef={vocabDDRef} show={showVocabDD} setShow={setShowVocabDD} />
@@ -2912,13 +2932,13 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                   <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                   <input value={search} onChange={e => setSearch(e.target.value)}
                     placeholder={activeTab === "vocabulary" ? "Search words..." : "Search mistakes..."}
-                    className="w-full text-sm bg-secondary/60 border border-border rounded-xl pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                    className="w-full text-sm bg-secondary/60 border border-border rounded-xl pl-8 pr-3 py-2.5 sm:py-2 focus:outline-none focus:ring-2 focus:ring-primary/30" />
                 </div>
               )}
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto px-5 py-3">
+            <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-3">
               {loading ? (
                 <div className="flex items-center justify-center py-16 gap-2 text-muted-foreground text-sm">
                   <Loader2 size={16} className="animate-spin" /> Loading your notebook...
@@ -2929,7 +2949,7 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                   {activeTab === "vocabulary" && (
                     <div>
                       <button onClick={addVocab}
-                        className="mb-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed text-sm font-medium transition"
+                        className="mb-3 w-full flex items-center justify-center gap-2 py-3 sm:py-2.5 rounded-xl border-2 border-dashed text-sm font-medium transition touch-manipulation"
                         style={{ borderColor: currentVocabSection.color + "80", color: currentVocabSection.color }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = currentVocabSection.accent}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
@@ -2967,7 +2987,7 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                   {activeTab === "mistakes" && (
                     <div>
                       <button onClick={addMistake}
-                        className="mb-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed text-sm font-medium transition"
+                        className="mb-3 w-full flex items-center justify-center gap-2 py-3 sm:py-2.5 rounded-xl border-2 border-dashed text-sm font-medium transition touch-manipulation"
                         style={{ borderColor: currentMistakeSection.color + "80", color: currentMistakeSection.color }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = currentMistakeSection.accent}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
@@ -3005,7 +3025,7 @@ export default function NotebookModal({ open, onClose, openAuth }) {
                   {activeTab === "notes" && (
                     <div>
                       <button onClick={addNote}
-                        className="mb-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border-2 border-dashed text-sm font-medium transition"
+                        className="mb-3 w-full flex items-center justify-center gap-2 py-3 sm:py-2.5 rounded-xl border-2 border-dashed text-sm font-medium transition touch-manipulation"
                         style={{ borderColor: currentNoteSection.color + "80", color: currentNoteSection.color }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = currentNoteSection.accent}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}>
@@ -3047,11 +3067,11 @@ export default function NotebookModal({ open, onClose, openAuth }) {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-5 py-3 border-t border-border bg-secondary/20 flex-shrink-0">
+            <div className="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-3 border-t border-border bg-secondary/20 flex-shrink-0">
               <div className="flex gap-4 text-xs text-muted-foreground">
-                <span>📚 {totalVocab} words</span>
-                <span>❌ {totalMistakes} mistakes</span>
-                <span>📝 {totalNotes} notes</span>
+                <span className="text-[11px] sm:text-xs">📚 {totalVocab}</span>
+                <span className="text-[11px] sm:text-xs">❌ {totalMistakes}</span>
+                <span className="text-[11px] sm:text-xs">📝 {totalNotes}</span>
               </div>
               <span className="text-xs text-muted-foreground">Synced to your account</span>
             </div>
