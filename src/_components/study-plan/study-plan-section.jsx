@@ -661,23 +661,45 @@ function PlanPicker({ selectedPlan, onSelect }) {
           const meta = PLAN_META.find(p => p.id === selectedPlan)
           return (
             <motion.div
-              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="mt-3 p-3.5 sm:p-4 rounded-2xl border flex items-center gap-3 flex-wrap"
-              style={{ borderColor: meta.color + "30", backgroundColor: meta.accent }}
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+              transition={{ type: "spring", stiffness: 300, damping: 28 }}
+              className="mt-4 rounded-2xl border overflow-hidden"
+              style={{ borderColor: meta.color + "25" }}
             >
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: meta.color }}>
-                <Target size={14} className="text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold" style={{ color: meta.color }}>{meta.label} — Selected</p>
-                <p className="text-xs text-gray-500">{meta.forWho}</p>
-              </div>
-              <div className="flex items-center gap-3 flex-wrap">
-                {[{ icon: Clock, v: `${meta.days} days` }, { icon: Zap, v: `${meta.mocks} mocks` }, { icon: Award, v: `Band ${meta.targetBand}` }].map(({ icon: Icon, v }) => (
-                  <div key={v} className="flex items-center gap-1 text-xs font-semibold" style={{ color: meta.color }}>
-                    <Icon size={11} />{v}
+              {/* Top accent strip */}
+              <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${meta.color}, ${meta.color}99)` }} />
+
+              <div className="p-4 sm:p-5" style={{ backgroundColor: meta.accent }}>
+                {/* Header row */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: meta.color }}>
+                    <Target size={14} className="text-white" />
                   </div>
-                ))}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold leading-tight" style={{ color: meta.color }}>{meta.label}</p>
+                    <p className="text-xs text-gray-500 leading-snug mt-0.5 line-clamp-2">{meta.forWho}</p>
+                  </div>
+                  <div className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white"
+                    style={{ backgroundColor: meta.color }}>
+                    <Check size={9} /> Selected
+                  </div>
+                </div>
+
+                {/* Stats row */}
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { icon: Clock, label: "Duration", v: `${meta.days} days` },
+                    { icon: Zap,   label: "Mock tests", v: `${meta.mocks}` },
+                    { icon: Award, label: "Target", v: `Band ${meta.targetBand}` },
+                  ].map(({ icon: Icon, label, v }) => (
+                    <div key={label} className="flex flex-col items-center py-2.5 px-1 rounded-xl bg-white/60 border border-white/80">
+                      <Icon size={13} style={{ color: meta.color }} className="mb-1" />
+                      <p className="text-xs font-bold text-gray-900 leading-none">{v}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">{label}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </motion.div>
           )
