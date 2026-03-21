@@ -485,9 +485,13 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
           <ChevronDown size={8}/>
         </button>
 
-        {showShapes && (
-          <div className="absolute bottom-full mb-2 left-0 z-50 bg-white border border-border rounded-2xl shadow-2xl shadow-black/12 overflow-hidden"
-            style={{ width: "min(280px, calc(100vw - 1rem))", maxHeight: "60vh", overflowY: "auto" }}>
+        {showShapes && (() => {
+          const btnRect = shapesRef.current?.getBoundingClientRect()
+          return (
+          <div className="fixed z-[9999] bg-white border border-border rounded-2xl shadow-2xl shadow-black/12 overflow-hidden"
+            style={{ width: "min(280px, calc(100vw - 1rem))", maxHeight: "55vh", overflowY: "auto",
+              bottom: btnRect ? window.innerHeight - btnRect.top + 6 : undefined,
+              left:   btnRect ? Math.min(btnRect.left, window.innerWidth - 290) : undefined }}>
             <div className="px-3 py-2.5 border-b border-border/40">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Shapes</p>
             </div>
@@ -513,7 +517,8 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
               ))}
             </div>
           </div>
-        )}
+          )
+        })()}
       </div>
 
       <div className="w-px h-4 bg-border/50 mx-0.5 flex-shrink-0"/>
@@ -525,8 +530,13 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
           <span className="w-4 h-4 rounded-full border-2 border-border/60 flex-shrink-0" style={{ backgroundColor: color }}/>
           <ChevronDown size={8}/>
         </button>
-        {showColors && (
-          <div className="absolute bottom-full mb-2 left-0 bg-white border border-border rounded-xl shadow-xl p-2.5 z-50" style={{ minWidth: 148 }}>
+        {showColors && (() => {
+          const btnRect = colorsRef.current?.getBoundingClientRect()
+          return (
+          <div className="fixed z-[9999] bg-white border border-border rounded-xl shadow-xl p-2.5"
+            style={{ minWidth: 148,
+              bottom: btnRect ? window.innerHeight - btnRect.top + 6 : undefined,
+              left:   btnRect ? Math.min(btnRect.left, window.innerWidth - 160) : undefined }}>
             <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Color</p>
             <div className="flex flex-wrap gap-1.5">
               {DRAW_COLORS.map(c => (
@@ -536,7 +546,8 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
               ))}
             </div>
           </div>
-        )}
+          )
+        })()}
       </div>
 
       {/* Size (thickness or font size) */}
@@ -550,8 +561,13 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
                 style={{ width: Math.min(thickness*2+2,10), height: Math.min(thickness*2+2,10) }}/>}
           <ChevronDown size={8}/>
         </button>
-        {showSizes && (
-          <div className="absolute bottom-full mb-2 left-0 bg-white border border-border rounded-xl shadow-xl p-3 z-50" style={{ minWidth: 130 }}>
+        {showSizes && (() => {
+          const btnRect = sizesRef.current?.getBoundingClientRect()
+          return (
+          <div className="fixed z-[9999] bg-white border border-border rounded-xl shadow-xl p-3"
+            style={{ minWidth: 130,
+              bottom: btnRect ? window.innerHeight - btnRect.top + 6 : undefined,
+              left:   btnRect ? Math.min(btnRect.left, window.innerWidth - 145) : undefined }}>
             {tool === "text" ? (
               <>
                 <p className="text-[9px] font-mono text-muted-foreground uppercase tracking-widest mb-2">Font Size</p>
@@ -578,7 +594,8 @@ function DrawMiniBar({ tool, setTool, color, setColor, thickness, setThickness, 
               </>
             )}
           </div>
-        )}
+          )
+        })()}
       </div>
 
 
@@ -593,7 +610,7 @@ const SHAPE_TOOLS = [
   "line","arrow","arrowLeft","arrowDouble","arrowUp","arrowDiag",
   "rect","roundedRect","circle","diamond","triangle","parallelogram",
   "process","decision","terminator","cylinder","arrowBlock",
-  "calloutRect","calloutOval","star","hexagon"
+  "calloutRect","calloutOval","star","hexagon","cloud"
 ]
 
 function _newSid() {
@@ -1766,7 +1783,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
       )}
       <canvas
         ref={canvasRef}
-        width={600} height={260}
+        width={600} height={220}
         onMouseDown={onDown} onMouseMove={onMove} onMouseUp={onUp} onMouseLeave={onUp}
         className="w-full block"
         style={{
