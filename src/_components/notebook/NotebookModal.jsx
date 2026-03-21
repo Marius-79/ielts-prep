@@ -753,12 +753,41 @@ function _ShapeItem({ shape, isSelected, isBeingDrawn, onSelect, onDelete, onCha
 // Lives inside DrawingCanvas, layered above the bitmap canvas.
 // Handles: draw (first interaction), select, multi-select (Shift+click),
 //          selection-box drag, move, corner-resize, side-resize, delete.
-function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTexts, texts, onSelectedChange }) {
+function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTexts, texts, onSelectedChange, onMoveTexts }) {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [drawingId,   setDrawingId]   = useState(null)   // shape being drawn rn
   const [selBox,      setSelBox]      = useState(null)   // {sx,sy,x,y,w,h}
-  const svgRef    = useRef(null)
-  const drawState = useRef(null) // { id, sx, sy } while mouse held during draw
+  const svgRef         = useRef(null)
+  const drawState      = useRef(null) // { id, sx, sy } while mouse held during draw
+  const dragOriginsRef = useRef({})
+
+  function handleMoveAll(action, dx, dy) {
+    if (action === "start") {
+      const origins = {}
+      shapes.forEach(s => { if (selectedIds.has(s.id)) origins[s.id] = { x: s.x, y: s.y } })
+      dragOriginsRef.current = origins
+      // Also snapshot text origins
+      onMoveTexts?.("start")
+      return
+    }
+    const origins = dragOriginsRef.current
+    onShapesChange(prev => prev.map(s => {
+      if (!selectedIds.has(s.id) || !origins[s.id]) return s
+      return {
+        ...s,
+        x: Math.max(0, Math.min(origins[s.id].x + dx, 600 - Math.abs(s.w))),
+        y: Math.max(0, Math.min(origins[s.id].y + dy, 220 - Math.abs(s.h))),
+      }
+    }))
+    // Move selected texts by same pixel delta (SVG dx/dy converted via scale)
+    const svg = svgRef.current
+    if (svg && onMoveTexts) {
+      const r = svg.getBoundingClientRect()
+      const pxDx = dx * (r.width  / 600)
+      const pxDy = dy * (r.height / 220)
+      onMoveTexts("move", pxDx, pxDy)
+    }
+  }
 
   const isShapeTool = SHAPE_TOOLS.includes(tool)
 
@@ -888,24 +917,26 @@ function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTe
           pxBw = bw * sx2px; pxBh = bh * sy2px
         }
 
-        // Select shapes inside box
+        // Select shapes that INTERSECT the box (touch any border)
         const shapeIds = new Set()
         onShapesChange(prev => {
           prev.forEach(s => {
             const x1=Math.min(s.x,s.x+s.w), y1=Math.min(s.y,s.y+s.h)
-            const aw=Math.abs(s.w), ah=Math.abs(s.h)
-            if (x1>=bx && y1>=by && x1+aw<=bx+bw && y1+ah<=by+bh) shapeIds.add(s.id)
+            const x2=x1+Math.abs(s.w),       y2=y1+Math.abs(s.h)
+            // intersects = NOT (completely outside on any side)
+            if (x2>bx && x1<bx+bw && y2>by && y1<by+bh) shapeIds.add(s.id)
           })
           setSelectedIds(shapeIds)
           return prev
         })
 
-        // Select text boxes inside box (pixel space)
+        // Select text boxes that INTERSECT the box (pixel space)
         if (onSelectTexts && texts) {
           const textIds = new Set()
           texts.forEach(t => {
             const tw = t.width || 100, th = (t.fontSize || 16) + 8
-            if (t.x >= pxBx && t.y >= pxBy && t.x + tw <= pxBx + pxBw && t.y + th <= pxBy + pxBh) {
+            const tx2 = t.x + tw, ty2 = t.y + th
+            if (tx2>pxBx && t.x<pxBx+pxBw && ty2>pxBy && t.y<pxBy+pxBh) {
               textIds.add(String(t.id))
             }
           })
@@ -979,24 +1010,7 @@ function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTe
           onChange={patch => onShapesChange(prev =>
             prev.map(s => s.id === shape.id ? { ...s, ...patch } : s)
           )}
-          onMoveAll={(() => {
-            const dragOrigins = {}
-            return (action, dx, dy) => {
-              if (action === "start") {
-                // Snapshot positions of all selected shapes
-                shapes.forEach(s => { if (selectedIds.has(s.id)) dragOrigins[s.id] = { x: s.x, y: s.y } })
-                return
-              }
-              onShapesChange(prev => prev.map(s => {
-                if (!selectedIds.has(s.id) || !dragOrigins[s.id]) return s
-                return {
-                  ...s,
-                  x: Math.max(0, Math.min(dragOrigins[s.id].x + dx, 600 - Math.abs(s.w))),
-                  y: Math.max(0, Math.min(dragOrigins[s.id].y + dy, 220 - Math.abs(s.h))),
-                }
-              }))
-            }
-          })()}
+          onMoveAll={handleMoveAll}
         />
       ))}
     </svg>
@@ -1077,15 +1091,20 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
     if (nodeRef.current && el.html) nodeRef.current.innerHTML = el.html
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Focus + select-all when entering edit mode
+  // Focus when entering edit mode — place cursor at end, no select-all
   useEffect(() => {
     if (!isEdit || !nodeRef.current) return
     const node = nodeRef.current
     node.focus()
-    const r = document.createRange()
-    r.selectNodeContents(node)
+    // Place cursor at end of content
     const s = window.getSelection()
-    s.removeAllRanges(); s.addRange(r)
+    if (s) {
+      const r = document.createRange()
+      r.selectNodeContents(node)
+      r.collapse(false) // collapse to end
+      s.removeAllRanges()
+      s.addRange(r)
+    }
   }, [isEdit])
 
   const COLORS = ["#1e293b","#ef4444","#f97316","#eab308","#16a34a","#2563eb","#7c3aed","#ec4899"]
@@ -1236,7 +1255,7 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
   )
 }
 
-function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange, externalSelectedIds, onExternalSelectClear }) {
+function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange, externalSelectedIds, onExternalSelectClear, onMoveShapes }) {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [editingId,   setEditingId]   = useState(null)
   const layerRef = useRef(null)
@@ -1252,6 +1271,20 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
       setEditingId(null)
     }
   }, [externalSelectedIds])
+
+  // Click outside the layer → deselect all text boxes
+  useEffect(() => {
+    function onDown(e) {
+      if (!layerRef.current) return
+      // If click is outside the drawing area entirely, deselect
+      if (!layerRef.current.contains(e.target)) {
+        setSelectedIds(new Set())
+        setEditingId(null)
+      }
+    }
+    document.addEventListener("mousedown", onDown)
+    return () => document.removeEventListener("mousedown", onDown)
+  }, [])
 
   // Escape = deselect, Delete = delete selected box
   useEffect(() => {
@@ -1289,7 +1322,7 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
   }
   function del(id) {
     onTextsChange(prev => prev.filter(t => t.id !== id))
-    setSelectedId(null); setEditingId(null)
+    setSelectedIds(new Set()); setEditingId(null)
   }
 
   // ── Place new text box ─────────────────────────────────────────────────────
@@ -1317,11 +1350,22 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
     if (e.target === layerRef.current) { setSelectedIds(new Set()); setEditingId(null); onExternalSelectClear?.() }
   }
 
-  // ── Drag with movement threshold — clamped to drawing area bounds ──────────
+  // ── Drag — moves ALL selected texts + selected shapes together ─────────────
   function startDrag(e, el) {
     if (e.button !== 0) return
     e.preventDefault(); e.stopPropagation()
-    const x0 = e.clientX, y0 = e.clientY, ox = el.x, oy = el.y
+    const x0 = e.clientX, y0 = e.clientY
+
+    // Snapshot origins of ALL selected texts at drag start
+    const textOrigins = {}
+    texts.forEach(t => {
+      if (selectedIds.has(String(t.id))) textOrigins[String(t.id)] = { x: t.x, y: t.y }
+    })
+    // If the dragged text is not in selection, add it alone
+    if (Object.keys(textOrigins).length === 0) textOrigins[String(el.id)] = { x: el.x, y: el.y }
+
+    // Snapshot shapes too
+    onMoveShapes?.("start")
 
     function getBounds() {
       if (!layerRef.current) return { w: 9999, h: 9999 }
@@ -1335,9 +1379,18 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
       if (!dragged && Math.sqrt(dx*dx + dy*dy) < 4) return
       dragged = true
       const { w, h } = getBounds()
-      const nx = Math.max(0, Math.min(ox + dx, w - (el.width || 100)))
-      const ny = Math.max(0, Math.min(oy + dy, h - (el.fontSize || 16) - 8))
-      upd(el.id, { x: nx, y: ny })
+      // Move all selected texts
+      onTextsChange(prev => prev.map(t => {
+        const tid = String(t.id)
+        if (!textOrigins[tid]) return t
+        return {
+          ...t,
+          x: Math.max(0, Math.min(textOrigins[tid].x + dx, w - (t.width || 100))),
+          y: Math.max(0, Math.min(textOrigins[tid].y + dy, h - (t.fontSize || 16) - 8)),
+        }
+      }))
+      // Move selected shapes with pixel→SVG conversion
+      onMoveShapes?.("move", dx, dy)
     }
     function up() {
       window.removeEventListener("mousemove", move)
@@ -1384,8 +1437,12 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
   const canvasRef         = useRef(null)
   const containerRef      = useRef(null)
   const [selectedTextIds, setSelectedTextIds] = useState(new Set())
-  const clipboardRef      = useRef(null)  // { shapes:[], texts:[] }
+  const selectedTextIdsRef   = useRef(new Set())
+  selectedTextIdsRef.current = selectedTextIds  // always fresh for keydown closure
+  const clipboardRef         = useRef(null)  // { shapes:[], texts:[] }
+  const textDragOriginsRef   = useRef({})
   const shapeSelectedIds  = useRef(new Set())
+  const [ctxMenu, setCtxMenu] = useState(null) // { x, y } in px relative to container
   const drawing        = useRef(false)
   const startPos       = useRef({ x: 0, y: 0 })
   const snapshotRef    = useRef(null)
@@ -1439,6 +1496,34 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ── Context menu actions ───────────────────────────────────────────────────
+  function doCopy() {
+    const selectedShapes = (canvasShapes || []).filter(s => shapeSelectedIds.current.has(s.id))
+    const selectedTexts  = (canvasTexts  || []).filter(t => selectedTextIds.has(String(t.id)))
+    if (selectedShapes.length > 0 || selectedTexts.length > 0)
+      clipboardRef.current = { shapes: selectedShapes.map(s=>({...s})), texts: selectedTexts.map(t=>({...t})) }
+    setCtxMenu(null)
+  }
+  function doPaste() {
+    if (!clipboardRef.current) return
+    const OFFSET = 20
+    const newShapes = clipboardRef.current.shapes.map(s => ({ ...s, id:`sh-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, x:s.x+OFFSET, y:s.y+OFFSET }))
+    const newTexts  = clipboardRef.current.texts.map(t  => ({ ...t, id:`txt-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, x:t.x+OFFSET, y:t.y+OFFSET }))
+    if (newShapes.length > 0) onShapesChange(prev => [...prev, ...newShapes])
+    if (newTexts.length  > 0) onTextsChange(prev  => [...prev, ...newTexts])
+    setCtxMenu(null)
+  }
+  function doDelete() {
+    const shapeIds = shapeSelectedIds.current
+    const textIds  = selectedTextIds
+    if (shapeIds.size > 0) onShapesChange(prev => prev.filter(s => !shapeIds.has(s.id)))
+    if (textIds.size  > 0) onTextsChange(prev  => prev.filter(t => !textIds.has(String(t.id))))
+    shapeSelectedIds.current = new Set()
+    setSelectedTextIds(new Set())
+    setCtxMenu(null)
+  }
+  const hasSelection = shapeSelectedIds.current.size > 0 || selectedTextIds.size > 0
+
   // ── Copy / Paste (Ctrl+C / Ctrl+V) ────────────────────────────────────────
   useEffect(() => {
     function onKey(e) {
@@ -1447,7 +1532,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
       if ((e.ctrlKey || e.metaKey) && e.key === "c") {
         // Copy selected shapes + texts
         const selectedShapes = (canvasShapes || []).filter(s => shapeSelectedIds.current.has(s.id))
-        const selectedTexts  = (canvasTexts  || []).filter(t => selectedTextIds.has(String(t.id ?? t.id)))
+        const selectedTexts  = (canvasTexts  || []).filter(t => selectedTextIdsRef.current.has(String(t.id ?? t.id)))
         if (selectedShapes.length > 0 || selectedTexts.length > 0) {
           clipboardRef.current = {
             shapes: selectedShapes.map(s => ({ ...s })),
@@ -1623,7 +1708,46 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
         borderTop: "1px dashed rgba(0,0,0,0.08)",
         display: visible ? "block" : "none",
       }}
+      onContextMenu={e => {
+        e.preventDefault()
+        const r = containerRef.current.getBoundingClientRect()
+        setCtxMenu({ x: e.clientX - r.left, y: e.clientY - r.top })
+      }}
+      onClick={() => ctxMenu && setCtxMenu(null)}
     >
+      {/* ── Right-click context menu ── */}
+      {ctxMenu && (
+        <div
+          style={{
+            position: "absolute", left: ctxMenu.x, top: ctxMenu.y,
+            zIndex: 9999, minWidth: 148,
+          }}
+          onMouseDown={e => e.stopPropagation()}
+        >
+          <div className="bg-white border border-border/60 rounded-xl shadow-2xl py-1 overflow-hidden"
+            style={{ backdropFilter: "blur(8px)" }}>
+            <button onClick={doCopy} disabled={!hasSelection}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-secondary transition disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span className="font-medium text-foreground">Copy</span>
+              <span className="ml-auto text-[10px] text-muted-foreground">Ctrl+C</span>
+            </button>
+            <button onClick={doPaste} disabled={!clipboardRef.current}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-secondary transition disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+              <span className="font-medium text-foreground">Paste</span>
+              <span className="ml-auto text-[10px] text-muted-foreground">Ctrl+V</span>
+            </button>
+            <div className="h-px bg-border/50 my-1"/>
+            <button onClick={doDelete} disabled={!hasSelection}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-red-50 transition disabled:opacity-30 disabled:cursor-not-allowed">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+              <span className="font-medium text-red-500">Delete</span>
+              <span className="ml-auto text-[10px] text-muted-foreground">Del</span>
+            </button>
+          </div>
+        </div>
+      )}
       <canvas
         ref={canvasRef}
         width={600} height={220}
@@ -1655,6 +1779,33 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
         containerRef={containerRef}
         externalSelectedIds={selectedTextIds}
         onExternalSelectClear={() => setSelectedTextIds(new Set())}
+        onMoveShapes={(action, pxDx, pxDy) => {
+          if (action === "start") {
+            // Snapshot selected shape origins
+            const origins = {}
+            ;(canvasShapes || []).forEach(s => {
+              if (shapeSelectedIds.current.has(s.id)) origins[s.id] = { x: s.x, y: s.y }
+            })
+            textDragOriginsRef.current = origins
+            return
+          }
+          if (Object.keys(textDragOriginsRef.current).length === 0) return
+          // Convert pixel delta to SVG viewBox units
+          const container = containerRef.current
+          if (!container) return
+          const r = container.getBoundingClientRect()
+          const svgDx = pxDx * (600 / r.width)
+          const svgDy = pxDy * (220 / r.height)
+          const origins = textDragOriginsRef.current
+          onShapesChange(prev => prev.map(s => {
+            if (!origins[s.id]) return s
+            return {
+              ...s,
+              x: Math.max(0, Math.min(origins[s.id].x + svgDx, 600 - Math.abs(s.w))),
+              y: Math.max(0, Math.min(origins[s.id].y + svgDy, 220 - Math.abs(s.h))),
+            }
+          }))
+        }}
       />
       <ShapeLayer
         tool={tool}
@@ -1665,6 +1816,27 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
         texts={(canvasTexts || []).map((el, i) => ({ ...el, id: String(el.id ?? `legacy-${i}`) }))}
         onSelectTexts={ids => setSelectedTextIds(ids)}
         onSelectedChange={ids => { shapeSelectedIds.current = ids }}
+        onMoveTexts={(action, pxDx, pxDy) => {
+          if (action === "start") {
+            // Snapshot text origins in a ref accessible here
+            const origins = {}
+            ;(canvasTexts || []).forEach(t => {
+              if (selectedTextIds.has(String(t.id))) origins[String(t.id)] = { x: t.x, y: t.y }
+            })
+            textDragOriginsRef.current = origins
+            return
+          }
+          const origins = textDragOriginsRef.current
+          onTextsChange(prev => prev.map(t => {
+            const tid = String(t.id)
+            if (!selectedTextIds.has(tid) || !origins[tid]) return t
+            return {
+              ...t,
+              x: Math.max(0, origins[tid].x + pxDx),
+              y: Math.max(0, origins[tid].y + pxDy),
+            }
+          }))
+        }}
       />
     </div>
   )

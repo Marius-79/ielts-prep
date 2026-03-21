@@ -56,7 +56,7 @@ function HintModal({ label, detail, period, taskTitle, onClose }) {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         exit={{ scale: 0.94, opacity: 0, y: 8 }}
         transition={{ type: "spring", stiffness: 340, damping: 28 }}
-        className="relative w-full max-w-[430px] bg-white rounded-2xl overflow-hidden shadow-2xl"
+        className="relative w-full max-w-[calc(100vw-2rem)] sm:max-w-[430px] bg-white rounded-2xl overflow-hidden shadow-2xl"
         onClick={e => e.stopPropagation()}
       >
         <div className="h-1.5 w-full bg-gradient-to-r from-violet-400 to-purple-600" />
@@ -162,7 +162,7 @@ function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, p
         )}
       </AnimatePresence>
 
-      <div className={`relative p-4 rounded-xl border transition-all duration-300 ${allDone ? "border-violet-200 bg-violet-50/40" : "border-gray-100 bg-white"}`}>
+      <div className={`relative p-3.5 sm:p-4 rounded-xl border transition-all duration-300 ${allDone ? "border-violet-200 bg-violet-50/40" : "border-gray-100 bg-white"}`}>
         {allDone && (
           <div className="absolute inset-0 pointer-events-none rounded-xl overflow-hidden">
             <div className="absolute inset-0 rounded-xl" style={{ background: "rgba(139,92,246,0.04)" }} />
@@ -201,10 +201,10 @@ function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, p
             const checked = checkedItems.has(i)
             return (
               <li key={i} className="flex items-start gap-2.5">
-                <button onClick={() => toggleItem(i)} className="flex-shrink-0 mt-0.5">
+                <button onClick={() => toggleItem(i)} className="flex-shrink-0 mt-0.5 p-0.5 -m-0.5 touch-manipulation">
                   {checked
-                    ? <CheckCircle2 className="w-4 h-4 text-violet-500" />
-                    : <Circle className="w-4 h-4 text-gray-300" />}
+                    ? <CheckCircle2 className="w-5 h-5 text-violet-500" />
+                    : <Circle className="w-5 h-5 text-gray-300" />}
                 </button>
                 <span onClick={() => toggleItem(i)}
                   className={`flex-1 cursor-pointer text-sm leading-snug ${checked ? "text-gray-400 line-through" : "text-gray-700"}`}>
@@ -213,8 +213,8 @@ function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, p
                 {detail && (
                   <button
                     onClick={() => { if (!userId) { openAuth(); return } setActiveHint({ label, detail }) }}
-                    className={`flex-shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-semibold border transition ${
-                      checked ? "border-gray-200 text-gray-400" : "border-violet-200 text-violet-600 bg-violet-50 hover:bg-violet-100"
+                    className={`flex-shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-semibold border transition touch-manipulation ${
+                      checked ? "border-gray-200 text-gray-400" : "border-violet-200 text-violet-600 bg-violet-50 active:bg-violet-100"
                     }`}>
                     <BookOpen size={9} />HOW
                   </button>
@@ -256,9 +256,9 @@ function DayCard({ dayPlan, weekNum, planId, refreshProgress, userId, openAuth, 
           animate={{ width: `${dayProgress}%` }} transition={{ duration: 0.4 }} />
       </div>
 
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-3.5 sm:p-4 hover:bg-gray-50/60 transition">
-        <div className="flex items-center gap-3">
-          <div className="relative w-9 h-9 flex items-center justify-center flex-shrink-0">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-4 py-4 hover:bg-gray-50/60 active:bg-gray-100 transition touch-manipulation">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="relative w-10 h-10 flex items-center justify-center flex-shrink-0">
             <AnimatePresence>
               {dayDone && (
                 <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
@@ -269,23 +269,23 @@ function DayCard({ dayPlan, weekNum, planId, refreshProgress, userId, openAuth, 
               )}
             </AnimatePresence>
             {!dayDone && (
-              <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
                 <span className="text-sm font-bold text-violet-600">{globalDay}</span>
               </div>
             )}
           </div>
-          <div className="text-left">
+          <div className="text-left min-w-0">
             <p className="text-sm font-semibold text-gray-900">Day {dayPlan.day}</p>
-            <p className="text-xs text-gray-400 truncate max-w-[200px] sm:max-w-none">
+            <p className="text-xs text-gray-400 truncate">
               {dayPlan.morning.title} · {dayPlan.afternoon.title}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
           {dayProgress > 0 && dayProgress < 100 && (
-            <span className="text-[10px] font-bold text-violet-600">{dayProgress}%</span>
+            <span className="text-[11px] font-bold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">{dayProgress}%</span>
           )}
-          <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
+          <ChevronDown className={`w-5 h-5 text-gray-300 transition-transform ${open ? "rotate-180" : ""}`} />
         </div>
       </button>
 
@@ -366,10 +366,10 @@ function WeekDropdown({ weeklyPlans, activeWeek, setActiveWeek, userId, user, op
   const currentPct = getWeekProgress(current)
 
   return (
-    <div ref={dropRef} className="relative w-full sm:w-auto">
+    <div ref={dropRef} className="relative w-full sm:w-56">
       <button
         onClick={() => setOpen(p => !p)}
-        className="w-full sm:w-auto flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition text-sm font-medium text-gray-800 shadow-sm"
+        className="w-full flex items-center gap-2.5 px-4 py-3 sm:py-2.5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition text-sm font-medium text-gray-800 shadow-sm touch-manipulation"
       >
         <WeekProgressCircle pct={currentPct} size={22} color={planColor} />
         <span className="flex-1 text-left">{current?.label || `${planUnit} ${activeWeek + 1}`}</span>
@@ -383,7 +383,7 @@ function WeekDropdown({ weeklyPlans, activeWeek, setActiveWeek, userId, user, op
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 right-0 sm:right-auto sm:min-w-[260px] mt-1.5 z-50 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden"
+            className="absolute top-full left-0 right-0 mt-1.5 z-50 bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden"
           >
             <div className="p-1.5 max-h-80 overflow-y-auto">
               {weeklyPlans.map((week, i) => {
@@ -535,7 +535,33 @@ function PlanPicker({ selectedPlan, onSelect }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+      {/* Mobile: horizontal scroll strip */}
+      <div className="flex sm:hidden gap-3 overflow-x-auto pb-2 -mx-4 px-4 snap-x snap-mandatory scrollbar-none mb-4">
+        {PLAN_META.map(plan => {
+          const selected = selectedPlan === plan.id
+          return (
+            <button
+              key={plan.id + "-mobile"}
+              onClick={() => onSelect(plan.id)}
+              className="flex-shrink-0 snap-start flex items-center gap-2.5 px-4 py-3 rounded-2xl border-2 transition-all touch-manipulation"
+              style={{
+                borderColor: selected ? plan.color : "#e5e7eb",
+                background: selected ? `linear-gradient(135deg, ${plan.accent}, #ffffff)` : "white",
+                minWidth: 160,
+              }}
+            >
+              {selected && <Check size={13} style={{ color: plan.color }} className="flex-shrink-0" />}
+              <div className="text-left">
+                <p className="text-sm font-bold text-gray-900">{plan.label}</p>
+                <p className="text-xs font-semibold mt-0.5" style={{ color: plan.color }}>{plan.targetBand}</p>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Desktop: full grid */}
+      <div className="hidden sm:grid grid-cols-3 gap-5">
         {PLAN_META.map(plan => {
           const Illus = ILLUS[plan.id]
           const selected = selectedPlan === plan.id
@@ -627,7 +653,7 @@ function PlanPicker({ selectedPlan, onSelect }) {
             </motion.button>
           )
         })}
-      </div>
+      </div>{/* end desktop grid */}
 
       {/* Active plan summary bar */}
       <AnimatePresence>
@@ -636,7 +662,7 @@ function PlanPicker({ selectedPlan, onSelect }) {
           return (
             <motion.div
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="mt-4 p-3.5 sm:p-4 rounded-2xl border flex items-start sm:items-center gap-3 flex-wrap sm:flex-nowrap"
+              className="mt-3 p-3.5 sm:p-4 rounded-2xl border flex items-center gap-3 flex-wrap"
               style={{ borderColor: meta.color + "30", backgroundColor: meta.accent }}
             >
               <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: meta.color }}>
@@ -789,7 +815,7 @@ function ScoreTracker({ openAuth, supabase, onScoresChange }) {
                     className="mb-5 p-4 rounded-xl border border-primary/20 bg-primary/5">
                     <p className="text-xs font-mono text-primary uppercase tracking-widest mb-1">Log a Score</p>
                     <p className="text-xs text-gray-500 mb-3">Leave any blank if you did not test that skill.</p>
-                    <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="grid grid-cols-2 gap-2.5 mb-4">
                       {fields.map(f => (
                         <div key={f.label}>
                           <label className="text-xs text-gray-500 mb-1 block">{f.label}</label>
@@ -832,7 +858,7 @@ function ScoreTracker({ openAuth, supabase, onScoresChange }) {
                     return (
                       <motion.div key={s.id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: i * 0.04 }}
-                        className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition">
+                        className="flex items-center gap-2.5 p-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50 transition">
                         <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm text-white flex-shrink-0"
                           style={{ backgroundColor: ov ? bandColor(ov) : "#94a3b8" }}>
                           {ov ?? "—"}
@@ -961,52 +987,51 @@ export default function StudyPlanSection({ openAuth }) {
   }
 
   return (
-    <section id="study-plan" className="py-20 sm:py-32 px-4 sm:px-6">
+    <section id="study-plan" className="py-14 sm:py-32 px-3 sm:px-6">
       <div className="max-w-5xl mx-auto">
 
         {/* Section header */}
-        <div className="text-center mb-12 sm:mb-16">
-          <span className="text-xs font-mono text-primary uppercase tracking-[0.3em] block mb-4">Study Plan</span>
-          <h2 className="text-3xl sm:text-5xl font-bold">IELTS <span className="text-primary">Preparation</span></h2>
+        <div className="text-center mb-8 sm:mb-16">
+          <span className="text-xs font-mono text-primary uppercase tracking-[0.3em] block mb-3">Study Plan</span>
+          <h2 className="text-2xl sm:text-5xl font-bold">IELTS <span className="text-primary">Preparation</span></h2>
         </div>
 
         {/* Plan picker */}
         <PlanPicker selectedPlan={selectedPlan} onSelect={handleSelectPlan} />
 
         {/* Plan header row */}
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-          <div>
-            <h3 className="text-base font-bold text-gray-900">
+        <div className="mb-5">
+          {/* Top: title + badges */}
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <h3 className="text-base font-bold text-gray-900 leading-tight">
               {planMeta.label}
               <span className="ml-2 text-sm font-normal text-gray-400">— {planMeta.weeks} weeks</span>
             </h3>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <span className="text-xs px-2.5 py-1 rounded-full text-white font-semibold whitespace-nowrap" style={{ backgroundColor: planMeta.color }}>
+                {planMeta.targetBand}
+              </span>
+              <span className="text-xs px-2.5 py-1 rounded-full border font-medium whitespace-nowrap"
+                style={{ borderColor: planMeta.color + "50", color: planMeta.color }}>
+                {planMeta.mocks} mocks
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            {planMeta.retakeWeek && (
-              <button
-                onClick={() => {
-                  if (!user) { openAuth(); return }
-                  setActiveWeek(planMeta.retakeWeek - 1)
-                }}
-                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition hover:bg-gray-50"
-                style={{ borderColor: planMeta.color + "50", color: planMeta.color }}
-              >
-                <AlertTriangle size={11} />
-                {planMeta.retakeLabel}
-              </button>
-            )}
-            <span className="text-xs px-2.5 py-1 rounded-full text-white font-semibold" style={{ backgroundColor: planMeta.color }}>
-              {planMeta.targetBand} target
-            </span>
-            <span className="text-xs px-2.5 py-1 rounded-full border font-medium"
-              style={{ borderColor: planMeta.color + "50", color: planMeta.color }}>
-              {planMeta.mocks} mock tests
-            </span>
-          </div>
+          {/* Retake button if applicable */}
+          {planMeta.retakeWeek && (
+            <button
+              onClick={() => { if (!user) { openAuth(); return } setActiveWeek(planMeta.retakeWeek - 1) }}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl border transition w-full sm:w-auto justify-center sm:justify-start touch-manipulation"
+              style={{ borderColor: planMeta.color + "50", color: planMeta.color }}
+            >
+              <AlertTriangle size={11} />
+              {planMeta.retakeLabel}
+            </button>
+          )}
         </div>
 
-        {/* Week dropdown */}
-        <div className="mb-6">
+        {/* Week dropdown — full width on mobile */}
+        <div className="mb-4 flex justify-end">
           <WeekDropdown
             weeklyPlans={weeklyPlans}
             activeWeek={activeWeek}
@@ -1027,7 +1052,7 @@ export default function StudyPlanSection({ openAuth }) {
             <motion.div
               key="completed"
               initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-              className="p-10 rounded-2xl border border-green-200 bg-green-50 text-center"
+              className="p-8 sm:p-10 rounded-2xl border border-green-200 bg-green-50 text-center"
             >
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 260, delay: 0.1 }} className="flex justify-center mb-4">
@@ -1068,14 +1093,14 @@ export default function StudyPlanSection({ openAuth }) {
         </AnimatePresence>
 
         {/* Week progress bar */}
-        <div className="mt-8">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-400">
-              {currentPlan?.label || `Week ${currentPlan?.week}`} progress
+        <div className="mt-6 p-4 rounded-2xl border border-gray-100 bg-white shadow-sm">
+          <div className="flex justify-between items-center mb-2.5">
+            <span className="text-xs font-medium text-gray-400">
+              {currentPlan?.label || `${planMeta?.unit || "Week"} ${activeWeek + 1}`} progress
             </span>
-            <span className="font-bold" style={{ color: planMeta.color }}>{weekProgress}%</span>
+            <span className="text-sm font-bold" style={{ color: planMeta.color }}>{weekProgress}%</span>
           </div>
-          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
             <motion.div className="h-full rounded-full" animate={{ width: `${weekProgress}%` }}
               transition={{ duration: 0.5 }} style={{ backgroundColor: planMeta.color }} />
           </div>
