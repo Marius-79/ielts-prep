@@ -738,7 +738,7 @@ function _ShapeItem({ shape, isSelected, isBeingDrawn, onSelect, onDelete, onCha
           startMove(e)
         }}
         onTouchStart={e => {
-          e.stopPropagation()
+          e.preventDefault(); e.stopPropagation()
           if (!isSelected) { onSelect(e); return }
           startMove(e)
         }}
@@ -770,26 +770,29 @@ function _ShapeItem({ shape, isSelected, isBeingDrawn, onSelect, onDelete, onCha
 
           {/* 4 corner handles — premium Figma-style: white circle with purple ring */}
           {corners.map(h => (
-            <g key={h.id} style={{ cursor: cornerCursors[h.id], pointerEvents: "all" }}
-               onMouseDown={e => { e.stopPropagation(); startCornerResize(e, h.id) }}>
-              {/* Invisible larger hit area */}
-              <circle cx={h.hx} cy={h.hy} r={10} fill="transparent"/>
+            <g key={h.id} style={{ cursor: cornerCursors[h.id], pointerEvents: "all", touchAction: "none" }}
+               onMouseDown={e => { e.stopPropagation(); startCornerResize(e, h.id) }}
+               onTouchStart={e => { e.preventDefault(); e.stopPropagation(); startCornerResize(e, h.id) }}>
+              {/* Invisible larger hit area — 18px radius for comfortable finger tap */}
+              <circle cx={h.hx} cy={h.hy} r={18} fill="transparent"/>
               {/* Outer ring */}
-              <circle cx={h.hx} cy={h.hy} r={6}
-                fill="white" stroke="#7c3aed" strokeWidth={2}
+              <circle cx={h.hx} cy={h.hy} r={7}
+                fill="white" stroke="#7c3aed" strokeWidth={2.5}
                 style={{ filter:"drop-shadow(0 1px 4px rgba(124,58,237,0.35))" }}/>
               {/* Inner dot */}
-              <circle cx={h.hx} cy={h.hy} r={2.5} fill="#7c3aed"/>
+              <circle cx={h.hx} cy={h.hy} r={3} fill="#7c3aed"/>
             </g>
           ))}
 
           {/* ✕ delete button — premium top-right */}
           <g
             transform={`translate(${x1+aw+10},${y1-10})`}
-            style={{ cursor:"pointer", pointerEvents: "all" }}
+            style={{ cursor:"pointer", pointerEvents: "all", touchAction: "none" }}
             onMouseDown={e => { e.preventDefault(); e.stopPropagation() }}
             onClick={e => { e.stopPropagation(); onDelete() }}
+            onTouchEnd={e => { e.preventDefault(); e.stopPropagation(); onDelete() }}
           >
+            <circle r={14} fill="transparent"/>
             <circle r={10} fill="#1e293b" stroke="white" strokeWidth={2}
               style={{ filter:"drop-shadow(0 2px 6px rgba(0,0,0,0.25))" }}/>
             <line x1={-4} y1={-4} x2={4} y2={4} stroke="white" strokeWidth={2} strokeLinecap="round"/>
@@ -1028,6 +1031,7 @@ function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTe
         zIndex:     isShapeTool ? 10 : 2,
         pointerEvents: "none",
         cursor:     isShapeTool ? "crosshair" : "default",
+        touchAction: "none",  // prevent browser scroll from interfering with shape interactions
       }}
       onClick={e => { if (e.target === svgRef.current && !isShapeTool) setSelectedIds(new Set()) }}
     >
@@ -1035,9 +1039,9 @@ function ShapeLayer({ tool, color, thickness, shapes, onShapesChange, onSelectTe
       <rect
         x="0" y="0" width="600" height="220"
         fill="transparent"
-        style={{ pointerEvents: (isShapeTool || tool === null) ? "all" : "none", touchAction: isShapeTool ? "none" : "auto" }}
+        style={{ pointerEvents: (isShapeTool || tool === null) ? "all" : "none", touchAction: "none" }}
         onMouseDown={handleSVGMouseDown}
-        onTouchStart={handleSVGMouseDown}
+        onTouchStart={e => { e.preventDefault(); handleSVGMouseDown(e) }}
       />
 
       {/* Selection box drag rectangle */}
@@ -1254,6 +1258,7 @@ function TextBox({ el, isSel, isEdit, onSelect, onEnterEdit, onUpdate, onDelete,
         onInput={e => onUpdate({ html: e.currentTarget.innerHTML })}
         onKeyDown={e => { if (e.key === "Escape") e.currentTarget.blur(); e.stopPropagation() }}
         onMouseDown={handleBodyMouseDown}
+        onTouchStart={e => { e.stopPropagation(); if (isEdit) return; onSelect(); onDragStart(e) }}
         onDoubleClick={e => { e.stopPropagation(); onEnterEdit() }}
         className="outline-none break-words leading-snug w-full"
         style={{
@@ -1414,7 +1419,7 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
 
   // ── Drag — moves ALL selected texts + selected shapes together ─────────────
   function startDrag(e, el) {
-    if (e.button !== 0) return
+    if (e.button !== 0 && !e.touches) return
     e.preventDefault(); e.stopPropagation()
     const x0 = e.clientX, y0 = e.clientY
 
@@ -1458,8 +1463,12 @@ function CanvasTextLayer({ tool, setTool, color, fontSize, texts, onTextsChange,
       window.removeEventListener("mousemove", move)
       window.removeEventListener("mouseup", up)
     }
+    function touchMoveText(ev) { ev.preventDefault(); move(ev) }
+    function touchUpText()   { up(); window.removeEventListener("touchmove", touchMoveText); window.removeEventListener("touchend", touchUpText) }
     window.addEventListener("mousemove", move)
     window.addEventListener("mouseup", up)
+    window.addEventListener("touchmove", touchMoveText, { passive: false })
+    window.addEventListener("touchend",  touchUpText,   { passive: false })
   }
 
   // When a shape tool is active the whole div must be transparent so clicks
@@ -1769,6 +1778,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
       style={{
         borderTop: "1px dashed rgba(0,0,0,0.08)",
         display: visible ? "block" : "none",
+        touchAction: (tool && tool !== null) ? "none" : "auto",
       }}
       onContextMenu={e => {
         e.preventDefault()
@@ -1817,7 +1827,7 @@ function DrawingCanvas({ tool, setTool, color, thickness, fontSize, canvasData, 
         className="w-full block"
         style={{
           cursor,
-          touchAction: (tool === "pen" || tool === "eraser") ? "none" : "auto",
+          touchAction: "none",
           background: "transparent",
           position: "absolute",
           top: 0, left: 0,
@@ -2099,8 +2109,7 @@ function NoteCard({ note, index, onUpdate, onRemove, activeTool, toolColor, tool
         canUndo={canUndo} canRedo={canRedo}
       />
 
-      {/* DrawingCanvas is ALWAYS mounted so the canvas bitmap and text elements
-          are never lost when switching tools. Hidden via CSS when no tool active. */}
+      {/* DrawingCanvas is ALWAYS mounted — touch-action managed per layer */}
       <DrawingCanvas
         tool={tool}
         setTool={setTool}
