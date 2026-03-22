@@ -30,30 +30,17 @@ export async function signUp(email, password, username) {
     }
   }
 
-  // create account
+  // create account — store username in metadata so AuthCallback can save it
+  // after email confirmation (RLS blocks the insert before confirmation)
   const { data, error } = await supabase.auth.signUp({
     email: normalizedEmail,
-    password
+    password,
+    options: {
+      data: { username: username }
+    }
   })
 
   if (error) return { data: null, error }
-
-  const user = data.user
-
-  if (user) {
-
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .insert({
-        id: user.id,
-        username: username
-      })
-
-    if (profileError) {
-      return { data: null, error: profileError }
-    }
-
-  }
 
   return { data, error: null }
 }

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react"
 import { X, User, Camera, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { supabase } from "../_lib/supabase"
 import { toast } from "sonner"
 
@@ -18,17 +18,22 @@ useEffect(() => {
   setAvatarUrl(currentAvatar || null)
 }, [currentUsername, currentAvatar, open])
 
-async function checkUsername(value) {
+const debounceRef = useRef(null)
+
+function checkUsername(value) {
   setUsername(value)
   if (value === currentUsername) { setUsernameStatus("same"); return }
   if (value.length < 3) { setUsernameStatus(null); return }
   setUsernameStatus("checking")
-  const { data } = await supabase
-    .from("profiles")
-    .select("username")
-    .eq("username", value)
-    .maybeSingle()
-  setUsernameStatus(data ? "taken" : "available")
+  clearTimeout(debounceRef.current)
+  debounceRef.current = setTimeout(async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("username", value)
+      .maybeSingle()
+    setUsernameStatus(data ? "taken" : "available")
+  }, 500)
 }
 
 async function handleAvatarUpload(e) {

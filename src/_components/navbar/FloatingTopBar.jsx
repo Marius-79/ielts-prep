@@ -15,7 +15,7 @@ const sections = [
   { id: "contact",    icon: Mail,            label: "Contact"   },
 ]
 
-export default function FloatingTopBar({ openAuth }) {
+export default function FloatingTopBar({ openAuth, openSignup }) {
   // ── Dark mode ─────────────────────────────────────────────────────────────
   const [dark, setDark] = useState(() => {
     const saved = localStorage.getItem("ielts-theme")
@@ -75,17 +75,29 @@ export default function FloatingTopBar({ openAuth }) {
         setUser(null); setUsername(null); setAvatarUrl(null)
         localStorage.removeItem("ielts-profile")
       } else if ((event === "SIGNED_IN" || event === "USER_UPDATED") && session?.user) {
-        setUser(session.user); fetchAndCacheProfile(session.user.id)
+        setUser(session.user)
+        fetchAndCacheProfile(session.user.id)
+        // Insert login event → triggers Supabase DB webhook → n8n → Telegram
+        if (event === "SIGNED_IN") {
+          supabase.from("user_logins").insert({
+            user_id:    session.user.id,
+            email:      session.user.email,
+            user_agent: navigator.userAgent,
+          }).then(() => {})
+        }
       }
     })
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  async function fetchAndCacheProfile(id) {
+  async function fetchAndCacheProfile(id, retries = 3) {
     const { data } = await supabase.from("profiles").select("username, avatar_url").eq("id", id).maybeSingle()
-    if (data) {
-      setUsername(data.username ?? null); setAvatarUrl(data.avatar_url ?? null)
-      localStorage.setItem("ielts-profile", JSON.stringify({ username: data.username ?? null, avatarUrl: data.avatar_url ?? null }))
+    if (data?.username) {
+      setUsername(data.username); setAvatarUrl(data.avatar_url ?? null)
+      localStorage.setItem("ielts-profile", JSON.stringify({ username: data.username, avatarUrl: data.avatar_url ?? null }))
+    } else if (retries > 0) {
+      // Profile row not ready yet (e.g. just after signup) — retry after a short delay
+      setTimeout(() => fetchAndCacheProfile(id, retries - 1), 800)
     }
   }
 
@@ -225,13 +237,21 @@ export default function FloatingTopBar({ openAuth }) {
 
                 {/* Sign in / avatar */}
                 {!user && (
-                  <button
-                    onClick={openAuth}
-                    className="flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-primary text-white text-xs sm:text-sm hover:opacity-90 transition flex-shrink-0 touch-manipulation"
-                  >
-                    <User size={14} />
-                    <span className="hidden sm:inline">Sign In</span>
-                  </button>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <button
+                      onClick={openAuth}
+                      className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full border border-border text-xs sm:text-sm text-foreground hover:bg-secondary transition touch-manipulation"
+                    >
+                      <User size={14} />
+                      <span className="hidden sm:inline">Sign In</span>
+                    </button>
+                    <button
+                      onClick={openSignup}
+                      className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-full bg-primary text-white text-xs sm:text-sm hover:opacity-90 transition touch-manipulation"
+                    >
+                      <span>Sign Up</span>
+                    </button>
+                  </div>
                 )}
 
                 {user && (

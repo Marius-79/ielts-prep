@@ -17,14 +17,19 @@ export default function AuthCallback() {
           .maybeSingle()
 
         if (!existing) {
-          // Build a sensible default username from GitHub metadata
-          const meta        = user.user_metadata ?? {}
-          const rawUsername = (meta.user_name || meta.preferred_username || meta.name || "")
-            .toLowerCase()
-            .replace(/[^a-z0-9_]/g, "_")
-            .slice(0, 30) || "user"
+          const meta = user.user_metadata ?? {}
 
-          // Avoid collisions by appending a short random suffix if needed
+          // Email signup: username was stored in metadata during signUp()
+          // OAuth (GitHub): use user_name / preferred_username from OAuth metadata
+          let rawUsername = (
+            meta.username ||
+            meta.user_name ||
+            meta.preferred_username ||
+            meta.name ||
+            ""
+          ).toLowerCase().replace(/[^a-z0-9_]/g, "_").slice(0, 30) || "user"
+
+          // Avoid collisions
           let finalUsername = rawUsername
           const { data: taken } = await supabase
             .from("profiles")

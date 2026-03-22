@@ -10,14 +10,15 @@ function generateUsernameSuggestions(base) {
   return [`${clean}${num()}`, `${clean}_ielts`, `${clean}${new Date().getFullYear()}`, `the_${clean}`, `${clean}_pro`]
 }
 
-export default function AuthModal({ open, onClose }) {
+export default function AuthModal({ open, onClose, mode }) {
   const [username,       setUsername]       = useState("")
   const [email,          setEmail]          = useState("")
   const [password,       setPassword]       = useState("")
   const [usernameStatus, setUsernameStatus] = useState(null)
   const [loading,        setLoading]        = useState(false)
-  const [isLogin,        setIsLogin]        = useState(true)
+  const [isLogin,        setIsLogin]        = useState(mode !== "signup")
   const [isForgot,       setIsForgot]       = useState(false)
+  useEffect(() => { if (open) setIsLogin(mode !== "signup") }, [open, mode])
   const [showPassword,   setShowPassword]   = useState(false)
   const [suggestions,    setSuggestions]    = useState([])
 
@@ -55,7 +56,16 @@ export default function AuthModal({ open, onClose }) {
       if (usernameStatus === "taken") { toast.error("Username already taken"); setLoading(false); return }
       if (!validatePassword(password)) { toast.error("Password needs 8+ chars, uppercase, number & symbol — e.g. Tiger42!"); setLoading(false); return }
 
-      const { data, error } = await supabase.auth.signUp({ email, password })
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          // username stored in metadata so AuthCallback saves it after email confirmation
+          data: { username },
+          // confirmation email link brings user back to THIS site's auth callback
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
       if (error) {
         toast.error(error.message.toLowerCase().includes("already") ? "Email already registered — try signing in" : error.message)
         setLoading(false); return
