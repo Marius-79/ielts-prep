@@ -350,32 +350,118 @@ function PTab({ label, period, active, onClick }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Shared navigator arrow used inside CompletionCard
+// ─────────────────────────────────────────────────────────────────────────────
+function NavArrow({ dir, enabled, onClick }) {
+  const path = dir === "prev" ? "M7.5 2L4 6l3.5 4" : "M4.5 2L8 6l-3.5 4"
+  return (
+    <button
+      onClick={onClick}
+      disabled={!enabled}
+      className="w-6 h-6 rounded-lg flex items-center justify-center transition-colors"
+      style={{
+        background: enabled ? "var(--secondary)" : "transparent",
+        color:      enabled ? "var(--foreground)" : "var(--border)",
+        cursor:     enabled ? "pointer" : "default",
+      }}>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d={path} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </button>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Completion card
 // ─────────────────────────────────────────────────────────────────────────────
-function CompletionCard({ perWeek, planPct, activeWeekIdx }) {
+function CompletionCard({ perWeek, planPct, activeWeekIdx, weeklyPlans, planId, userId, planUnit }) {
   const [period, setPeriod] = useState("weekly")
-  // selectedWeekIdx lets the user browse any week — defaults to the current active week.
-  // Stays in sync: when activeWeekIdx changes (e.g. plan switch) we reset to it.
+
+  // ── Week navigator (all plans) ─────────────────────────────────────────────
   const [selectedWeekIdx, setSelectedWeekIdx] = useState(activeWeekIdx)
   useEffect(() => { setSelectedWeekIdx(activeWeekIdx) }, [activeWeekIdx])
-
   const selectedWeek = perWeek[selectedWeekIdx] || { pct:0, completed:0, total:0 }
 
-  // Daily: divide selected week evenly across its days
-  const dailyDone  = Math.round(selectedWeek.completed / Math.max(1, perWeek[selectedWeekIdx] ? 5 : 1))
-  const dailyTotal = Math.round(selectedWeek.total     / Math.max(1, perWeek[selectedWeekIdx] ? 5 : 1))
-  const dailyPct   = dailyTotal === 0 ? 0 : Math.round((dailyDone / dailyTotal) * 100)
+  // ── Day navigator (within the selected week) ───────────────────────────────
+  // Build per-day data for the selected week by reading the same localStorage keys
+  const perDay = (() => {
+    const weekPlan = weeklyPlans[selectedWeekIdx]
+    if (!weekPlan) return []
+    return weekPlan.days.map(day => {
+      const globalDay = (weekPlan.week - 1) * 5 + day.day
+      let total = 0, completed = 0
+      ;[day.morning, day.afternoon].forEach(task => {
+        total += task.subtasks.length
+        const key = userId
+          ? `${userId}-${planId}-week-${weekPlan.week}-day-${globalDay}-${task.title}`
+          : `${planId}-week-${weekPlan.week}-day-${globalDay}-${task.title}`
+        try { const raw = localStorage.getItem(key); if (raw) completed += JSON.parse(raw).length } catch {}
+      })
+      const pct = total === 0 ? 0
+        : completed === total ? 100
+        : Math.round((completed / total) * 100)
+      return { label: `Day ${day.day}`, total, completed, pct }
+    })
+  })()
 
+  // Active day = first incomplete, or last if all done
+  const activeDayIdx = (() => {
+    const idx = perDay.findIndex(d => d.pct < 100)
+    return idx === -1 ? Math.max(0, perDay.length - 1) : idx
+  })()
+  const [selectedDayIdx, setSelectedDayIdx] = useState(activeDayIdx)
+  // Reset day when week changes
+  useEffect(() => { setSelectedDayIdx(activeDayIdx) }, [selectedWeekIdx])
+
+  const selectedDay = perDay[selectedDayIdx] || { pct:0, completed:0, total:0, label:"Day 1" }
+
+  // ── Month navigator (plans B & C — unit === "Month") ───────────────────────
+  // Each month = 4 weeks. Group perWeek into months.
+  const isMonthPlan = planUnit === "Month"
+  const perMonth = (() => {
+    if (!isMonthPlan) return []
+    const months = []
+    for (let i = 0; i < perWeek.length; i += 4) {
+      const slice = perWeek.slice(i, i + 4)
+      const total     = slice.reduce((a, w) => a + w.total,     0)
+      const completed = slice.reduce((a, w) => a + w.completed, 0)
+      const pct = total === 0 ? 0
+        : completed === total ? 100
+        : Math.round((completed / total) * 100)
+      months.push({ label: `Month ${months.length + 1}`, total, completed, pct })
+    }
+    return months
+  })()
+
+  const activeMonthIdx = (() => {
+    const idx = perMonth.findIndex(m => m.pct < 100)
+    return idx === -1 ? Math.max(0, perMonth.length - 1) : idx
+  })()
+  const [selectedMonthIdx, setSelectedMonthIdx] = useState(activeMonthIdx)
+  useEffect(() => { setSelectedMonthIdx(activeMonthIdx) }, [activeWeekIdx])
+
+  const selectedMonth = perMonth[selectedMonthIdx] || { pct:0, completed:0, total:0, label:"Month 1" }
+
+  // ── Data for the donut depending on active period ──────────────────────────
   const data = {
-    daily:   { pct:dailyPct,           done:dailyDone,              total:dailyTotal,            label:"today"     },
-    weekly:  { pct:selectedWeek.pct,   done:selectedWeek.completed, total:selectedWeek.total,    label:selectedWeek.label || `Week ${selectedWeekIdx + 1}` },
-    monthly: { pct:planPct,            done:perWeek.reduce((a,w)=>a+w.completed,0),
-                                       total:perWeek.reduce((a,w)=>a+w.total,0),                 label:"overall"   },
+    daily:   { pct: selectedDay.pct,   done: selectedDay.completed,   total: selectedDay.total,
+               label: selectedDay.label },
+    weekly:  { pct: selectedWeek.pct,  done: selectedWeek.completed,  total: selectedWeek.total,
+               label: selectedWeek.label || `Week ${selectedWeekIdx + 1}` },
+    monthly: isMonthPlan
+      ? { pct: selectedMonth.pct, done: selectedMonth.completed, total: selectedMonth.total,
+          label: selectedMonth.label }
+      : { pct: planPct,           done: perWeek.reduce((a,w)=>a+w.completed,0),
+          total: perWeek.reduce((a,w)=>a+w.total,0),                            label: "overall" },
   }
   const p = data[period]
 
-  const canPrev = selectedWeekIdx > 0
-  const canNext = selectedWeekIdx < perWeek.length - 1
+  // ── Badge helper ───────────────────────────────────────────────────────────
+  function Badge({ isActive, isDone }) {
+    if (isDone)    return <span className="ml-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background:"rgba(16,185,129,0.12)", color:"#10b981" }}>✓ done</span>
+    if (isActive)  return <span className="ml-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background:"rgba(124,58,237,0.12)", color:PURPLE }}>current</span>
+    return null
+  }
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 flex flex-col">
@@ -384,50 +470,49 @@ function CompletionCard({ perWeek, planPct, activeWeekIdx }) {
         <div className="flex gap-0.5 p-1 rounded-xl bg-secondary">
           <PTab label="Day"     period="daily"   active={period==="daily"}   onClick={setPeriod}/>
           <PTab label="Week"    period="weekly"  active={period==="weekly"}  onClick={setPeriod}/>
-          <PTab label="Overall" period="monthly" active={period==="monthly"} onClick={setPeriod}/>
+          <PTab label={isMonthPlan ? "Month" : "Overall"} period="monthly" active={period==="monthly"} onClick={setPeriod}/>
         </div>
       </div>
 
-      {/* Week navigator — only shown when "Week" tab is active */}
+      {/* Day navigator */}
+      {period === "daily" && perDay.length > 1 && (
+        <div className="flex items-center justify-between mb-3 px-1">
+          <NavArrow dir="prev" enabled={selectedDayIdx > 0}
+            onClick={() => setSelectedDayIdx(i => Math.max(0, i - 1))}/>
+          <span className="text-[11px] font-semibold text-foreground">
+            {selectedDay.label}
+            <Badge isActive={selectedDayIdx === activeDayIdx} isDone={selectedDay.pct === 100}/>
+          </span>
+          <NavArrow dir="next" enabled={selectedDayIdx < perDay.length - 1}
+            onClick={() => setSelectedDayIdx(i => Math.min(perDay.length - 1, i + 1))}/>
+        </div>
+      )}
+
+      {/* Week navigator */}
       {period === "weekly" && perWeek.length > 1 && (
         <div className="flex items-center justify-between mb-3 px-1">
-          <button
-            onClick={() => setSelectedWeekIdx(i => Math.max(0, i - 1))}
-            disabled={!canPrev}
-            className="w-6 h-6 rounded-lg flex items-center justify-center transition-colors"
-            style={{
-              background: canPrev ? "var(--secondary)" : "transparent",
-              color: canPrev ? "var(--foreground)" : "var(--border)",
-              cursor: canPrev ? "pointer" : "default",
-            }}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M7.5 2L4 6l3.5 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+          <NavArrow dir="prev" enabled={selectedWeekIdx > 0}
+            onClick={() => setSelectedWeekIdx(i => Math.max(0, i - 1))}/>
           <span className="text-[11px] font-semibold text-foreground">
             {selectedWeek.label || `Week ${selectedWeekIdx + 1}`}
-            {selectedWeekIdx === activeWeekIdx && (
-              <span className="ml-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
-                style={{ background:"rgba(124,58,237,0.12)", color:PURPLE }}>current</span>
-            )}
-            {selectedWeek.pct === 100 && (
-              <span className="ml-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full"
-                style={{ background:"rgba(16,185,129,0.12)", color:"#10b981" }}>✓ done</span>
-            )}
+            <Badge isActive={selectedWeekIdx === activeWeekIdx} isDone={selectedWeek.pct === 100}/>
           </span>
-          <button
-            onClick={() => setSelectedWeekIdx(i => Math.min(perWeek.length - 1, i + 1))}
-            disabled={!canNext}
-            className="w-6 h-6 rounded-lg flex items-center justify-center transition-colors"
-            style={{
-              background: canNext ? "var(--secondary)" : "transparent",
-              color: canNext ? "var(--foreground)" : "var(--border)",
-              cursor: canNext ? "pointer" : "default",
-            }}>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M4.5 2L8 6l-3.5 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+          <NavArrow dir="next" enabled={selectedWeekIdx < perWeek.length - 1}
+            onClick={() => setSelectedWeekIdx(i => Math.min(perWeek.length - 1, i + 1))}/>
+        </div>
+      )}
+
+      {/* Month navigator — only for plans B & C */}
+      {period === "monthly" && isMonthPlan && perMonth.length > 1 && (
+        <div className="flex items-center justify-between mb-3 px-1">
+          <NavArrow dir="prev" enabled={selectedMonthIdx > 0}
+            onClick={() => setSelectedMonthIdx(i => Math.max(0, i - 1))}/>
+          <span className="text-[11px] font-semibold text-foreground">
+            {selectedMonth.label}
+            <Badge isActive={selectedMonthIdx === activeMonthIdx} isDone={selectedMonth.pct === 100}/>
+          </span>
+          <NavArrow dir="next" enabled={selectedMonthIdx < perMonth.length - 1}
+            onClick={() => setSelectedMonthIdx(i => Math.min(perMonth.length - 1, i + 1))}/>
         </div>
       )}
 
@@ -1014,6 +1099,10 @@ export default function ProgressDashboard({ user, username, avatarUrl }) {
             perWeek={perWeek}
             planPct={planPct}
             activeWeekIdx={activeWeekIdx}
+            weeklyPlans={weeklyPlans}
+            planId={planId}
+            userId={user?.id}
+            planUnit={planMeta.unit}
           />
           <ScoreCard scores={scores}/>
         </motion.div>
