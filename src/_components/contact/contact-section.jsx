@@ -70,7 +70,7 @@ export default function ContactSection() {
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">Creator</p>
                 <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Marius</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
-                  I took the IELTS exam and achieved a <span className="font-semibold text-foreground">C1 level</span>. This platform is built from my own preparation journey — sharing what I genuinely believe is the most optimal path for anyone sitting the exam.
+                  For everyone asking <span className="font-semibold text-foreground">"where do I start?"</span> and <span className="font-semibold text-foreground">"what strategy should I follow?"</span> — this was built for you. I went through the IELTS preparation process myself, achieved a <span className="font-semibold text-foreground">C1 level</span>, and built this platform from everything that actually worked. No filler — just the strategies, tools, and daily structure that I'd follow again from day one.
                 </p>
               </div>
             </div>
