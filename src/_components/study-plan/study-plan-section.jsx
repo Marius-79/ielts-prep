@@ -135,6 +135,8 @@ function TaskBlock({ task, period, icon: Icon, refreshProgress, dayId, weekId, p
       const next = new Set(prev)
       next.has(index) ? next.delete(index) : next.add(index)
       localStorage.setItem(storageKey, JSON.stringify([...next]))
+      // Notify dashboard in the same tab (storage event only fires cross-tab)
+      try { new BroadcastChannel("ielts-progress").postMessage({ type: "task" }) } catch {}
       if (window.supabaseUser)
         saveTaskProgress(window.supabaseUser.id, planId, weekId, dayId, task.title, [...next])
       return next
@@ -1031,6 +1033,7 @@ function ScoreTracker({ openAuth, supabase, onScoresChange }) {
     const { data, error } = await supabase.from("score_history").insert(payload).select()
     if (data && data[0]) {
       setScores(prev => { const u = [data[0], ...prev]; localStorage.setItem("ielts-scores", JSON.stringify(u)); return u })
+      try { new BroadcastChannel("ielts-progress").postMessage({ type: "scores" }) } catch {}
       resetForm()
       setView("history")
     }
@@ -1041,6 +1044,7 @@ function ScoreTracker({ openAuth, supabase, onScoresChange }) {
   async function deleteScore(id) {
     await supabase.from("score_history").delete().eq("id", id)
     setScores(prev => { const u = prev.filter(s => s.id !== id); localStorage.setItem("ielts-scores", JSON.stringify(u)); return u })
+    try { new BroadcastChannel("ielts-progress").postMessage({ type: "scores" }) } catch {}
   }
 
   const bandOpts  = [4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9]
@@ -1439,6 +1443,7 @@ export default function StudyPlanSection({ openAuth }) {
     setActiveWeek(0)
     localStorage.setItem("ielts-selected-plan", id)
     if (user) saveSelectedPlan(user.id, id)
+    try { new BroadcastChannel("ielts-progress").postMessage({ type: "plan", planId: id }) } catch {}
   }
 
   useEffect(() => {
