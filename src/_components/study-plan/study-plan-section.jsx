@@ -500,7 +500,7 @@ function StandardIllustration() {
       {/* Mock counter */}
       <circle cx="170" cy="55" r="32" fill="#0ea5e9" opacity="0.12"/>
       <circle cx="170" cy="55" r="24" fill="#0ea5e9"/>
-      <text x="170" y="51" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">25</text>
+      <text x="170" y="51" textAnchor="middle" fill="white" fontSize="14" fontWeight="bold">20</text>
       <text x="170" y="64" textAnchor="middle" fill="white" fontSize="8">mock tests</text>
       {/* Band label */}
       <rect x="128" y="90" width="64" height="18" rx="9" fill="#0ea5e9" opacity="0.15"/>

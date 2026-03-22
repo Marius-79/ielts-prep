@@ -1,5 +1,5 @@
-import { motion, useInView } from "motion/react"
-import { useRef } from "react"
+import { motion, useInView, AnimatePresence } from "motion/react"
+import { useRef, useState } from "react"
 import { Target, ArrowRight, CheckCircle, Zap, Clock, Trophy } from "lucide-react"
 
 // ── Data derived from PLAN_META ───────────────────────────────────────────────
@@ -83,6 +83,206 @@ const skills = [
     img: "https://pecpte.com/wp-content/uploads/2021/02/IELTS-Speaking-Test.jpeg",
     desc: "Develop fluency, coherence, and vocabulary range for the interview." },
 ]
+
+
+// ── MethodologyAccordion ──────────────────────────────────────────────────────
+const METHOD_SECTIONS = [
+  {
+    id: "simon",
+    emoji: "📘",
+    label: "Simon",
+    title: "Simon's Teaching",
+    tagline: "Strategy & templates — the brain of every plan",
+    color: "#7c3aed",
+    content: [
+      { text: "Simon's method is built on one core principle: ", bold: false },
+      { text: "simplicity with precision", bold: true },
+      { text: ". No complicated language, no filler — just the clearest path to a high band score.", bold: false },
+    ],
+    bullets: [
+      { label: "4 core rules", desc: "written at the top of the plan for students to copy into their notebooks on Day 1 — because understanding the method matters more than following it blindly." },
+      { label: "Named lessons", desc: "every task directly references Simon’s specific material — “Read Simon’s Task 2 introduction (30 min)” — so students know exactly what to open and why." },
+      { label: "Ideas before language", desc: "his writing and speaking templates ensure students express clear ideas first, then wrap them in the right vocabulary — not the other way around." },
+    ],
+  },
+  {
+    id: "jumpinto",
+    emoji: "🤖",
+    label: "JumpInto",
+    title: "JumpInto AI Practice",
+    tagline: "Daily feedback partner — not just an occasional exercise",
+    color: "#0ea5e9",
+    content: [
+      { text: "JumpInto is wired into ", bold: false },
+      { text: "every single day", bold: true },
+      { text: " of the plan for Speaking practice across all 3 parts — with AI feedback that actually tells you what to fix.", bold: false },
+    ],
+    bullets: [
+      { label: "4 scored criteria", desc: "Fluency, Vocabulary, Grammar, and Pronunciation — students are told exactly which score to focus on each week and what to do differently based on that feedback." },
+      { label: "All 4 skills tested", desc: "full AI-scored mock tests for Listening, Reading, Writing, and Speaking — one platform that covers the entire exam." },
+      { label: "Daily training partner", desc: "not an optional resource. Every week has specific JumpInto targets — e.g. 'aim for a Fluency score above 6.5 by Week 3'." },
+    ],
+  },
+  {
+    id: "engnovate",
+    emoji: "📊",
+    label: "Engnovate",
+    title: "Engnovate Mock Tests",
+    tagline: "Cambridge-format tests with measurable progress tracking",
+    color: "#10b981",
+    content: [
+      { text: "Engnovate handles the ", bold: false },
+      { text: "heavy lifting of structured testing", bold: true },
+      { text: " — every mock in the plan is Cambridge-format and automatically scored so progress is always measurable.", bold: false },
+    ],
+    bullets: [
+      { label: "Cambridge-format mocks", desc: "identical to real exam conditions — students get an accurate band estimate after every single test, not just a percentage." },
+      { label: "AI writing scoring", desc: "essays submitted for AI feedback on all 4 writing criteria: Task Achievement, Coherence, Lexical Resource, and Grammar." },
+      { label: "Pronunciation & shadowing", desc: "scheduled on specific days when speaking skills need deepening — not random, but deliberately placed at the right point in each plan." },
+    ],
+  },
+  {
+    id: "discord",
+    emoji: "💬",
+    label: "Discord",
+    title: "Discord Speaking",
+    tagline: "Human interaction — the one thing AI cannot replace",
+    color: "#f97316",
+    content: [
+      { text: "Every single week has a dedicated ", bold: false },
+      { text: "structured Discord session", bold: true },
+      { text: " — extending to 1.5 hours in Month 2 — each with a specific focus so it builds progressively.", bold: false },
+    ],
+    bullets: [
+      { label: "Progressive structure", desc: "Part 2 practice in Week 3, Part 3 abstract discussion in Week 4, full mock simulations in the final weeks — never just 'go talk to someone'." },
+      { label: "Real examiner pressure", desc: "speaking with a real person who can ask follow-up questions prepares you for the unpredictability of the actual Speaking test in a way no AI can replicate." },
+      { label: "1–1.5 hours weekly", desc: "the minimum needed to build the confidence and spontaneity required for a Band 7+ speaking performance." },
+    ],
+  },
+]
+
+function MethodologyAccordion({ isInView }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: 0.55 }}
+      className="mt-10 rounded-2xl border border-border bg-card overflow-hidden"
+    >
+      {/* ── Toggle header ── */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 sm:px-6 py-5 hover:bg-secondary/30 transition-colors group"
+      >
+        <div className="flex items-center gap-3 text-left">
+          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <span className="text-base">⚡</span>
+          </div>
+          <div>
+            <p className="text-sm sm:text-base font-bold text-foreground leading-tight">
+              Why This Plan Works — The Method Behind It
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Simon · JumpInto · Engnovate · Discord — how the four tools combine
+            </p>
+          </div>
+        </div>
+        <motion.div
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
+          className="flex-shrink-0 ml-3 w-7 h-7 rounded-full border border-border flex items-center justify-center text-muted-foreground group-hover:border-primary/40 group-hover:text-primary transition-colors"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 4L6 8L10 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </motion.div>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 sm:px-6 pb-6 border-t border-border">
+
+              {/* Intro line */}
+              <p className="text-sm text-muted-foreground leading-relaxed pt-5 pb-6 max-w-3xl">
+                Each plan is built around <strong className="text-foreground font-semibold">four tools that do completely different jobs</strong> — none of them redundant, each one doing something the others cannot.
+              </p>
+
+              {/* 4 sections */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                {METHOD_SECTIONS.map(sec => (
+                  <div key={sec.id}
+                    className="rounded-xl border p-4 sm:p-5"
+                    style={{ borderColor: sec.color + "30", backgroundColor: sec.color + "08" }}
+                  >
+                    {/* Section header */}
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
+                        style={{ backgroundColor: sec.color + "18" }}>
+                        {sec.emoji}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-foreground leading-tight">{sec.title}</p>
+                        <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{sec.tagline}</p>
+                      </div>
+                    </div>
+
+                    {/* Lead sentence */}
+                    <p className="text-xs text-foreground/80 leading-relaxed mb-3">
+                      {sec.content.map((chunk, ci) =>
+                        chunk.bold
+                          ? <strong key={ci} className="text-foreground font-semibold">{chunk.text}</strong>
+                          : <span key={ci}>{chunk.text}</span>
+                      )}
+                    </p>
+
+                    {/* Bullets */}
+                    <ul className="space-y-2.5">
+                      {sec.bullets.map((b, bi) => (
+                        <li key={bi} className="flex items-start gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ backgroundColor: sec.color }} />
+                          <p className="text-xs text-foreground/75 leading-relaxed">
+                            <strong className="text-foreground font-semibold">{b.label}</strong>
+                            {" — "}{b.desc}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom summary strip */}
+              <div className="rounded-xl border border-border bg-secondary/20 px-4 py-3.5 flex flex-wrap gap-x-6 gap-y-2">
+                {[
+                  { color: "#7c3aed", text: "Simon gives the strategy & templates" },
+                  { color: "#0ea5e9", text: "JumpInto gives daily AI feedback" },
+                  { color: "#10b981", text: "Engnovate gives structured mock tests" },
+                  { color: "#f97316", text: "Discord gives real human practice" },
+                ].map(item => (
+                  <div key={item.text} className="flex items-center gap-2 text-xs text-foreground/80">
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                    {item.text}
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
 
 // ── Component ─────────────────────────────────────────────────────────────────
 export default function OverviewSection() {
@@ -288,6 +488,9 @@ export default function OverviewSection() {
             </div>
           ))}
         </motion.div>
+
+        {/* ── Methodology Accordion ─────────────────────────────────────────── */}
+        <MethodologyAccordion isInView={isInView} />
 
         {/* ── Bottom CTA ───────────────────────────────────────────────────────── */}
         <motion.div
