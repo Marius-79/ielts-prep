@@ -148,7 +148,7 @@ async function promptUserForAccount(options) {
             exit={{ scale: 0.95, opacity: 0, y: 12 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
             onClick={e => e.stopPropagation()}
-            className="relative w-full max-w-[380px] bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-[380px] bg-background rounded-2xl shadow-2xl overflow-hidden border border-border"
           >
             {/* Purple top accent */}
             <div className="h-1 w-full bg-primary" />
@@ -186,7 +186,7 @@ async function promptUserForAccount(options) {
                     <div className="relative">
                       <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
                       <input type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)}
-                        className="w-full pl-10 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
+                        className="w-full pl-10 py-2.5 border border-border rounded-xl text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
                     </div>
                   </div>
                   <button onClick={handleForgotPassword} disabled={loading}
@@ -237,7 +237,7 @@ async function promptUserForAccount(options) {
                         <div className="relative">
                           <User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
                           <input type="text" placeholder="your_username" value={username} onChange={e => checkUsername(e.target.value)}
-                            className="w-full pl-10 pr-9 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
+                            className="w-full pl-10 pr-9 py-2.5 border border-border rounded-xl text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
                           <span className="absolute right-3.5 top-1/2 -translate-y-1/2">
                             {usernameStatus === "checking" && <Loader2 size={13} className="animate-spin text-muted-foreground/40" />}
                             {usernameStatus === "available" && <CheckCircle2 size={13} className="text-green-500" />}
@@ -264,7 +264,7 @@ async function promptUserForAccount(options) {
                     <div className="relative">
                       <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
                       <input type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)}
-                        className="w-full pl-10 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
+                        className="w-full pl-10 py-2.5 border border-border rounded-xl text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
                     </div>
                   </div>
 
@@ -282,7 +282,7 @@ async function promptUserForAccount(options) {
                       <Lock size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
                       <input type={showPassword ? "text" : "password"} placeholder={isLogin ? "Your password" : "Min. 8 characters"}
                         value={password} onChange={e => setPassword(e.target.value)}
-                        className="w-full pl-10 pr-10 py-2.5 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
+                        className="w-full pl-10 pr-10 py-2.5 border border-border rounded-xl text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition" />
                       <button type="button" onClick={() => setShowPassword(p => !p)}
                         className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 hover:text-muted-foreground transition">
                         {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
