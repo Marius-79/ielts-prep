@@ -80,6 +80,19 @@ async function handleSave() {
   }
 
   toast.success("Profile updated!")
+
+  // Notify n8n → Telegram
+  fetch("https://marius-88.app.n8n.cloud/webhook/fd464385-ba18-4a29-bf14-07fffa52ba48", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      type: "UPDATE",
+      table: "profiles",
+      record: { username, avatar_url: avatarUrl },
+      old_record: { username: currentUsername }
+    })
+  }).catch(() => {})
+
   onUpdated({ username, avatarUrl })
   onClose()
   setSaving(false)
